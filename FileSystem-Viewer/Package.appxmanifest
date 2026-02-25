@@ -9,11 +9,11 @@
   IgnorableNamespaces="uap rescap systemai">
 
   <Identity
-    Name="8792496a-2206-47f3-8274-1a9d8f900539"
+    Name="9f2e2c6a-32c7-4ae6-8c92-9c7cccc73c57"
     Publisher="CN=Vanya"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="8792496a-2206-47f3-8274-1a9d8f900539" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="9f2e2c6a-32c7-4ae6-8c92-9c7cccc73c57" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>FileSystem-Viewer</DisplayName>
