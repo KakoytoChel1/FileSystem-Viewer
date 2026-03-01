@@ -10,6 +10,10 @@
     mc:Ignorable="d">
 
     <Grid>
-        
+        <Button
+            Content="{x:Bind ViewModel.StartButtonText}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Command="{x:Bind ViewModel.ScanCommand}"/>
     </Grid>
 </Page>

@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using FileSystem_Viewer.Views.Pages;
 using FileSystem_Viewer.ViewModels;
+using FileSystem_Viewer.Services.IServices;
+using FileSystem_Viewer.Services;
 
 
 namespace FileSystem_Viewer
@@ -42,7 +44,8 @@ namespace FileSystem_Viewer
 
             #region Services
 
-
+            services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
+            services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             #endregion
 
             ServiceProvider = services.BuildServiceProvider();

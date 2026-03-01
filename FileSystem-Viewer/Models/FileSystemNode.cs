@@ -32,6 +32,7 @@ namespace FileSystem_Viewer.Models
             get { return _lastModified; }
             set { SetProperty(ref _lastModified, value); }
         }
+        protected FileSystemNode() { }
         protected FileSystemNode(string name, string fullPath, long size, DateTime lastModified)
         {
             Name = name;

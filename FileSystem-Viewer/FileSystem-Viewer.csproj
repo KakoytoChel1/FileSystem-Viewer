@@ -48,7 +48,6 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Services\IServices\" />
     <Folder Include="Views\Resources\" />
   </ItemGroup>
   <ItemGroup>
