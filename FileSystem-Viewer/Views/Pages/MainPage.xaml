@@ -7,13 +7,94 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileSystem_Viewer.ViewModels"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    xmlns:models="using:FileSystem_Viewer.Models"
+    xmlns:tsel="using:FileSystem_Viewer.Views.TSelectors"
+    x:Name="mainPage">
+
+    <Page.Resources>
+        <DataTemplate x:Key="DirectoryTemplate">
+            <TreeViewItem AutomationProperties.Name="{Binding Name}" 
+                      ItemsSource="{Binding FileSystemNodes}" 
+                      IsExpanded="True">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="20" Source="../../Assets/directory.png"/>
+                    <TextBlock Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding Name}" />
+                </StackPanel>
+            </TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FileTemplate">
+            <TreeViewItem AutomationProperties.Name="{Binding Name}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="20" Source="../../Assets/file.png"/>
+                    <TextBlock Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding Name}"/>
+                </StackPanel>
+            </TreeViewItem>
+        </DataTemplate>
+
+        <tsel:ExplorerItemTemplateSelector 
+        x:Key="ExplorerItemTemplateSelector"
+        DirectoryTemplate="{StaticResource DirectoryTemplate}"
+        FileTemplate="{StaticResource FileTemplate}"/>
+    </Page.Resources>
 
     <Grid>
-        <Button
-            Content="{x:Bind ViewModel.StartButtonText}"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Command="{x:Bind ViewModel.ScanCommand}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="35"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <!--Menu bar-->
+        <MenuBar Grid.Row="0"
+                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+            <MenuBarItem Title="File">
+                <MenuFlyoutItem Text="Select target.."/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Refresh scanning"/>
+                <MenuFlyoutItem Text="Refresh selected"/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Exit"/>
+            </MenuBarItem>
+        </MenuBar>
+
+        <!--Buttons bar-->
+        <StackPanel
+            Grid.Row="1"
+            Margin="5,5,5,0"
+            Orientation="Horizontal">
+
+            <Button
+                Style="{StaticResource CommandBarButtonStyle}"
+                ToolTipService.ToolTip="Select target..."
+                Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}"
+                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+
+                <Image Source="/Assets/disk.png" Margin="-4"/>
+            </Button>
+
+            <Button
+                Style="{StaticResource CommandBarButtonStyle}"
+                Content="&#xE895;"
+                FontSize="16"
+                ToolTipService.ToolTip="Refresh scanning">
+            </Button>
+
+            <Button
+                Style="{StaticResource CommandBarButtonStyle}"
+                Content="&#xE8F7;"
+                FontSize="16"
+                ToolTipService.ToolTip="Refresh selected">
+            </Button>
+        </StackPanel>
+
+        <TreeView Grid.Row="2"
+                  ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
+                  ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
+            
+        </TreeView>
     </Grid>
 </Page>

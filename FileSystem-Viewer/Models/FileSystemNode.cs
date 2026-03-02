@@ -1,10 +1,25 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
+using Windows.Data.Xml.Dom;
 
 namespace FileSystem_Viewer.Models
 {
     public abstract class FileSystemNode : ObservableObject
     {
+        public enum NodeTypes
+        {
+            Unrecognized,
+            File,
+            Directory
+        }
+
+        private NodeTypes _nodeType;
+        public NodeTypes NodeType
+        {
+            get { return _nodeType; }
+            set { SetProperty(ref _nodeType, value); }
+        }
+
         private string _name = null!;
         public string Name
         {
@@ -26,8 +41,8 @@ namespace FileSystem_Viewer.Models
             set { SetProperty(ref _size, value); }
         }
 
-        private DateTime _lastModified;
-        public DateTime LastModified
+        private DateTime? _lastModified;
+        public DateTime? LastModified
         {
             get { return _lastModified; }
             set { SetProperty(ref _lastModified, value); }

@@ -1,5 +1,4 @@
-﻿using DiscUtils.Ntfs;
-using FileSystem_Viewer.Models;
+﻿using FileSystem_Viewer.Models;
 using FileSystem_Viewer.Services.IServices;
 using System;
 using System.Collections.Generic;
@@ -45,16 +44,10 @@ namespace FileSystem_Viewer.Services
             {
                 await Task.Run(() =>
                 {
-                    string drivePath = @$"\\.\{directoryNode.FullPath.TrimEnd('\\')}";
+                    //string drivePath = @$"\\.\{directoryNode.FullPath.TrimEnd('\\')}";
 
-                    using (FileStream fileStream = new FileStream(drivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    {
-                        using (NtfsFileSystem ntfsFileSystem = new NtfsFileSystem(fileStream))
-                        {
-                            Stopwatch stopWatch = Stopwatch.StartNew();
-                            Scan(ntfsFileSystem, directoryNode, @"\", token, stopWatch);
-                        }
-                    }
+                    Stopwatch stopWatch = Stopwatch.StartNew();
+                    Scan(directoryNode, @"/", token, stopWatch);
                 });
             }
         }
@@ -64,7 +57,7 @@ namespace FileSystem_Viewer.Services
             throw new NotImplementedException();
         }
 
-        private void Scan(NtfsFileSystem ntfsFileSystem, DirectoryNode directoryNode, string directory, CancellationToken token, Stopwatch stopwatch)
+        private void Scan(DirectoryNode directoryNode, string directory, CancellationToken token, Stopwatch stopwatch)
         {
             try
             {
@@ -73,62 +66,74 @@ namespace FileSystem_Viewer.Services
                 var directoryBuffer = new List<FileSystemNode>();
                 long directorySize = 0;
 
-                foreach (var file in ntfsFileSystem.GetFiles(directory))
+                var currentDirectoryInfo = new DirectoryInfo(directory);
+
+                try
                 {
-                    token.ThrowIfCancellationRequested();
-
-                    try
+                    foreach (var fileInfo in currentDirectoryInfo.EnumerateFiles())
                     {
-                        var fileInfo = ntfsFileSystem.GetFileInfo(file);
+                        token.ThrowIfCancellationRequested();
 
-                        FileNode fileNode = new FileNode(
-                            name: fileInfo.Name, 
-                            fullPath: fileInfo.FullName, 
-                            size: fileInfo.Length, 
-                            lastModified: fileInfo.LastWriteTime);
-
-                        directoryBuffer.Add(fileNode);
-                        directorySize += fileInfo.Length;
-
-                        if (stopwatch.ElapsedMilliseconds > 100)
+                        try
                         {
-                            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
+                            FileNode fileNode = new FileNode(
+                                name: fileInfo.Name,
+                                fullPath: fileInfo.FullName,
+                                size: fileInfo.Length,
+                                lastModified: fileInfo.LastWriteTime);
+
+                            directoryBuffer.Add(fileNode);
+                            directorySize += fileInfo.Length;
+
+                            if (stopwatch.ElapsedMilliseconds > 100)
+                            {
+                                SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
+                            }
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            //
+                        }
+                        catch (Exception)
+                        {
+                            //
                         }
                     }
-                    catch (FileNotFoundException)
-                    {
-                        //
-                    }
-                    catch (Exception)
-                    {
-                        //
-                    }
                 }
+                catch (UnauthorizedAccessException)
+                {
+                    return;
+                }
+                catch (DirectoryNotFoundException) { return; }
+                catch (Exception) { return; }
 
                 SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
 
                 token.ThrowIfCancellationRequested();
 
-                foreach (var subDirectory in ntfsFileSystem.GetDirectories(directory))
+                try
                 {
-                    token.ThrowIfCancellationRequested();
+                    foreach (var subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
+                    {
+                        token.ThrowIfCancellationRequested();
 
-                    var subDirectoryInfo = ntfsFileSystem.GetDirectoryInfo(subDirectory);
+                        DirectoryNode subDirectoryNode = new DirectoryNode(
+                                name: subDirectoryInfo.Name,
+                                fullPath: subDirectoryInfo.FullName,
+                                size: 0,
+                                lastModified: subDirectoryInfo.LastWriteTime);
 
-                    DirectoryNode subDirectoryNode = new DirectoryNode(
-                            name: subDirectoryInfo.Name,
-                            fullPath: subDirectoryInfo.FullName,
-                            size: 0,
-                            lastModified: subDirectoryInfo.LastWriteTime);
+                        directoryBuffer.Add(subDirectoryNode);
 
-                    directoryBuffer.Add(subDirectoryNode);
+                        SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
 
-                    SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
+                        Scan(subDirectoryNode, subDirectoryInfo.FullName, token, stopwatch);
 
-                    Scan(ntfsFileSystem, subDirectoryNode, subDirectory, token, stopwatch);
-
-                    DrivesUpdated?.Invoke(directoryNode, null, subDirectoryNode.Size);
+                        DrivesUpdated?.Invoke(directoryNode, null, subDirectoryNode.Size);
+                    }
                 }
+                catch (UnauthorizedAccessException) { /* Игнорируем закрытые системные папки */ }
+                catch (Exception) { /* Игнорируем прочие ошибки I/O */ }
             }
             catch (OperationCanceledException)
             {

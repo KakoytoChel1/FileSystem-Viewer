@@ -15,7 +15,14 @@
 	<WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\directory.png" />
+    <None Remove="Assets\disk.png" />
+    <None Remove="Assets\file.png" />
+    <None Remove="Assets\refresh directory.png" />
+    <None Remove="Assets\refresh disk.png" />
+    <None Remove="Views\DialogPages\TargetSelectDialog.xaml" />
     <None Remove="Views\Pages\MainPage.xaml" />
+    <None Remove="Views\Resources\Styles.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,10 +55,17 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Views\Resources\" />
+    <Page Update="Views\Pages\MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\Pages\MainPage.xaml">
+    <Page Update="Views\Resources\Styles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\DialogPages\TargetSelectDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
