@@ -10,23 +10,21 @@
     mc:Ignorable="d"
     xmlns:models="using:FileSystem_Viewer.Models"
     xmlns:tsel="using:FileSystem_Viewer.Views.TSelectors"
+    xmlns:controls="using:FileSystem_Viewer.Views.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Name="mainPage">
 
     <Page.Resources>
         <DataTemplate x:Key="DirectoryTemplate">
-            <TreeViewItem AutomationProperties.Name="{Binding Name}" 
-                      ItemsSource="{Binding FileSystemNodes}" 
-                      IsExpanded="True">
-                <StackPanel Orientation="Horizontal">
-                    <Image Width="20" Source="../../Assets/directory.png"/>
-                    <TextBlock Margin="0,0,10,0"/>
-                    <TextBlock Text="{Binding Name}" />
-                </StackPanel>
-            </TreeViewItem>
+            <StackPanel Orientation="Horizontal">
+                <Image Width="20" Source="../../Assets/directory.png"/>
+                <TextBlock Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding Name}" />
+            </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="FileTemplate">
-            <TreeViewItem AutomationProperties.Name="{Binding Name}">
+            <TreeViewItem AutomationProperties.Name="{Binding Name}" HasUnrealizedChildren="True">
                 <StackPanel Orientation="Horizontal">
                     <Image Width="20" Source="../../Assets/file.png"/>
                     <TextBlock Margin="0,0,10,0"/>
@@ -36,9 +34,9 @@
         </DataTemplate>
 
         <tsel:ExplorerItemTemplateSelector 
-        x:Key="ExplorerItemTemplateSelector"
-        DirectoryTemplate="{StaticResource DirectoryTemplate}"
-        FileTemplate="{StaticResource FileTemplate}"/>
+            x:Key="ExplorerItemTemplateSelector"
+            DirectoryTemplate="{StaticResource DirectoryTemplate}"
+            FileTemplate="{StaticResource FileTemplate}"/>
     </Page.Resources>
 
     <Grid>
@@ -92,9 +90,27 @@
         </StackPanel>
 
         <TreeView Grid.Row="2"
+                  x:Name="treeView"
                   ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
-                  ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
-            
+                  ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
+                  Expanding="treeView_Expanding">
+
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="HasUnrealizedChildren" Value="true"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
+
+            <TreeView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="20" Source="{Binding Icon}"/>
+                        <TextBlock Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding Name}" />
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.ItemTemplate>
         </TreeView>
+
     </Grid>
 </Page>

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using Windows.Data.Xml.Dom;
 
@@ -6,19 +7,14 @@ namespace FileSystem_Viewer.Models
 {
     public abstract class FileSystemNode : ObservableObject
     {
-        public enum NodeTypes
+        private BitmapImage? _icon;
+        public BitmapImage? Icon
         {
-            Unrecognized,
-            File,
-            Directory
+            get { return _icon; }
+            set { SetProperty(ref _icon, value); }
         }
 
-        private NodeTypes _nodeType;
-        public NodeTypes NodeType
-        {
-            get { return _nodeType; }
-            set { SetProperty(ref _nodeType, value); }
-        }
+        public bool IsDirectory => this is DirectoryNode;
 
         private string _name = null!;
         public string Name
@@ -47,6 +43,7 @@ namespace FileSystem_Viewer.Models
             get { return _lastModified; }
             set { SetProperty(ref _lastModified, value); }
         }
+
         protected FileSystemNode() { }
         protected FileSystemNode(string name, string fullPath, long size, DateTime lastModified)
         {

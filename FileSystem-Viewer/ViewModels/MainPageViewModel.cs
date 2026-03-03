@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -18,7 +17,7 @@ using System.Windows.Input;
 
 namespace FileSystem_Viewer.ViewModels
 {
-    // * Исправить дивный баг с TemplateSelector
+    // * Исправить дивный баг с TemplateSelector +-
     // 1. Селектор дисков, реализовать +
     // 2. Сканирование выбранной директории реализовать
     // 3. Пересканирование целевых цисков реализовать

@@ -1,13 +1,17 @@
 ﻿using FileSystem_Viewer.Models;
 using FileSystem_Viewer.Services.IServices;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
 
 namespace FileSystem_Viewer.Services
 {
@@ -17,6 +21,12 @@ namespace FileSystem_Viewer.Services
     public class DriveUtilsService : IDriveUtilsService
     {
         public event Action<DirectoryNode, List<FileSystemNode>?, long> DrivesUpdated = null!;
+        private IDispatcherQueueProvider _dispatcherQueueProvider;
+
+        public DriveUtilsService(IDispatcherQueueProvider dispatcherQueueProvider)
+        {
+            _dispatcherQueueProvider = dispatcherQueueProvider;
+        }
 
         public List<DriveInfo> GetAvailableDrives()
         {
@@ -42,12 +52,12 @@ namespace FileSystem_Viewer.Services
 
             foreach (var directoryNode in diskNodes)
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     //string drivePath = @$"\\.\{directoryNode.FullPath.TrimEnd('\\')}";
 
                     Stopwatch stopWatch = Stopwatch.StartNew();
-                    Scan(directoryNode, @"/", token, stopWatch);
+                    await Scan(directoryNode, @"/", token, stopWatch);
                 });
             }
         }
@@ -57,7 +67,7 @@ namespace FileSystem_Viewer.Services
             throw new NotImplementedException();
         }
 
-        private void Scan(DirectoryNode directoryNode, string directory, CancellationToken token, Stopwatch stopwatch)
+        private async Task Scan(DirectoryNode directoryNode, string directory, CancellationToken token, Stopwatch stopwatch)
         {
             try
             {
@@ -127,7 +137,7 @@ namespace FileSystem_Viewer.Services
 
                         SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
 
-                        Scan(subDirectoryNode, subDirectoryInfo.FullName, token, stopwatch);
+                        await Scan(subDirectoryNode, subDirectoryInfo.FullName, token, stopwatch);
 
                         DrivesUpdated?.Invoke(directoryNode, null, subDirectoryNode.Size);
                     }
