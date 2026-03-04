@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,20 +24,35 @@ public sealed partial class MainPage : Page
 
         ViewModel = (Application.Current as App)!.ServiceProvider.GetRequiredService<MainPageViewModel>();
 
-        //ViewModel.DriveNodes.CollectionChanged += (s, e) =>
-        //{
-        //    if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
-        //    {
-        //        foreach (DirectoryNode newDrive in e.NewItems)
-        //        {
-        //            TreeViewNode treeViewNode = new TreeViewNode { Content = newDrive, HasUnrealizedChildren = true };
-        //            BitmapImage bitmapImage = new BitmapImage(new Uri("ms-appx:///Assets/drive.png"));
-        //            newDrive.Icon = bitmapImage;
-        //            treeView.RootNodes.Add(treeViewNode);
-        //        }
-        //    }
-        //};
+        foreach (var drive in ViewModel.DriveNodes)
+        {
+            AddDriveNode(drive);
+        }
+
+        ViewModel.DriveNodes.CollectionChanged += (s, e) =>
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
+            {
+                foreach (DirectoryNode newDrive in e.NewItems)
+                {
+                    AddDriveNode(newDrive);
+                }
+            }
+        };
     }
+
+    private void AddDriveNode(DirectoryNode drive)
+    {
+        var node = new TreeViewNode
+        {
+            Content = drive,
+            HasUnrealizedChildren = true
+        };
+        drive.Icon = new BitmapImage(new Uri("ms-appx:///Assets/disk.png"));
+        treeView.RootNodes.Add(node);
+    }
+
+    private HashSet<TreeViewNode> _subscribedNodes = new HashSet<TreeViewNode>();
 
     private void treeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
     {
@@ -50,9 +66,11 @@ public sealed partial class MainPage : Page
                 AddFileSystemNode(args.Node, childNode);
             }
 
-            if (dirNode.FileSystemNodes is INotifyCollectionChanged observableList)
+            if (dirNode.FileSystemNodes is INotifyCollectionChanged observable &&
+            !_subscribedNodes.Contains(args.Node))
             {
-                observableList.CollectionChanged += async (s, e) =>
+                _subscribedNodes.Add(args.Node);
+                observable.CollectionChanged += (s, e) =>
                 {
                     if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
                     {

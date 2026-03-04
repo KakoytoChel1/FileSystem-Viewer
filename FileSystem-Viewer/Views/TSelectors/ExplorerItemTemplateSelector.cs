@@ -11,13 +11,20 @@ namespace FileSystem_Viewer.Views.TSelectors
         public DataTemplate FileTemplate { get; set; } = null!;
 
 
-        //protected override DataTemplate SelectTemplateCore(object item)
-        //{
-        //    var fileSystemNode = (FileSystemNode)item;
-
-        //    return fileSystemNode.NodeType == FileSystemNode.NodeTypes.Directory
-        //        ? DirectoryTemplate
-        //        : FileTemplate;
-        //}
+        protected override DataTemplate SelectTemplateCore(object item)
+        {
+            if(item is DirectoryNode directoryNode)
+            {
+                return DirectoryTemplate;
+            }
+            else if(item is FileNode fileNode)
+            {
+                return FileTemplate;
+            }
+            else
+            {
+                return base.SelectTemplateCore(item);
+            }
+        }
     }
 }

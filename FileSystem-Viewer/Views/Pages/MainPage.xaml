@@ -15,28 +15,6 @@
     x:Name="mainPage">
 
     <Page.Resources>
-        <DataTemplate x:Key="DirectoryTemplate">
-            <StackPanel Orientation="Horizontal">
-                <Image Width="20" Source="../../Assets/directory.png"/>
-                <TextBlock Margin="0,0,10,0"/>
-                <TextBlock Text="{Binding Name}" />
-            </StackPanel>
-        </DataTemplate>
-
-        <DataTemplate x:Key="FileTemplate">
-            <TreeViewItem AutomationProperties.Name="{Binding Name}" HasUnrealizedChildren="True">
-                <StackPanel Orientation="Horizontal">
-                    <Image Width="20" Source="../../Assets/file.png"/>
-                    <TextBlock Margin="0,0,10,0"/>
-                    <TextBlock Text="{Binding Name}"/>
-                </StackPanel>
-            </TreeViewItem>
-        </DataTemplate>
-
-        <tsel:ExplorerItemTemplateSelector 
-            x:Key="ExplorerItemTemplateSelector"
-            DirectoryTemplate="{StaticResource DirectoryTemplate}"
-            FileTemplate="{StaticResource FileTemplate}"/>
     </Page.Resources>
 
     <Grid>
@@ -90,23 +68,15 @@
         </StackPanel>
 
         <TreeView Grid.Row="2"
-                  x:Name="treeView"
-                  ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
-                  ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
-                  Expanding="treeView_Expanding">
-
-            <TreeView.ItemContainerStyle>
-                <Style TargetType="TreeViewItem">
-                    <Setter Property="HasUnrealizedChildren" Value="true"/>
-                </Style>
-            </TreeView.ItemContainerStyle>
+          x:Name="treeView"
+          Expanding="treeView_Expanding">
 
             <TreeView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <Image Width="20" Source="{Binding Icon}"/>
+                        <Image Width="20" Source="{Binding Content.Icon}"/>
                         <TextBlock Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Content.Name}" />
                     </StackPanel>
                 </DataTemplate>
             </TreeView.ItemTemplate>
