@@ -1,23 +1,16 @@
 ﻿using FileSystem_Viewer.Models;
 using FileSystem_Viewer.Services.IServices;
-using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.Storage.FileProperties;
 
 namespace FileSystem_Viewer.Services
 {
-    // Задачи:
-    // - Дописываем сервис для Dispatcher +
-    // - И лезем в систему оповещений UI чтобы динамически обновлять отображение
     public class DriveUtilsService : IDriveUtilsService
     {
         public event Action<DirectoryNode, List<FileSystemNode>?, long> DrivesUpdated = null!;
@@ -42,7 +35,7 @@ namespace FileSystem_Viewer.Services
             return availableDrives;
         }
 
-        public async Task ScanProvidedDrives(ObservableCollection<DirectoryNode> diskNodes, CancellationToken token)
+        public async Task ScanProvidedDrives(ObservableCollection<DirectoryNode> diskNodes, CancellationToken token, PauseResetToken pauseResetToken)
         {
             if(diskNodes == null || !diskNodes.Any())
             {
@@ -54,24 +47,27 @@ namespace FileSystem_Viewer.Services
             {
                 await Task.Run(async () =>
                 {
-                    //string drivePath = @$"\\.\{directoryNode.FullPath.TrimEnd('\\')}";
-
                     Stopwatch stopWatch = Stopwatch.StartNew();
-                    await Scan(directoryNode, @"/", token, stopWatch);
+                    await Scan(directoryNode, directoryNode.FullPath, token, stopWatch, pauseResetToken);
                 });
             }
         }
 
-        public void ScanSpecifiedDirectory(string directory, ObservableCollection<FileSystemNode> fileSystemNodes)
+        public async Task ScanSpecifiedDirectory(DirectoryNode directoryNode, CancellationToken cancellationToken, PauseResetToken pauseResetToken)
         {
-            throw new NotImplementedException();
+            await Task.Run(async () =>
+            {
+                Stopwatch stopWatch = Stopwatch.StartNew();
+                await Scan(directoryNode, directoryNode.FullPath, cancellationToken, stopWatch, pauseResetToken);
+            });
         }
 
-        private async Task Scan(DirectoryNode directoryNode, string directory, CancellationToken token, Stopwatch stopwatch)
+        private async Task Scan(DirectoryNode directoryNode, string directory, CancellationToken cancellationToken, Stopwatch stopwatch, PauseResetToken pauseResetToken)
         {
             try
             {
-                token.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
+                await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
                 var directoryBuffer = new List<FileSystemNode>();
                 long directorySize = 0;
@@ -82,7 +78,8 @@ namespace FileSystem_Viewer.Services
                 {
                     foreach (var fileInfo in currentDirectoryInfo.EnumerateFiles())
                     {
-                        token.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
+                        await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
                         try
                         {
@@ -100,32 +97,25 @@ namespace FileSystem_Viewer.Services
                                 SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
                             }
                         }
-                        catch (FileNotFoundException)
-                        {
-                            //
-                        }
-                        catch (Exception)
-                        {
-                            //
-                        }
+                        catch (FileNotFoundException) { }
+                        catch (OperationCanceledException) { }
+                        catch (Exception) { }
                     }
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    return;
-                }
-                catch (DirectoryNotFoundException) { return; }
-                catch (Exception) { return; }
+                catch (OperationCanceledException) { }
+                catch (Exception) {  }
 
                 SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
 
-                token.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
+                await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
                 try
                 {
                     foreach (var subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
                     {
-                        token.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
+                        await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
                         DirectoryNode subDirectoryNode = new DirectoryNode(
                                 name: subDirectoryInfo.Name,
@@ -137,22 +127,17 @@ namespace FileSystem_Viewer.Services
 
                         SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
 
-                        await Scan(subDirectoryNode, subDirectoryInfo.FullName, token, stopwatch);
+                        await Scan(subDirectoryNode, subDirectoryInfo.FullName, cancellationToken, stopwatch, pauseResetToken);
 
                         DrivesUpdated?.Invoke(directoryNode, null, subDirectoryNode.Size);
                     }
                 }
-                catch (UnauthorizedAccessException) { /* Игнорируем закрытые системные папки */ }
-                catch (Exception) { /* Игнорируем прочие ошибки I/O */ }
+                catch (UnauthorizedAccessException) { }
+                catch (OperationCanceledException) { }
+                catch (Exception) { }
             }
-            catch (OperationCanceledException)
-            {
-
-            }
-            catch (Exception)
-            {
-
-            }
+            catch (OperationCanceledException) { }
+            catch (Exception) { }
         }
 
         private void SendDirectoryBuffer(DirectoryNode directoryNode, List<FileSystemNode> directoryBuffer, ref long directorySize, Stopwatch stopWatch)

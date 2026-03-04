@@ -38,6 +38,10 @@ public sealed partial class MainPage : Page
                     AddDriveNode(newDrive);
                 }
             }
+            else if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                treeView.RootNodes.Clear();
+            }
         };
     }
 
@@ -78,6 +82,10 @@ public sealed partial class MainPage : Page
                         {
                             AddFileSystemNode(args.Node, newChild);
                         }
+                    }
+                    else if (e.Action == NotifyCollectionChangedAction.Reset)
+                    {
+                        args.Node.Children.Clear();
                     }
                 };
             }
@@ -124,5 +132,10 @@ public sealed partial class MainPage : Page
         }
 
         return null;
+    }
+
+    private void treeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
+    {
+        ViewModel.FileSystemNodeSelectionChanged.Execute(sender.SelectedItem);
     }
 }

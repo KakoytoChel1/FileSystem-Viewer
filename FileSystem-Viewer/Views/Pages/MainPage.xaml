@@ -9,7 +9,6 @@
     xmlns:vm="using:FileSystem_Viewer.ViewModels"
     mc:Ignorable="d"
     xmlns:models="using:FileSystem_Viewer.Models"
-    xmlns:tsel="using:FileSystem_Viewer.Views.TSelectors"
     xmlns:controls="using:FileSystem_Viewer.Views.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Name="mainPage">
@@ -28,10 +27,10 @@
         <MenuBar Grid.Row="0"
                  Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
             <MenuBarItem Title="File">
-                <MenuFlyoutItem Text="Select target.."/>
+                <MenuFlyoutItem Text="Select target.." Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}" CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"/>
                 <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Refresh scanning"/>
-                <MenuFlyoutItem Text="Refresh selected"/>
+                <MenuFlyoutItem Text="Refresh scanning" Command="{x:Bind ViewModel.RefreshScanningCommand}" CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"/>
+                <MenuFlyoutItem Text="Rescan selected" Command="{x:Bind ViewModel.RescanSelectedDirectoryCommand}"/>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Exit"/>
             </MenuBarItem>
@@ -41,7 +40,8 @@
         <StackPanel
             Grid.Row="1"
             Margin="5,5,5,0"
-            Orientation="Horizontal">
+            Orientation="Horizontal"
+            Spacing="3">
 
             <Button
                 Style="{StaticResource CommandBarButtonStyle}"
@@ -52,24 +52,62 @@
                 <Image Source="/Assets/disk.png" Margin="-4"/>
             </Button>
 
+            <!--Scanning managing command bar-->
+            <Border
+                BorderThickness="0.5,0,0.5,0"
+                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                Padding="5,0,5,0">
+                
+                <StackPanel Orientation="Horizontal" Spacing="3">
+                    <Button
+                        Style="{StaticResource MiniCommandBarButtonStyle}"
+                        ToolTipService.ToolTip="Stop"
+                        Command="{x:Bind ViewModel.CancelScanningCommand}"
+                        CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+
+                        <Image Source="/Assets/stop.png" Margin="-4"/>
+                    </Button>
+
+                    <Button
+                        Style="{StaticResource MiniCommandBarButtonStyle}"
+                        ToolTipService.ToolTip="Resume"
+                        Command="{x:Bind ViewModel.ResumeScanningCommand}">
+
+                        <Image Source="/Assets/continue.png" Margin="-6"/>
+                    </Button>
+
+                    <Button
+                        Style="{StaticResource MiniCommandBarButtonStyle}"
+                        ToolTipService.ToolTip="Pause"
+                        Command="{x:Bind ViewModel.PauseScanningCommand}">
+
+                        <Image Source="/Assets/pause.png" Margin="-4"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+
             <Button
                 Style="{StaticResource CommandBarButtonStyle}"
                 Content="&#xE895;"
                 FontSize="16"
-                ToolTipService.ToolTip="Refresh scanning">
+                ToolTipService.ToolTip="Refresh scanning"
+                Command="{x:Bind ViewModel.RefreshScanningCommand}"
+                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
             </Button>
 
             <Button
                 Style="{StaticResource CommandBarButtonStyle}"
                 Content="&#xE8F7;"
                 FontSize="16"
-                ToolTipService.ToolTip="Refresh selected">
+                ToolTipService.ToolTip="Refresh selected"
+                Command="{x:Bind ViewModel.RescanSelectedDirectoryCommand}">
             </Button>
         </StackPanel>
 
         <TreeView Grid.Row="2"
           x:Name="treeView"
-          Expanding="treeView_Expanding">
+          Expanding="treeView_Expanding"
+          SelectionChanged="treeView_SelectionChanged">
 
             <TreeView.ItemTemplate>
                 <DataTemplate>

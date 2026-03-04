@@ -49,7 +49,7 @@
             x:Name="availableDrives" 
             SelectionMode="Multiple"
             SelectionChanged="availableDrives_SelectionChanged"
-            ItemsSource="{x:Bind ViewModel.AvailableDrives}"
+            ItemsSource="{x:Bind ViewModel.AllAvailableDrives}"
             ItemTemplate="{StaticResource DriveTemplate}">
         </ListView>
     </Grid>

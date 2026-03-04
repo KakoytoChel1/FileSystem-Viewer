@@ -12,7 +12,7 @@ namespace FileSystem_Viewer.Services.IServices
     {
         public event Action<DirectoryNode, List<FileSystemNode>?, long> DrivesUpdated;
         public List<DriveInfo> GetAvailableDrives();
-        public void ScanSpecifiedDirectory(string directory, ObservableCollection<FileSystemNode> fileSystemNodes);
-        public Task ScanProvidedDrives(ObservableCollection<DirectoryNode> fileSystemNodes, CancellationToken token);
+        public Task ScanSpecifiedDirectory(DirectoryNode directoryNode, CancellationToken token, PauseResetToken pauseResetToken);
+        public Task ScanProvidedDrives(ObservableCollection<DirectoryNode> fileSystemNodes, CancellationToken token, PauseResetToken pauseResetToken);
     }
 }
