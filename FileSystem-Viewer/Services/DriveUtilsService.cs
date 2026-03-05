@@ -43,6 +43,7 @@ namespace FileSystem_Viewer.Services
                 return;
             }
 
+            // TODO: Тут будет параллельное сканирование
             foreach (var directoryNode in diskNodes)
             {
                 await Task.Run(async () =>
