@@ -15,6 +15,11 @@ using System.Windows.Input;
 
 namespace FileSystem_Viewer.ViewModels
 {
+    /*
+    1. Параллельное сканирование пока не работает, нужно разобрать процес сканирования нескольких дисков поэтапно.
+    2. Проблема с CancellationToken при попытке сканировать несколько дисков (Token is disposed), нужно отследить ее и исправить его жизненный цикл
+    3. Необходимо также наладить жизненный цикл токена паузы
+     */
     public class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider) : base(driveUtilsService, dispatcherQueueProvider)
@@ -58,6 +63,12 @@ namespace FileSystem_Viewer.ViewModels
         #region Properties
 
         private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; } // Для отмены
+
+        /*
+         С токеном паузы сейчас есть баг, из-за его постоянного цикла жизни при прирывании операции которая стоит на паузе флаг 
+        IsPauseRequsted не меняется. Проблема будет исправлена.
+         
+         */
         private PauseResetTokenSource PauseResetTokenSource { get; set; } // Для паузы/возобновления
 
         /// <summary>
