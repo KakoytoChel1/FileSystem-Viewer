@@ -15,10 +15,6 @@ using System.Windows.Input;
 
 namespace FileSystem_Viewer.ViewModels
 {
-    // 1. Исправить проблему с выбором элемента для сканированния.
-    // 2. Исправить проблему доблирования данных при повторном сканировании выбранной директории.
-    // 3. Добавить параллельное сканирование для всех доступных дисков.
-
     public class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider) : base(driveUtilsService, dispatcherQueueProvider)
@@ -35,6 +31,7 @@ namespace FileSystem_Viewer.ViewModels
             IsScanningNow = false;
         }
 
+        // Вызывается для отправки нового буфера отсканированной информации, чтобы через Dispatcher добавить в UI
         private void OnDrivesUpdated(DirectoryNode node, List<FileSystemNode>? list, long size)
         {
             DispatcherQueueProvider.DispatcherQueue.TryEnqueue(() =>
@@ -60,9 +57,12 @@ namespace FileSystem_Viewer.ViewModels
 
         #region Properties
 
-        private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; }
-        private PauseResetTokenSource PauseResetTokenSource { get; set; }
+        private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; } // Для отмены
+        private PauseResetTokenSource PauseResetTokenSource { get; set; } // Для паузы/возобновления
 
+        /// <summary>
+        /// Главная коллекция, содержит перечень дисков со всеми сопутствующими вложениями
+        /// </summary>
         public ObservableCollection<DirectoryNode> DriveNodes { get; set; }
         /// <summary>
         /// Все доступные диски на устройстве.
@@ -81,6 +81,7 @@ namespace FileSystem_Viewer.ViewModels
             set { SetProperty(ref _selectedScanningTargetIndex, value); }
         }
 
+        // Выбранная директория в визуальном дереве.
         private DirectoryNode? _selectedDirectoryNodeNode;
         public DirectoryNode? SelectedDirectoryNode
         {
@@ -172,6 +173,7 @@ namespace FileSystem_Viewer.ViewModels
             
         }, (xamltoor) => !IsScanningNow);
 
+
         // Обновляет список доступных дисков, в меню выбора целей для сканирования
         private ICommand? _refreshAvailableDrivesCollectionCommand;
         public ICommand RefreshAvailableDrivesCollectionCommand => _refreshAvailableDrivesCollectionCommand ??= new RelayCommand(() =>
@@ -179,7 +181,8 @@ namespace FileSystem_Viewer.ViewModels
             LoadAvailableDrives();
         });
 
-        // Запускает сканирование выбранных дисков или всех дисков заново
+
+        // Запускает сканирование целевых дисков заново
         private ICommand? _refreshScanningCommand;
         public ICommand RefreshScanningCommand => _refreshScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
@@ -203,7 +206,8 @@ namespace FileSystem_Viewer.ViewModels
             }
         }, (xamlRoot) => !IsScanningNow);
 
-        // Запускает повторное сканирование выбранной директории
+
+        // Запускает повторное сканирование для выбранной директории
         private ICommand? _rescanSelectedDirectoryCommand;
         public ICommand RescanSelectedDirectoryCommand => _rescanSelectedDirectoryCommand ??= new RelayCommand(async () =>
         {
@@ -216,14 +220,19 @@ namespace FileSystem_Viewer.ViewModels
                     CurrentScanningCancellationTokenSource.Dispose();
 
                 CurrentScanningCancellationTokenSource = new CancellationTokenSource();
+
+                SelectedDirectoryNode.FileSystemNodes.Clear();
+
                 await ScanSelectedTarget(SelectedDirectoryNode, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
 
             }
 
         }, () => !IsScanningNow);
 
+
         #region Scanning managing commands
 
+        // Отменяет процесс сканирование
         private ICommand? _cancelScanningCommand;
         public ICommand CancelScanningCommand => _cancelScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
@@ -240,6 +249,7 @@ namespace FileSystem_Viewer.ViewModels
             }    
         }, (xamlRoot) => IsScanningNow);
 
+        // Возобновляет процесс сканирования после паузы
         private ICommand? _resumeScanningCommand;
         public ICommand ResumeScanningCommand => _resumeScanningCommand ??= new RelayCommand(async () =>
         {
@@ -248,6 +258,7 @@ namespace FileSystem_Viewer.ViewModels
 
         }, () => IsScanningNow && IsPausedNow);
 
+        // Ставит процесс сканирования на паузу
         private ICommand? _pauseScanningCommand;
         public ICommand PauseScanningCommand => _pauseScanningCommand ??= new RelayCommand(async () =>
         {
@@ -256,20 +267,38 @@ namespace FileSystem_Viewer.ViewModels
 
         }, () => IsScanningNow && !IsPausedNow);
 
+        // Устанавливает выбранную директорию
+        /*
+         Поскольку привязка коллекции к TreeView отсутствует, выбранным элементом при прямой привязке стал бы TreeViewItem,
+         поэтому в code behind главной страницы вручную обрабатывается событие изменения и передает информацию сюда.
+         */
         private ICommand? _fileSystemNodeSelectionChanged;
-        public ICommand FileSystemNodeSelectionChanged => _fileSystemNodeSelectionChanged ??= new RelayCommand<TreeViewNode>(async (node) =>
+        public ICommand FileSystemNodeSelectionChanged => _fileSystemNodeSelectionChanged ??= new RelayCommand<TreeViewNode?>(async (node) =>
         {
-            if (node != null && node.Content is DirectoryNode directoryNode)
+            if(node == null)
+            {
+                SelectedDirectoryNode = null;
+                return;
+            }
+
+            if (node.Content is DirectoryNode directoryNode)
             {
                 SelectedDirectoryNode = directoryNode;
             }
         });
         #endregion
-
         #endregion
 
-        #region Methods
 
+        #region Methods
+        /// <summary>
+        /// Сканирует выбранную цель.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="target"></param>
+        /// <param name="cts"></param>
+        /// <param name="prts"></param>
+        /// <returns></returns>
         private async Task ScanSelectedTarget<T>(T target, CancellationTokenSource cts, PauseResetTokenSource prts)
         {
             IsScanningNow = true;
@@ -289,6 +318,9 @@ namespace FileSystem_Viewer.ViewModels
                 CurrentScanningCancellationTokenSource.Dispose();
         }
 
+        /// <summary>
+        /// Загружает перечень доступных системе дисков, и добавляет их в коллекцию
+        /// </summary>
         private void LoadAvailableDrives()
         {
             AllAvailableDrives.Clear();

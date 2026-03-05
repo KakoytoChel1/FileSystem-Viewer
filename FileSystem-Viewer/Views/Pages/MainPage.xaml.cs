@@ -29,6 +29,7 @@ public sealed partial class MainPage : Page
             AddDriveNode(drive);
         }
 
+        // Подписка на отслеживание изменений в главной коллекции
         ViewModel.DriveNodes.CollectionChanged += (s, e) =>
         {
             if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
@@ -45,12 +46,13 @@ public sealed partial class MainPage : Page
         };
     }
 
+    // Ручное добавление корневих элементов (дисков) главной коллекции в TreeView
     private void AddDriveNode(DirectoryNode drive)
     {
         var node = new TreeViewNode
         {
             Content = drive,
-            HasUnrealizedChildren = true
+            HasUnrealizedChildren = true // Имеет ли или будет иметь в себе вложенные данные
         };
         drive.Icon = new BitmapImage(new Uri("ms-appx:///Assets/disk.png"));
         treeView.RootNodes.Add(node);
@@ -58,6 +60,7 @@ public sealed partial class MainPage : Page
 
     private HashSet<TreeViewNode> _subscribedNodes = new HashSet<TreeViewNode>();
 
+    // Когда определенный TreeViewItem разворачивается, запрашиваются его вложенные элементы и сразу рисуются.
     private void treeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
     {
         if (args.Node.Content is DirectoryNode dirNode)
@@ -70,6 +73,7 @@ public sealed partial class MainPage : Page
                 AddFileSystemNode(args.Node, childNode);
             }
 
+            // Устанавливает подписку на изменение вложенной коллекции, только для тех кому еще не ставили
             if (dirNode.FileSystemNodes is INotifyCollectionChanged observable &&
             !_subscribedNodes.Contains(args.Node))
             {
@@ -112,6 +116,15 @@ public sealed partial class MainPage : Page
         parentNode.Children.Add(treeViewNode);
     }
 
+    // Сигнализирует об изменении выбранного элемента в TreeView
+    private void treeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
+    {
+        if (args.AddedItems.Count > 0)
+            ViewModel.FileSystemNodeSelectionChanged.Execute((TreeViewNode)args.AddedItems.First());
+        else if (args.RemovedItems.Count > 0)
+            ViewModel.FileSystemNodeSelectionChanged.Execute(null);
+    }
+
     private async Task<BitmapImage?> GetFileIconAsync(string filePath)
     {
         try
@@ -132,10 +145,5 @@ public sealed partial class MainPage : Page
         }
 
         return null;
-    }
-
-    private void treeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
-    {
-        ViewModel.FileSystemNodeSelectionChanged.Execute(sender.SelectedItem);
     }
 }
