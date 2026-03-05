@@ -5,6 +5,7 @@ using FileSystem_Viewer.ViewModels.Tools;
 using FileSystem_Viewer.Views.DialogPages;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -15,11 +16,6 @@ using System.Windows.Input;
 
 namespace FileSystem_Viewer.ViewModels
 {
-    /*
-    1. Параллельное сканирование пока не работает, нужно разобрать процес сканирования нескольких дисков поэтапно.
-    2. Проблема с CancellationToken при попытке сканировать несколько дисков (Token is disposed), нужно отследить ее и исправить его жизненный цикл
-    3. Необходимо также наладить жизненный цикл токена паузы
-     */
     public class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider) : base(driveUtilsService, dispatcherQueueProvider)
@@ -27,8 +23,6 @@ namespace FileSystem_Viewer.ViewModels
             DriveNodes = new ObservableCollection<DirectoryNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
-
-            PauseResetTokenSource = new PauseResetTokenSource();
 
             DriveUtilsService.DrivesUpdated += OnDrivesUpdated;
 
@@ -63,13 +57,7 @@ namespace FileSystem_Viewer.ViewModels
         #region Properties
 
         private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; } // Для отмены
-
-        /*
-         С токеном паузы сейчас есть баг, из-за его постоянного цикла жизни при прирывании операции которая стоит на паузе флаг 
-        IsPauseRequsted не меняется. Проблема будет исправлена.
-         
-         */
-        private PauseResetTokenSource PauseResetTokenSource { get; set; } // Для паузы/возобновления
+        private PauseResetTokenSource? PauseResetTokenSource { get; set; } // Для паузы/возобновления
 
         /// <summary>
         /// Главная коллекция, содержит перечень дисков со всеми сопутствующими вложениями
@@ -141,6 +129,8 @@ namespace FileSystem_Viewer.ViewModels
         {
             LoadAvailableDrives();
 
+            SelectedTargetDrives.Clear();
+
             var dialogResult = await DialogManager.ShowContentDialog(xamlRoot!, "Target selection...", "Apply",
                 ContentDialogButton.Primary, new TargetSelectDialog(), "Cancel", null);
 
@@ -160,25 +150,26 @@ namespace FileSystem_Viewer.ViewModels
                         CurrentScanningCancellationTokenSource.Dispose();
 
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
+                    PauseResetTokenSource = new PauseResetTokenSource();
 
                     foreach (DriveInfo drive in SelectedTargetDrives)
                     {
                         DriveNodes.Add(new DirectoryNode(drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
-
-                        await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                     }
+                    await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
                 else
                 {
                     DriveNodes.Clear();
 
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
+                    PauseResetTokenSource = new PauseResetTokenSource();
 
                     foreach (DriveInfo drive in AllAvailableDrives)
                     {
                         DriveNodes.Add(new DirectoryNode(drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
-                        await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                     }
+                    await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
             }
             
@@ -212,6 +203,7 @@ namespace FileSystem_Viewer.ViewModels
                     CurrentScanningCancellationTokenSource.Dispose();
 
                 CurrentScanningCancellationTokenSource = new CancellationTokenSource();
+                PauseResetTokenSource = new PauseResetTokenSource();
 
                 await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
             }
@@ -231,6 +223,7 @@ namespace FileSystem_Viewer.ViewModels
                     CurrentScanningCancellationTokenSource.Dispose();
 
                 CurrentScanningCancellationTokenSource = new CancellationTokenSource();
+                PauseResetTokenSource = new PauseResetTokenSource();
 
                 SelectedDirectoryNode.FileSystemNodes.Clear();
 
@@ -247,24 +240,21 @@ namespace FileSystem_Viewer.ViewModels
         private ICommand? _cancelScanningCommand;
         public ICommand CancelScanningCommand => _cancelScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
-
             var dialogResult = await DialogManager.ShowContentDialog(xamlRoot!, "Cancel scanning confirmation", "Yes",
                 ContentDialogButton.Primary, $"Are you sure you want to cancel the scanning process?", "No", null);
 
             if (dialogResult == ContentDialogResult.Primary)
             {
-                if (CurrentScanningCancellationTokenSource == null)
-                    return;
+                CurrentScanningCancellationTokenSource!.Cancel();
+            }
 
-                CurrentScanningCancellationTokenSource.Cancel();
-            }    
         }, (xamlRoot) => IsScanningNow);
 
         // Возобновляет процесс сканирования после паузы
         private ICommand? _resumeScanningCommand;
         public ICommand ResumeScanningCommand => _resumeScanningCommand ??= new RelayCommand(async () =>
         {
-            PauseResetTokenSource.Reset();
+            PauseResetTokenSource!.Reset();
             IsPausedNow = false;
 
         }, () => IsScanningNow && IsPausedNow);
@@ -273,7 +263,7 @@ namespace FileSystem_Viewer.ViewModels
         private ICommand? _pauseScanningCommand;
         public ICommand PauseScanningCommand => _pauseScanningCommand ??= new RelayCommand(async () =>
         {
-            PauseResetTokenSource.Pause();
+            PauseResetTokenSource!.Pause();
             IsPausedNow = true;
 
         }, () => IsScanningNow && !IsPausedNow);
@@ -324,6 +314,7 @@ namespace FileSystem_Viewer.ViewModels
             }
             
             IsScanningNow = false;
+            IsPausedNow = false;
 
             if(CurrentScanningCancellationTokenSource != null)
                 CurrentScanningCancellationTokenSource.Dispose();
