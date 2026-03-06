@@ -10,9 +10,9 @@ namespace FileSystem_Viewer.Services.IServices
 {
     public interface IDriveUtilsService
     {
-        public event Action<DirectoryNode, List<FileSystemNode>?, long> DrivesUpdated;
+        public event Action<DirectoryNode, List<FileSystemNode>?, long, long> DrivesUpdated;
         public List<DriveInfo> GetAvailableDrives();
         public Task ScanSpecifiedDirectory(DirectoryNode directoryNode, CancellationToken token, PauseResetToken pauseResetToken);
-        public Task ScanProvidedDrives(ObservableCollection<DirectoryNode> fileSystemNodes, CancellationToken token, PauseResetToken pauseResetToken);
+        public Task ScanProvidedDrives(ObservableCollection<DriveNode> fileSystemNodes, CancellationToken token, PauseResetToken pauseResetToken);
     }
 }

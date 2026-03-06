@@ -20,7 +20,7 @@ namespace FileSystem_Viewer.ViewModels
     {
         public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider) : base(driveUtilsService, dispatcherQueueProvider)
         {
-            DriveNodes = new ObservableCollection<DirectoryNode>();
+            DriveNodes = new ObservableCollection<DriveNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
 
@@ -28,10 +28,41 @@ namespace FileSystem_Viewer.ViewModels
 
             SelectedScanningTargetIndex = 0;
             IsScanningNow = false;
+
+
+
+            // --- Test ---
+            //var driveC = new DriveNode("Local Disk", 504658657280, 246960619520, "(C:)", @"C:\\", 8192, DateTime.Now);
+            //driveC.FileCount = 567891;
+
+            //var programFiles = new DirectoryNode("Program Files", @"C:\\Program Files", 3072, DateTime.Now);
+            //programFiles.FileSystemNodes.Add(new FileNode("readme.txt", @"C:\\Program Files\\readme.txt", 1024, DateTime.Now));
+            //programFiles.FileSystemNodes.Add(new FileNode("log.txt", @"C:\\Program Files\\log.txt", 2048, DateTime.Now));
+            //programFiles.FileCount = 2;
+
+            //var users = new DirectoryNode("Users", @"C:\\Users", 5120, DateTime.Now);
+            //users.FileSystemNodes.Add(new FileNode("user.docx", @"C:\\Users\\user.docx", 5120, DateTime.Now));
+            //programFiles.FileCount = 1;
+
+            //driveC.FileSystemNodes.Add(programFiles);
+            //driveC.FileSystemNodes.Add(users);
+
+            //var driveD = new DriveNode("Data", 504658657280, 107374182400, "(D:)", @"D:\\", 10485760, DateTime.Now);
+            //var movies = new DirectoryNode("Movies", @"D:\\Movies", 10485760, DateTime.Now);
+            //movies.FileSystemNodes.Add(new FileNode("movie.mp4", @"D:\\Movies\\movie.mp4", 10485760, DateTime.Now));
+            //driveD.FileSystemNodes.Add(movies);
+
+            //driveD.FileCount = 782;
+            //movies.FileCount = 2;
+
+
+            //DriveNodes.Add(driveC);
+            //DriveNodes.Add(driveD);
+
         }
 
         // Вызывается для отправки нового буфера отсканированной информации, чтобы через Dispatcher добавить в UI
-        private void OnDrivesUpdated(DirectoryNode node, List<FileSystemNode>? list, long size)
+        private void OnDrivesUpdated(DirectoryNode node, List<FileSystemNode>? list, long size, long fileCount)
         {
             DispatcherQueueProvider.DispatcherQueue.TryEnqueue(() =>
             {
@@ -51,6 +82,7 @@ namespace FileSystem_Viewer.ViewModels
                 }
 
                 node.Size += size;
+                node.FileCount += fileCount;
             });
         }
 
@@ -62,7 +94,7 @@ namespace FileSystem_Viewer.ViewModels
         /// <summary>
         /// Главная коллекция, содержит перечень дисков со всеми сопутствующими вложениями
         /// </summary>
-        public ObservableCollection<DirectoryNode> DriveNodes { get; set; }
+        public ObservableCollection<DriveNode> DriveNodes { get; set; }
         /// <summary>
         /// Все доступные диски на устройстве.
         /// </summary>
@@ -154,7 +186,7 @@ namespace FileSystem_Viewer.ViewModels
 
                     foreach (DriveInfo drive in SelectedTargetDrives)
                     {
-                        DriveNodes.Add(new DirectoryNode(drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
+                        DriveNodes.Add(new DriveNode(drive.VolumeLabel, drive.TotalSize, drive.TotalFreeSpace, drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
                     }
                     await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
@@ -167,7 +199,7 @@ namespace FileSystem_Viewer.ViewModels
 
                     foreach (DriveInfo drive in AllAvailableDrives)
                     {
-                        DriveNodes.Add(new DirectoryNode(drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
+                        DriveNodes.Add(new DriveNode(drive.VolumeLabel, drive.TotalSize, drive.TotalFreeSpace, drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
                     }
                     await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
@@ -308,7 +340,7 @@ namespace FileSystem_Viewer.ViewModels
             {
                 await DriveUtilsService.ScanSpecifiedDirectory(directoryNode, cts.Token, prts.Token);
             }
-            else if (target is ObservableCollection<DirectoryNode> collection)
+            else if (target is ObservableCollection<DriveNode> collection)
             {
                 await DriveUtilsService.ScanProvidedDrives(collection, cts.Token, prts.Token);
             }

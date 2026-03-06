@@ -13,7 +13,7 @@ namespace FileSystem_Viewer.Services
 {
     public class DriveUtilsService : IDriveUtilsService
     {
-        public event Action<DirectoryNode, List<FileSystemNode>?, long> DrivesUpdated = null!;
+        public event Action<DirectoryNode, List<FileSystemNode>?, long, long> DrivesUpdated = null!;
         private IDispatcherQueueProvider _dispatcherQueueProvider;
 
         public DriveUtilsService(IDispatcherQueueProvider dispatcherQueueProvider)
@@ -35,7 +35,7 @@ namespace FileSystem_Viewer.Services
             return availableDrives;
         }
 
-        public async Task ScanProvidedDrives(ObservableCollection<DirectoryNode> diskNodes, CancellationToken token, PauseResetToken pauseResetToken)
+        public async Task ScanProvidedDrives(ObservableCollection<DriveNode> diskNodes, CancellationToken token, PauseResetToken pauseResetToken)
         {
             try
             {
@@ -50,10 +50,10 @@ namespace FileSystem_Viewer.Services
                     CancellationToken = token,
                 };
 
-                await Parallel.ForEachAsync(diskNodes, parallelOptions, async (dirNode, cancelToken) =>
+                await Parallel.ForEachAsync(diskNodes, parallelOptions, async (driveNode, cancelToken) =>
                 {
                     Stopwatch stopWatch = Stopwatch.StartNew();
-                    await Scan(dirNode, dirNode.FullPath, cancelToken, stopWatch, pauseResetToken);
+                    await Scan(driveNode, driveNode.FullPath, cancelToken, stopWatch, pauseResetToken);
                 });
             }
             catch(OperationCanceledException) { }
@@ -81,6 +81,7 @@ namespace FileSystem_Viewer.Services
 
             var directoryBuffer = new List<FileSystemNode>();
             long directorySize = 0;
+            long directoryFileCount = 0;
 
             var currentDirectoryInfo = new DirectoryInfo(directory);
 
@@ -101,10 +102,11 @@ namespace FileSystem_Viewer.Services
 
                         directoryBuffer.Add(fileNode);
                         directorySize += fileInfo.Length;
+                        directoryFileCount++;
 
                         if (stopwatch.ElapsedMilliseconds > 100)
                         {
-                            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
+                            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, ref directoryFileCount, stopwatch);
                         }
                     }
                     catch (FileNotFoundException) { }
@@ -114,7 +116,7 @@ namespace FileSystem_Viewer.Services
             catch (Exception ex) when (ex is not OperationCanceledException)
             { }
 
-            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
+            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, ref directoryFileCount, stopwatch);
 
             cancellationToken.ThrowIfCancellationRequested();
             await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
@@ -134,11 +136,11 @@ namespace FileSystem_Viewer.Services
 
                     directoryBuffer.Add(subDirectoryNode);
 
-                    SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, stopwatch);
+                    SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, ref directoryFileCount, stopwatch);
 
                     await Scan(subDirectoryNode, subDirectoryInfo.FullName, cancellationToken, stopwatch, pauseResetToken);
 
-                    DrivesUpdated?.Invoke(directoryNode, null, subDirectoryNode.Size);
+                    DrivesUpdated?.Invoke(directoryNode, null, subDirectoryNode.Size, subDirectoryNode.FileCount);
                 }
             }
             catch (UnauthorizedAccessException) { }
@@ -146,15 +148,16 @@ namespace FileSystem_Viewer.Services
             { }
         }
 
-        private void SendDirectoryBuffer(DirectoryNode directoryNode, List<FileSystemNode> directoryBuffer, ref long directorySize, Stopwatch stopWatch)
+        private void SendDirectoryBuffer(DirectoryNode directoryNode, List<FileSystemNode> directoryBuffer, ref long directorySize, ref long directoryFileCount, Stopwatch stopWatch)
         {
             if (directoryBuffer.Count == 0 && directorySize == 0) return;
 
             var itemsToSend = new List<FileSystemNode>(directoryBuffer); // Создаем копию буфера для отправки, чтобы избежать проблем во время его очистки
-            DrivesUpdated?.Invoke(directoryNode, itemsToSend, directorySize);
+            DrivesUpdated?.Invoke(directoryNode, itemsToSend, directorySize, directoryFileCount);
 
             directoryBuffer.Clear();
             directorySize = 0;
+            directoryFileCount = 0;
             stopWatch.Restart();
         }
     }

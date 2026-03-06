@@ -9,11 +9,307 @@
     xmlns:vm="using:FileSystem_Viewer.ViewModels"
     mc:Ignorable="d"
     xmlns:models="using:FileSystem_Viewer.Models"
-    xmlns:controls="using:FileSystem_Viewer.Views.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:view="using:FileSystem_Viewer.Views"
+    xmlns:converters="using:FileSystem_Viewer.Views.Converters"
     x:Name="mainPage">
 
     <Page.Resources>
+        <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
+        <converters:DriveFreeSpaceIntoPercentsConverter x:Key="DriveFreeSpaceIntoPercentsConverter"/>
+
+        <DataTemplate x:Key="DriveTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="Name"/>
+                    <ColumnDefinition x:Name="ProgressBar" Width="150"/>
+                    <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="0.1*"/>
+                </Grid.ColumnDefinitions>
+
+                <!--General information-->
+                <StackPanel
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Left"
+                    Spacing="10"
+                    Grid.Column="0">
+                    
+                    <!--Icon-->
+                    <Image Width="20" Source="/Assets/disk.png"/>
+                    
+                    <!--Volume label & Name-->
+                    <TextBlock>
+                        <Run Text="{Binding Content.VolumeName}"/>
+                        <Run Text="{Binding Content.Name}"/>
+                    </TextBlock>
+
+                    <!--Available space / Total space-->
+                    <TextBlock FontSize="13" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        <Run Text="{Binding Content.TotalFreeSpace, Converter={StaticResource BytesIntoSuitableFormatConverter}}"/>
+                        <Run Text="free of"/>
+                        <Run Text="{Binding Content.TotalSize, Converter={StaticResource BytesIntoSuitableFormatConverter}}"/>
+                        <Run Text="{Binding Content, Converter={StaticResource DriveFreeSpaceIntoPercentsConverter}}"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
+                    <Grid>
+                        <ProgressBar 
+                            Value="52"/>
+                    </Grid>
+                </Border>
+                
+                <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
+                    <Grid>
+                        <TextBlock 
+                            Margin="20,0,0,0"
+                            Text="52.0%"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                    </Grid>
+                </Border>
+                
+                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Text="&#xE9F9;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                    </StackPanel>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="4" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Text="&#xE8A5;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.FileCount}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="5" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Margin="20,0,0,0"
+                            Text="&#xF738;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.LastModified}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DirectoryTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="Name"/>
+                    <ColumnDefinition x:Name="ProgressBar" Width="150"/>
+                    <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="0.1*"/>
+                </Grid.ColumnDefinitions>
+
+                <!--General information-->
+                <StackPanel
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Left"
+                    Spacing="10"
+                    Grid.Column="0">
+
+                    <!--Icon-->
+                    <Image Width="20" Source="/Assets/directory.png"/>
+
+                    <!--Name-->
+                    <TextBlock Text="{Binding Content.Name}"/>
+                </StackPanel>
+
+                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
+                    <Grid>
+                        <ProgressBar 
+                            Value="30"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
+                    <Grid>
+                        <TextBlock 
+                            Margin="20,0,0,0"
+                            Text="30.0%"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Text="&#xE9F9;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                    </StackPanel>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="4" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Text="&#xE8A5;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.FileCount}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="5" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Margin="20,0,0,0"
+                            Text="&#xF738;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.LastModified}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FileTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="Name"/>
+                    <ColumnDefinition x:Name="ProgressBar" Width="100"/>
+                    <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="auto" MinWidth="100"/>
+                    <ColumnDefinition Width="0.1*"/>
+                </Grid.ColumnDefinitions>
+
+                <!--General information-->
+                <StackPanel
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Left"
+                    Spacing="10"
+                    Grid.Column="0">
+
+                    <!--Icon-->
+                    <Image Width="20" Source="{Binding Content.Icon}"/>
+
+                    <!--Name-->
+                    <TextBlock Text="{Binding Content.Name}"/>
+                </StackPanel>
+
+                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
+                    <Grid>
+                        <ProgressBar 
+                            Value="12"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
+                    <Grid>
+                        <TextBlock 
+                            Margin="20,0,0,0"
+                            Text="12.0%"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Text="&#xE9F9;"
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource FileNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
+                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
+
+                    </StackPanel>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="4" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Margin="20,0,0,0"
+                            Text="&#xF738;"
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource FileNodeInfoTextIconStyle}"/>
+                        <TextBlock
+                            Text="{Binding Content.LastModified}"
+                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <view:ExplorerTemplateSelector 
+            x:Key="ExplorerItemTemplateSelector"
+            DirectoryTemplate="{StaticResource DirectoryTemplate}"
+            FileTemplate="{StaticResource FileTemplate}"
+            DriveTemplate="{StaticResource DriveTemplate}"/>
     </Page.Resources>
 
     <Grid>
@@ -107,17 +403,8 @@
         <TreeView Grid.Row="2"
           x:Name="treeView"
           Expanding="treeView_Expanding"
+          ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
           SelectionChanged="treeView_SelectionChanged">
-
-            <TreeView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Width="20" Source="{Binding Content.Icon}"/>
-                        <TextBlock Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding Content.Name}" />
-                    </StackPanel>
-                </DataTemplate>
-            </TreeView.ItemTemplate>
         </TreeView>
 
     </Grid>

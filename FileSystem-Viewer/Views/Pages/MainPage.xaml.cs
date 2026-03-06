@@ -54,7 +54,6 @@ public sealed partial class MainPage : Page
             Content = drive,
             HasUnrealizedChildren = true // Имеет ли или будет иметь в себе вложенные данные
         };
-        drive.Icon = new BitmapImage(new Uri("ms-appx:///Assets/disk.png"));
         treeView.RootNodes.Add(node);
     }
 
@@ -109,8 +108,6 @@ public sealed partial class MainPage : Page
         else if (childModel is DirectoryNode dirNode)
         {
             treeViewNode.HasUnrealizedChildren = true;
-            BitmapImage bitmapImage = new BitmapImage(new Uri("ms-appx:///Assets/directory.png"));
-            childModel.Icon = bitmapImage;
         }
 
         parentNode.Children.Add(treeViewNode);

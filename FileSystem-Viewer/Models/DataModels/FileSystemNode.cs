@@ -14,8 +14,6 @@ namespace FileSystem_Viewer.Models
             set { SetProperty(ref _icon, value); }
         }
 
-        public bool IsDirectory => this is DirectoryNode;
-
         private string _name = null!;
         public string Name
         {

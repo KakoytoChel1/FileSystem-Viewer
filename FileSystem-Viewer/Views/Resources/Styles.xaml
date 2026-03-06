@@ -22,4 +22,26 @@
         <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
     </Style>
 
+    <Style x:Key="DirectoryNodeInfoTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style x:Key="DirectoryNodeInfoTextIconStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
+    </Style>
+
+    <Style x:Key="FileNodeInfoTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style x:Key="FileNodeInfoTextIconStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
+    </Style>
+
 </ResourceDictionary>
