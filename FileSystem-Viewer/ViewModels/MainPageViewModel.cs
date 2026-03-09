@@ -69,13 +69,13 @@ namespace FileSystem_Viewer.ViewModels
                     node.Size += size;
                     node.FileCount += fileCount;
 
-                    if (size != 0)
-                    {
-                        foreach (FileSystemNode item in node.FileSystemNodes)
-                        {
-                            item.UpdatePercentForUI();
-                        }
-                    }
+                    //if (size != 0)
+                    //{
+                    //    foreach (FileSystemNode item in node.FileSystemNodes)
+                    //    {
+                    //        item.UpdatePercentForUI();
+                    //    }
+                    //}
                 }
                 catch (Exception)
                 {

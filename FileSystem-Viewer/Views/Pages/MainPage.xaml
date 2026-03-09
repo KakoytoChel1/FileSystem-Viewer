@@ -299,10 +299,15 @@
             <RowDefinition Height="35"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.7*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
 
         <!--Menu bar-->
         <MenuBar Grid.Row="0"
-                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                 Grid.ColumnSpan="2">
             <MenuBarItem Title="File">
                 <MenuFlyoutItem Text="Select target.." Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}" CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"/>
                 <MenuFlyoutSeparator/>
@@ -313,9 +318,17 @@
             </MenuBarItem>
         </MenuBar>
 
+        <Border
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Grid.Column="0"
+            Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+            Opacity="0.5"/>
+        
         <!--Buttons bar-->
         <StackPanel
             Grid.Row="1"
+            Grid.ColumnSpan="2"
             Margin="5,5,5,0"
             Orientation="Horizontal"
             Spacing="3">
@@ -334,7 +347,7 @@
                 BorderThickness="0.5,0,0.5,0"
                 BorderBrush="{ThemeResource ControlElevationBorderBrush}"
                 Padding="5,0,5,0">
-                
+
                 <StackPanel Orientation="Horizontal" Spacing="3">
                     <Button
                         Style="{StaticResource MiniCommandBarButtonStyle}"
@@ -381,7 +394,7 @@
             </Button>
         </StackPanel>
 
-        <TreeView Grid.Row="2"
+        <TreeView Grid.Row="2" Grid.ColumnSpan="2"
           x:Name="treeView"
           Expanding="treeView_Expanding"
           ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"

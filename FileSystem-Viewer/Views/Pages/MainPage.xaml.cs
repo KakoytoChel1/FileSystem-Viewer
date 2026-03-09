@@ -71,9 +71,10 @@ public sealed partial class MainPage : Page
             if (args.Node.Children.ToList().Any())
                 return;
 
-            foreach (var childNode in dirNode.FileSystemNodes)
+            foreach (FileSystemNode childNode in dirNode.FileSystemNodes)
             {
                 AddFileSystemNode(args.Node, childNode);
+                childNode.UpdatePercentForUI();
             }
 
             // Устанавливает подписку на изменение вложенной коллекции, только для тех кому еще не ставили
@@ -93,6 +94,23 @@ public sealed partial class MainPage : Page
                     else if (e.Action == NotifyCollectionChangedAction.Reset)
                     {
                         args.Node.Children.Clear();
+                    }
+                };
+
+                dirNode.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(DirectoryNode.Size))
+                    {
+                        if (args.Node.IsExpanded)
+                        {
+                            foreach (var child in args.Node.Children)
+                            {
+                                if (child.Content is FileSystemNode fsn)
+                                {
+                                    fsn.UpdatePercentForUI();
+                                }
+                            }
+                        }
                     }
                 };
             }
