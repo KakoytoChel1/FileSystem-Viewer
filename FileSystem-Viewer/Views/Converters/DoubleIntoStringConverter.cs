@@ -3,11 +3,15 @@ using System;
 
 namespace FileSystem_Viewer.Views.Converters
 {
-    public class PercentsIntoStringFormatConverter : IValueConverter
+    public class DoubleIntoStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            throw new NotImplementedException();
+            if(value is double percent)
+            {
+                return $"{(percent).ToString("F2")}%";
+            }
+            return 0;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

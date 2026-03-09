@@ -74,14 +74,17 @@ namespace FileSystem_Viewer.Services
             catch (Exception) { }
         }
 
-        private async Task Scan(DirectoryNode directoryNode, string directory, CancellationToken cancellationToken, Stopwatch stopwatch, PauseResetToken pauseResetToken)
+        private async Task<(long totalSize, long totalCount)> Scan(DirectoryNode directoryNode, string directory, CancellationToken cancellationToken, Stopwatch stopwatch, PauseResetToken pauseResetToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
             var directoryBuffer = new List<FileSystemNode>();
-            long directorySize = 0;
-            long directoryFileCount = 0;
+            long directoryBufferSize = 0;
+            long directoryBufferFileCount = 0;
+
+            long totalLevelSize = 0;
+            long totalLevelFileCount = 0;
 
             var currentDirectoryInfo = new DirectoryInfo(directory);
 
@@ -95,18 +98,23 @@ namespace FileSystem_Viewer.Services
                     try
                     {
                         FileNode fileNode = new FileNode(
+                            parentNode: directoryNode,
                             name: fileInfo.Name,
                             fullPath: fileInfo.FullName,
                             size: fileInfo.Length,
                             lastModified: fileInfo.LastWriteTime);
 
                         directoryBuffer.Add(fileNode);
-                        directorySize += fileInfo.Length;
-                        directoryFileCount++;
+
+                        directoryBufferSize += fileInfo.Length;
+                        directoryBufferFileCount++;
+
+                        totalLevelSize += fileInfo.Length;
+                        totalLevelFileCount++;
 
                         if (stopwatch.ElapsedMilliseconds > 100)
                         {
-                            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, ref directoryFileCount, stopwatch);
+                            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directoryBufferSize, ref directoryBufferFileCount, stopwatch);
                         }
                     }
                     catch (FileNotFoundException) { }
@@ -116,7 +124,7 @@ namespace FileSystem_Viewer.Services
             catch (Exception ex) when (ex is not OperationCanceledException)
             { }
 
-            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, ref directoryFileCount, stopwatch);
+            SendDirectoryBuffer(directoryNode, directoryBuffer, ref directoryBufferSize, ref directoryBufferFileCount, stopwatch);
 
             cancellationToken.ThrowIfCancellationRequested();
             await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
@@ -129,6 +137,7 @@ namespace FileSystem_Viewer.Services
                     await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
                     DirectoryNode subDirectoryNode = new DirectoryNode(
+                            parentNode: directoryNode,
                             name: subDirectoryInfo.Name,
                             fullPath: subDirectoryInfo.FullName,
                             size: 0,
@@ -136,21 +145,26 @@ namespace FileSystem_Viewer.Services
 
                     directoryBuffer.Add(subDirectoryNode);
 
-                    SendDirectoryBuffer(directoryNode, directoryBuffer, ref directorySize, ref directoryFileCount, stopwatch);
+                    SendDirectoryBuffer(directoryNode, directoryBuffer, ref directoryBufferSize, ref directoryBufferFileCount, stopwatch);
 
-                    await Scan(subDirectoryNode, subDirectoryInfo.FullName, cancellationToken, stopwatch, pauseResetToken);
+                    var totals = await Scan(subDirectoryNode, subDirectoryInfo.FullName, cancellationToken, stopwatch, pauseResetToken);
 
-                    DrivesUpdated?.Invoke(directoryNode, null, subDirectoryNode.Size, subDirectoryNode.FileCount);
+                    totalLevelSize += totals.totalSize;
+                    totalLevelFileCount += totals.totalCount;
+
+                    DrivesUpdated?.Invoke(directoryNode, null, totals.totalSize, totals.totalCount);
                 }
             }
             catch (UnauthorizedAccessException) { }
             catch (Exception ex) when (ex is not OperationCanceledException)
             { }
+
+            return (totalLevelSize, totalLevelFileCount);
         }
 
         private void SendDirectoryBuffer(DirectoryNode directoryNode, List<FileSystemNode> directoryBuffer, ref long directorySize, ref long directoryFileCount, Stopwatch stopWatch)
         {
-            if (directoryBuffer.Count == 0 && directorySize == 0) return;
+            if (directoryBuffer.Count == 0 && directorySize == 0 && directoryFileCount == 0) return;
 
             var itemsToSend = new List<FileSystemNode>(directoryBuffer); // Создаем копию буфера для отправки, чтобы избежать проблем во время его очистки
             DrivesUpdated?.Invoke(directoryNode, itemsToSend, directorySize, directoryFileCount);

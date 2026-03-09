@@ -31,33 +31,16 @@ namespace FileSystem_Viewer.ViewModels
 
 
 
-            // --- Test ---
+            //---Test-- -
             //var driveC = new DriveNode("Local Disk", 504658657280, 246960619520, "(C:)", @"C:\\", 8192, DateTime.Now);
             //driveC.FileCount = 567891;
 
-            //var programFiles = new DirectoryNode("Program Files", @"C:\\Program Files", 3072, DateTime.Now);
-            //programFiles.FileSystemNodes.Add(new FileNode("readme.txt", @"C:\\Program Files\\readme.txt", 1024, DateTime.Now));
-            //programFiles.FileSystemNodes.Add(new FileNode("log.txt", @"C:\\Program Files\\log.txt", 2048, DateTime.Now));
-            //programFiles.FileCount = 2;
-
-            //var users = new DirectoryNode("Users", @"C:\\Users", 5120, DateTime.Now);
-            //users.FileSystemNodes.Add(new FileNode("user.docx", @"C:\\Users\\user.docx", 5120, DateTime.Now));
-            //programFiles.FileCount = 1;
-
-            //driveC.FileSystemNodes.Add(programFiles);
-            //driveC.FileSystemNodes.Add(users);
-
-            //var driveD = new DriveNode("Data", 504658657280, 107374182400, "(D:)", @"D:\\", 10485760, DateTime.Now);
-            //var movies = new DirectoryNode("Movies", @"D:\\Movies", 10485760, DateTime.Now);
-            //movies.FileSystemNodes.Add(new FileNode("movie.mp4", @"D:\\Movies\\movie.mp4", 10485760, DateTime.Now));
-            //driveD.FileSystemNodes.Add(movies);
-
-            //driveD.FileCount = 782;
-            //movies.FileCount = 2;
-
+            //var programFiles = new DirectoryNode(driveC, "Program Files", @"C:\\Program Files", 3072, DateTime.Now);
+            //programFiles.FileSystemNodes.Add(new FileNode(programFiles, "readme.txt", @"C:\\Program Files\\readme.txt", 1024, DateTime.Now));
 
             //DriveNodes.Add(driveC);
-            //DriveNodes.Add(driveD);
+
+            //driveC.Size = 100000;
 
         }
 
@@ -66,23 +49,38 @@ namespace FileSystem_Viewer.ViewModels
         {
             DispatcherQueueProvider.DispatcherQueue.TryEnqueue(() =>
             {
-                if(list != null && list.Any())
+                try
                 {
-                    foreach(FileSystemNode item in list)
+                    if (list != null && list.Any())
                     {
-                        if(item is DirectoryNode directoryNode)
+                        foreach (FileSystemNode item in list)
                         {
-                            node.FileSystemNodes.Add(directoryNode);
+                            if (item is DirectoryNode directoryNode)
+                            {
+                                node.FileSystemNodes.Add(directoryNode);
+                            }
+                            else if (item is FileNode fileNode)
+                            {
+                                node.FileSystemNodes.Add(fileNode);
+                            }
                         }
-                        else if (item is FileNode fileNode)
+                    }
+
+                    node.Size += size;
+                    node.FileCount += fileCount;
+
+                    if (size != 0)
+                    {
+                        foreach (FileSystemNode item in node.FileSystemNodes)
                         {
-                            node.FileSystemNodes.Add(fileNode);
+                            item.UpdatePercentForUI();
                         }
                     }
                 }
+                catch (Exception)
+                {
 
-                node.Size += size;
-                node.FileCount += fileCount;
+                }
             });
         }
 
@@ -229,6 +227,8 @@ namespace FileSystem_Viewer.ViewModels
                 foreach(DirectoryNode drive in DriveNodes)
                 {
                     drive.FileSystemNodes.Clear();
+                    drive.FileCount = 0;
+                    drive.Size = 0;
                 }
 
                 if (CurrentScanningCancellationTokenSource != null)
@@ -258,6 +258,8 @@ namespace FileSystem_Viewer.ViewModels
                 PauseResetTokenSource = new PauseResetTokenSource();
 
                 SelectedDirectoryNode.FileSystemNodes.Clear();
+                SelectedDirectoryNode.FileCount = 0;
+                SelectedDirectoryNode.Size = 0;
 
                 await ScanSelectedTarget(SelectedDirectoryNode, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
 

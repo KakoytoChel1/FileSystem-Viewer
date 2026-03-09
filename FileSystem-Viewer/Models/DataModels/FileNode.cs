@@ -4,12 +4,9 @@ namespace FileSystem_Viewer.Models
 {
     public class FileNode : FileSystemNode
     {
-        public FileNode()
-        {
+        public FileNode(FileSystemNode paretnNode) : base(paretnNode) { }
 
-        }
-
-        public FileNode(string name, string fullPath, long size, DateTime lastModified) : base(name, fullPath, size, lastModified)
+        public FileNode(FileSystemNode parentNode, string name, string fullPath, long size, DateTime lastModified) : base(parentNode, name, fullPath, size, lastModified)
         {
 
         }

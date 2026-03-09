@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using Windows.Data.Xml.Dom;
 
 namespace FileSystem_Viewer.Models
 {
@@ -32,7 +31,10 @@ namespace FileSystem_Viewer.Models
         public long Size
         {
             get { return _size; }
-            set { SetProperty(ref _size, value); }
+            set 
+            {
+                SetProperty(ref _size, value);
+            }
         }
 
         private DateTime? _lastModified;
@@ -42,13 +44,41 @@ namespace FileSystem_Viewer.Models
             set { SetProperty(ref _lastModified, value); }
         }
 
-        protected FileSystemNode() { }
-        protected FileSystemNode(string name, string fullPath, long size, DateTime lastModified)
+        private FileSystemNode? _parentNode;
+        public FileSystemNode? ParentNode
+        {
+            get { return _parentNode; }
+            private set { SetProperty(ref _parentNode, value); }
+        }
+
+        public double PercentProperty
+        {
+            get
+            {
+                if (ParentNode == null) return 0;
+
+                double result = (double)Size / ParentNode.Size;
+                return result * 100;
+            }
+        }
+
+        public void UpdatePercentForUI()
+        {
+            OnPropertyChanged(nameof(PercentProperty));
+        }
+
+        protected FileSystemNode(FileSystemNode? parentNode)
+        {
+            ParentNode = parentNode;
+        }
+
+        protected FileSystemNode(FileSystemNode? parentNode, string name, string fullPath, long size, DateTime lastModified)
         {
             Name = name;
             FullPath = fullPath;
             Size = size;
             LastModified = lastModified;
+            ParentNode = parentNode;
         }
     }
 }

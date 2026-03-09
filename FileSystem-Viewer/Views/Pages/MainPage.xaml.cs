@@ -1,4 +1,5 @@
 using FileSystem_Viewer.Models;
+using FileSystem_Viewer.Services.IServices;
 using FileSystem_Viewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -17,12 +18,15 @@ namespace FileSystem_Viewer.Views.Pages;
 public sealed partial class MainPage : Page
 {
     public MainPageViewModel ViewModel { get; private set; }
+    private IDispatcherQueueProvider dispatcherQueueProvider;
 
     public MainPage()
     {
         InitializeComponent();
 
         ViewModel = (Application.Current as App)!.ServiceProvider.GetRequiredService<MainPageViewModel>();
+        dispatcherQueueProvider = (Application.Current as App)!.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>();
+
 
         foreach (var drive in ViewModel.DriveNodes)
         {

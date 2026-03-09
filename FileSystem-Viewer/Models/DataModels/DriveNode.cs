@@ -5,16 +5,16 @@ namespace FileSystem_Viewer.Models
 {
     public class DriveNode : DirectoryNode
     {
-        public DriveNode() { }
+        public DriveNode() : base(null) { }
 
-        public DriveNode(string volumeName, long totalSize, long totalFreeSpace, string name, string fullPath, long size, DateTime lastModified) : base(name, fullPath, size, lastModified)
+        public DriveNode(string volumeName, long totalSize, long totalFreeSpace, string name, string fullPath, long size, DateTime lastModified) : base(null, name, fullPath, size, lastModified)
         {
             VolumeName = volumeName;
             TotalSize = totalSize;
             TotalFreeSpace = totalFreeSpace;
         }
 
-        public DriveNode(string volumeName, long totalSize, long totalFreeSpace, string name, string fullPath, long size, DateTime lastModified, IEnumerable<FileSystemNode> fileSystemNodes) : base(name, fullPath, size, lastModified, fileSystemNodes)
+        public DriveNode(string volumeName, long totalSize, long totalFreeSpace, string name, string fullPath, long size, DateTime lastModified, IEnumerable<FileSystemNode> fileSystemNodes) : base(null, name, fullPath, size, lastModified, fileSystemNodes)
         {
             VolumeName = volumeName;
             TotalSize = totalSize;

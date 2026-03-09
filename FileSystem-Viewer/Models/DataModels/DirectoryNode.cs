@@ -6,11 +6,11 @@ namespace FileSystem_Viewer.Models
 {
     public class DirectoryNode : FileSystemNode
     {
-        public DirectoryNode() { }
+        public DirectoryNode(FileSystemNode? parentNode) : base(parentNode) { }
 
-        public DirectoryNode(string name, string fullPath, long size, DateTime lastModified) : base(name, fullPath, size, lastModified) { }
+        public DirectoryNode(FileSystemNode? parentNode, string name, string fullPath, long size, DateTime lastModified) : base(parentNode, name, fullPath, size, lastModified) { }
 
-        public DirectoryNode(string name, string fullPath, long size, DateTime lastModified, IEnumerable<FileSystemNode> fileSystemNodes) : base(name, fullPath, size, lastModified)
+        public DirectoryNode(FileSystemNode? parentNode, string name, string fullPath, long size, DateTime lastModified, IEnumerable<FileSystemNode> fileSystemNodes) : base(parentNode, name, fullPath, size, lastModified)
         {
 
             _fileSystemNodes = new ObservableCollection<FileSystemNode>(fileSystemNodes);
