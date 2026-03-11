@@ -1,4 +1,4 @@
-﻿namespace FileSystem_Viewer.Models
+﻿namespace FileSystemViewer.Models
 {
     public interface IPauseResetTokenSource
     {

@@ -1,10 +1,10 @@
-using FileSystem_Viewer.Services;
-using FileSystem_Viewer.Services.IServices;
-using FileSystem_Viewer.Views.Pages;
+using FileSystemViewer.Services;
+using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 
-namespace FileSystem_Viewer
+namespace FileSystemViewer
 {
     public sealed partial class MainWindow : Window
     {

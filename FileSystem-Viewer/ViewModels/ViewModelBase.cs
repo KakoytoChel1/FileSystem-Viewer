@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FileSystem_Viewer.Services.IServices;
+using FileSystemViewer.Services.Interfaces;
 
-namespace FileSystem_Viewer.ViewModels
+namespace FileSystemViewer.ViewModels
 {
     public abstract class ViewModelBase : ObservableObject
     {

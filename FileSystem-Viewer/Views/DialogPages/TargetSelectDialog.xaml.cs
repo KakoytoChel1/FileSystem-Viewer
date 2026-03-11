@@ -1,10 +1,10 @@
-using FileSystem_Viewer.ViewModels;
+using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.IO;
 
-namespace FileSystem_Viewer.Views.DialogPages;
+namespace FileSystemViewer.Views.DialogPages;
 
 public sealed partial class TargetSelectDialog : UserControl
 {

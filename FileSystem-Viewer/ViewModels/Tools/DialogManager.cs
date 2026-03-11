@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Threading.Tasks;
 
-namespace FileSystem_Viewer.ViewModels.Tools
+namespace FileSystemViewer.ViewModels.Tools
 {
     public static class DialogManager
     {

@@ -1,9 +1,9 @@
-﻿using FileSystem_Viewer.Models;
+﻿using FileSystemViewer.Models;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using System;
 
-namespace FileSystem_Viewer.Views.Converters
+namespace FileSystemViewer.Views.Converters
 {
     public class DriveFreeSpaceIntoPercentsConverter : IValueConverter
     {

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="FileSystem_Viewer.Views.Pages.MainPage"
+    x:Class="FileSystemViewer.Views.Pages.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:FileSystem_Viewer.Views.Pages"
+    xmlns:local="using:FileSystemViewer.Views.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vm="using:FileSystem_Viewer.ViewModels"
+    xmlns:vm="using:FileSystemViewer.ViewModels"
     mc:Ignorable="d"
-    xmlns:models="using:FileSystem_Viewer.Models"
+    xmlns:models="using:FileSystemViewer.Models"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:view="using:FileSystem_Viewer.Views"
-    xmlns:converters="using:FileSystem_Viewer.Views.Converters"
+    xmlns:view="using:FileSystemViewer.Views"
+    xmlns:converters="using:FileSystemViewer.Views.Converters"
     x:Name="mainPage">
 
     <Page.Resources>
@@ -395,10 +395,10 @@
         </StackPanel>
 
         <TreeView Grid.Row="2" Grid.ColumnSpan="2"
-          x:Name="treeView"
-          Expanding="treeView_Expanding"
+          x:Name="FileSystemTreeView"
+          Expanding="FileSystemTreeView_Expanding"
           ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
-          SelectionChanged="treeView_SelectionChanged">
+          SelectionChanged="FileSystemTreeView_SelectionChanged">
         </TreeView>
 
     </Grid>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace FileSystem_Viewer.Models
+namespace FileSystemViewer.Models
 {
     public class DirectoryNode : FileSystemNode
     {

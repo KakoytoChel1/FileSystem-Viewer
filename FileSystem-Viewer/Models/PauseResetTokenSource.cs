@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace FileSystem_Viewer.Models
+namespace FileSystemViewer.Models
 {
     public class PauseResetTokenSource : IPauseResetTokenSource
     {

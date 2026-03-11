@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Dispatching;
 
-namespace FileSystem_Viewer.Services.IServices
+namespace FileSystemViewer.Services.Interfaces
 {
     public interface IDispatcherQueueProvider
     {

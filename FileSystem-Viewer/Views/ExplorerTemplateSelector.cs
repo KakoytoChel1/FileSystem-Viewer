@@ -1,8 +1,8 @@
-﻿using FileSystem_Viewer.Models;
+﻿using FileSystemViewer.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace FileSystem_Viewer.Views
+namespace FileSystemViewer.Views
 {
     public class ExplorerTemplateSelector : DataTemplateSelector
     {

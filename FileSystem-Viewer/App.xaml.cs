@@ -1,13 +1,12 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using FileSystem_Viewer.Views.Pages;
-using FileSystem_Viewer.ViewModels;
-using FileSystem_Viewer.Services.IServices;
-using FileSystem_Viewer.Services;
+using FileSystemViewer.ViewModels;
+using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.Services;
 
 
-namespace FileSystem_Viewer
+namespace FileSystemViewer
 {
     public partial class App : Application
     {

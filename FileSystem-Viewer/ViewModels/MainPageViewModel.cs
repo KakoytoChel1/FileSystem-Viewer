@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using FileSystem_Viewer.Models;
-using FileSystem_Viewer.Services.IServices;
-using FileSystem_Viewer.ViewModels.Tools;
-using FileSystem_Viewer.Views.DialogPages;
+using FileSystemViewer.Models;
+using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.ViewModels.Tools;
+using FileSystemViewer.Views.DialogPages;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace FileSystem_Viewer.ViewModels
+namespace FileSystemViewer.ViewModels
 {
     public class MainPageViewModel : ViewModelBase
     {
@@ -68,14 +68,6 @@ namespace FileSystem_Viewer.ViewModels
 
                     node.Size += size;
                     node.FileCount += fileCount;
-
-                    //if (size != 0)
-                    //{
-                    //    foreach (FileSystemNode item in node.FileSystemNodes)
-                    //    {
-                    //        item.UpdatePercentForUI();
-                    //    }
-                    //}
                 }
                 catch (Exception)
                 {
@@ -186,7 +178,7 @@ namespace FileSystem_Viewer.ViewModels
                     {
                         DriveNodes.Add(new DriveNode(drive.VolumeLabel, drive.TotalSize, drive.TotalFreeSpace, drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
                     }
-                    await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                    await ScanSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
                 else
                 {
@@ -199,7 +191,7 @@ namespace FileSystem_Viewer.ViewModels
                     {
                         DriveNodes.Add(new DriveNode(drive.VolumeLabel, drive.TotalSize, drive.TotalFreeSpace, drive.Name, drive.RootDirectory.FullName, 0, drive.RootDirectory.LastWriteTime));
                     }
-                    await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                    await ScanSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
             }
             
@@ -237,7 +229,7 @@ namespace FileSystem_Viewer.ViewModels
                 CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                 PauseResetTokenSource = new PauseResetTokenSource();
 
-                await ScanSelectedTarget(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                await ScanSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
             }
         }, (xamlRoot) => !IsScanningNow);
 
@@ -261,7 +253,7 @@ namespace FileSystem_Viewer.ViewModels
                 SelectedDirectoryNode.FileCount = 0;
                 SelectedDirectoryNode.Size = 0;
 
-                await ScanSelectedTarget(SelectedDirectoryNode, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                await ScanSelectedTargetAsync(SelectedDirectoryNode, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
 
             }
 
@@ -334,17 +326,17 @@ namespace FileSystem_Viewer.ViewModels
         /// <param name="cts"></param>
         /// <param name="prts"></param>
         /// <returns></returns>
-        private async Task ScanSelectedTarget<T>(T target, CancellationTokenSource cts, PauseResetTokenSource prts)
+        private async Task ScanSelectedTargetAsync<T>(T target, CancellationTokenSource cts, PauseResetTokenSource prts)
         {
             IsScanningNow = true;
 
             if (target is DirectoryNode directoryNode)
             {
-                await DriveUtilsService.ScanSpecifiedDirectory(directoryNode, cts.Token, prts.Token);
+                await DriveUtilsService.ScanSpecifiedDirectoryAsync(directoryNode, cts.Token, prts.Token);
             }
             else if (target is ObservableCollection<DriveNode> collection)
             {
-                await DriveUtilsService.ScanProvidedDrives(collection, cts.Token, prts.Token);
+                await DriveUtilsService.ScanProvidedDrivesAsync(collection, cts.Token, prts.Token);
             }
             
             IsScanningNow = false;

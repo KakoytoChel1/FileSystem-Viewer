@@ -1,6 +1,6 @@
-using FileSystem_Viewer.Models;
-using FileSystem_Viewer.Services.IServices;
-using FileSystem_Viewer.ViewModels;
+using FileSystemViewer.Models;
+using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 
-namespace FileSystem_Viewer.Views.Pages;
+namespace FileSystemViewer.Views.Pages;
 
 public sealed partial class MainPage : Page
 {
@@ -45,7 +45,7 @@ public sealed partial class MainPage : Page
             }
             else if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                treeView.RootNodes.Clear();
+                FileSystemTreeView.RootNodes.Clear();
             }
         };
     }
@@ -58,13 +58,13 @@ public sealed partial class MainPage : Page
             Content = drive,
             HasUnrealizedChildren = true // Имеет ли или будет иметь в себе вложенные данные
         };
-        treeView.RootNodes.Add(node);
+        FileSystemTreeView.RootNodes.Add(node);
     }
 
     private HashSet<TreeViewNode> _subscribedNodes = new HashSet<TreeViewNode>();
 
     // Когда определенный TreeViewItem разворачивается, запрашиваются его вложенные элементы и сразу рисуются.
-    private void treeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
+    private void FileSystemTreeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
     {
         if (args.Node.Content is DirectoryNode dirNode)
         {
@@ -74,7 +74,6 @@ public sealed partial class MainPage : Page
             foreach (FileSystemNode childNode in dirNode.FileSystemNodes)
             {
                 AddFileSystemNode(args.Node, childNode);
-                childNode.UpdatePercentForUI();
             }
 
             // Устанавливает подписку на изменение вложенной коллекции, только для тех кому еще не ставили
@@ -99,16 +98,13 @@ public sealed partial class MainPage : Page
 
                 dirNode.PropertyChanged += (s, e) =>
                 {
-                    if (e.PropertyName == nameof(DirectoryNode.Size))
+                    if (e.PropertyName == nameof(DirectoryNode.Size) && args.Node.IsExpanded)
                     {
-                        if (args.Node.IsExpanded)
+                        foreach (var child in args.Node.Children)
                         {
-                            foreach (var child in args.Node.Children)
+                            if (child.Content is FileSystemNode fsn)
                             {
-                                if (child.Content is FileSystemNode fsn)
-                                {
-                                    fsn.UpdatePercentForUI();
-                                }
+                                fsn.UpdatePercentForUI();
                             }
                         }
                     }
@@ -136,7 +132,7 @@ public sealed partial class MainPage : Page
     }
 
     // Сигнализирует об изменении выбранного элемента в TreeView
-    private void treeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
+    private void FileSystemTreeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
     {
         if (args.AddedItems.Count > 0)
             ViewModel.FileSystemNodeSelectionChanged.Execute((TreeViewNode)args.AddedItems.First());

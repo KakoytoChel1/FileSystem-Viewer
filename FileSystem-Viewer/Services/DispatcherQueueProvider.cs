@@ -1,8 +1,8 @@
-﻿using FileSystem_Viewer.Services.IServices;
+﻿using FileSystemViewer.Services.Interfaces;
 using Microsoft.UI.Dispatching;
 using System;
 
-namespace FileSystem_Viewer.Services
+namespace FileSystemViewer.Services
 {
     public class DispatcherQueueProvider : IDispatcherQueueProvider
     {

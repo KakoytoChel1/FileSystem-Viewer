@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FileSystem_Viewer.Models
+namespace FileSystemViewer.Models
 {
     public class DriveNode : DirectoryNode
     {

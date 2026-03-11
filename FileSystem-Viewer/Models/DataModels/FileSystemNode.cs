@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 
-namespace FileSystem_Viewer.Models
+namespace FileSystemViewer.Models
 {
     public abstract class FileSystemNode : ObservableObject
     {
@@ -55,7 +55,9 @@ namespace FileSystem_Viewer.Models
         {
             get
             {
-                if (ParentNode == null) return 0;
+                if (ParentNode == null) return 100;
+
+                if (ParentNode.Size == 0) return 0;
 
                 double result = (double)Size / ParentNode.Size;
                 return result * 100;
