@@ -39,6 +39,7 @@ namespace FileSystemViewer.ViewModels
 
             //var programFiles = new DirectoryNode(driveC, "Program Files", @"C:\\Program Files", 3072, DateTime.Now);
             //programFiles.FileSystemNodes.Add(new FileNode(programFiles, "readme.txt", @"C:\\Program Files\\readme.txt", 1024, DateTime.Now));
+            //driveC.FileSystemNodes.Add(programFiles);
 
             //DriveNodes.Add(driveC);
 
@@ -332,7 +333,7 @@ namespace FileSystemViewer.ViewModels
         {
             var progress = new Progress<List<FileSystemNode>>(data =>
             {
-                // Хранит значения размера и количества файлов для каждого из родильских узлов в этом наборе data (до 100 узлов)
+                //Хранит значения размера и количества файлов для каждого из родильских узлов в этом наборе data(до 100 узлов)
                 Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
 
                 foreach (FileSystemNode node in data)
@@ -385,8 +386,16 @@ namespace FileSystemViewer.ViewModels
             
             IsScanningNow = false;
             IsPausedNow = false;
+            
+            foreach (var drive in DriveNodes)
+            {
+                if (drive.IsExpanded)
+                {
+                    RefreshExpandedNodesRecursive(drive.FileSystemNodes);
+                }
+            }
 
-            if(CurrentScanningCancellationTokenSource != null)
+            if (CurrentScanningCancellationTokenSource != null)
                 CurrentScanningCancellationTokenSource.Dispose();
         }
 
@@ -400,6 +409,19 @@ namespace FileSystemViewer.ViewModels
             foreach (var drive in drives)
             {
                 AllAvailableDrives.Add(drive);
+            }
+        }
+
+        private void RefreshExpandedNodesRecursive(ObservableCollection<FileSystemNode> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                node.UpdatePercentForUI();
+
+                if (node is DirectoryNode directoryNode && directoryNode.IsExpanded && directoryNode.FileSystemNodes.Any())
+                {
+                    RefreshExpandedNodesRecursive(directoryNode.FileSystemNodes);
+                }
             }
         }
         #endregion

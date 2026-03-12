@@ -402,6 +402,7 @@
 
         <TreeView Grid.Row="2" Grid.ColumnSpan="2"
           x:Name="FileSystemTreeView"
+          Collapsed="FileSystemTreeView_Collapsed"
           Expanding="FileSystemTreeView_Expanding"
           ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
           SelectionChanged="FileSystemTreeView_SelectionChanged">

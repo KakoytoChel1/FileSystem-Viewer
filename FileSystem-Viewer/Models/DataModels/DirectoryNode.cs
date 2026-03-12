@@ -29,5 +29,12 @@ namespace FileSystemViewer.Models
             get { return _fileCount; }
             set { SetProperty(ref _fileCount, value); }
         }
+
+        private bool _isExpanded;
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+            set { SetProperty(ref _isExpanded, value); }
+        }
     }
 }

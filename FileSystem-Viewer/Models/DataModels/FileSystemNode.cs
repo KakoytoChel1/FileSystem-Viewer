@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
+using System.Collections.ObjectModel;
 
 namespace FileSystemViewer.Models
 {

@@ -9,9 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.Storage.FileProperties;
 
 namespace FileSystemViewer.Views.Pages;
 
@@ -68,6 +65,8 @@ public sealed partial class MainPage : Page
     {
         if (args.Node.Content is DirectoryNode dirNode)
         {
+            dirNode.IsExpanded = true;
+
             if (args.Node.Children.ToList().Any())
                 return;
 
@@ -95,21 +94,15 @@ public sealed partial class MainPage : Page
                         args.Node.Children.Clear();
                     }
                 };
-
-                dirNode.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(DirectoryNode.Size) && args.Node.IsExpanded)
-                    {
-                        foreach (var child in args.Node.Children)
-                        {
-                            if (child.Content is FileSystemNode fsn)
-                            {
-                                fsn.UpdatePercentForUI();
-                            }
-                        }
-                    }
-                };
             }
+        }
+    }
+
+    private void FileSystemTreeView_Collapsed(TreeView sender, TreeViewCollapsedEventArgs args)
+    {
+        if (args.Node.Content is DirectoryNode dirNode)
+        {
+            dirNode.IsExpanded = false;
         }
     }
 
@@ -138,27 +131,5 @@ public sealed partial class MainPage : Page
             ViewModel.FileSystemNodeSelectionChanged.Execute((TreeViewNode)args.AddedItems.First());
         else if (args.RemovedItems.Count > 0)
             ViewModel.FileSystemNodeSelectionChanged.Execute(null);
-    }
-
-    private async Task<BitmapImage?> GetFileIconAsync(string filePath)
-    {
-        try
-        {
-            StorageFolder sf = await StorageFolder.GetFolderFromPathAsync(filePath);
-            StorageItemThumbnail thumbnail = await sf.GetThumbnailAsync(ThumbnailMode.SingleItem, 32, ThumbnailOptions.UseCurrentScale);
-
-            if (thumbnail != null)
-            {
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.SetSource(thumbnail);
-                return bitmapImage;
-            }
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-
-        return null;
     }
 }
