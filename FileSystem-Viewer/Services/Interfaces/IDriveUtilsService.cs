@@ -13,6 +13,6 @@ namespace FileSystemViewer.Services.Interfaces
         public event Action<DirectoryNode, List<FileSystemNode>?, long, long> DrivesUpdated;
         public List<DriveInfo> GetAvailableDrives();
         public Task ScanSpecifiedDirectoryAsync(DirectoryNode directoryNode, CancellationToken token, PauseResetToken pauseResetToken);
-        public Task ScanProvidedDrivesAsync(ObservableCollection<DriveNode> fileSystemNodes, CancellationToken token, PauseResetToken pauseResetToken);
+        public Task ScanProvidedDrivesAsync(ObservableCollection<DriveNode> fileSystemNodes, IProgress<List<FileSystemNode>> progress, CancellationToken token, PauseResetToken pauseResetToken);
     }
 }

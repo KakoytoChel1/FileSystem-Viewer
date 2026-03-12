@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using FileSystem_Viewer.Models.DataModels;
 using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -328,15 +330,57 @@ namespace FileSystemViewer.ViewModels
         /// <returns></returns>
         private async Task ScanSelectedTargetAsync<T>(T target, CancellationTokenSource cts, PauseResetTokenSource prts)
         {
+            var progress = new Progress<List<FileSystemNode>>(data =>
+            {
+                // Хранит значения размера и количества файлов для каждого из родильских узлов в этом наборе data (до 100 узлов)
+                Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
+
+                foreach (FileSystemNode node in data)
+                {
+                    DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
+
+                    parentNode.FileSystemNodes.Add(node);
+
+                    if (node is FileNode fileNode)
+                    {
+                        var values = new TotalScanValues();
+
+                        if (totalScanValues.TryGetValue(parentNode, out values))
+                        {
+                            values.TotalSizeInBytes += fileNode.Size;
+                            values.TotalFileCount++;
+                        }
+                        else
+                        {
+                            values = new TotalScanValues();
+                            values.TotalSizeInBytes = fileNode.Size;
+                            values.TotalFileCount++;
+                            totalScanValues.Add(parentNode, values);
+                        }
+                    }
+                }
+
+                foreach (var pair in totalScanValues)
+                {
+                    var current = pair.Key;
+                    while (current != null)
+                    {
+                        current.Size += pair.Value.TotalSizeInBytes;
+                        current.FileCount += pair.Value.TotalFileCount;
+                        current = current.ParentNode as DirectoryNode;
+                    }
+                }
+            });
+
             IsScanningNow = true;
 
             if (target is DirectoryNode directoryNode)
             {
-                await DriveUtilsService.ScanSpecifiedDirectoryAsync(directoryNode, cts.Token, prts.Token);
+                //await DriveUtilsService.ScanSpecifiedDirectoryAsync(directoryNode, cts.Token, prts.Token);
             }
             else if (target is ObservableCollection<DriveNode> collection)
             {
-                await DriveUtilsService.ScanProvidedDrivesAsync(collection, cts.Token, prts.Token);
+                await DriveUtilsService.ScanProvidedDrivesAsync(collection, progress, cts.Token, prts.Token);
             }
             
             IsScanningNow = false;

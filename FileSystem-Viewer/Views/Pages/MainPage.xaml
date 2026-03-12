@@ -25,7 +25,7 @@
                     <ColumnDefinition x:Name="Name"/>
                     <ColumnDefinition x:Name="Size" Width="100"/>
                     <ColumnDefinition x:Name="FileCount" Width="100"/>
-                    <ColumnDefinition x:Name="LastModifiedDate" Width="170"/>
+                    <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
                     <ColumnDefinition Width="0.1*"/>
                 </Grid.ColumnDefinitions>
 
@@ -62,12 +62,13 @@
                         Spacing="5">
 
                         <TextBlock
+                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                        <TextBlock
                             Text="&#xE9F9;"
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                        <TextBlock
-                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
 
                     </StackPanel>
                 </Border>
@@ -80,12 +81,13 @@
                         Spacing="5">
 
                         <TextBlock
+                            Text="{Binding Content.FileCount}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                        
+                        <TextBlock
                             Text="&#xE8A5;"
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                        <TextBlock
-                            Text="{Binding Content.FileCount}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
                     </StackPanel>
                 </Border>
 
@@ -97,13 +99,14 @@
                         Spacing="5">
 
                         <TextBlock
-                            Margin="20,0,0,0"
+                            Margin="10,0,0,0"
+                            Text="{Binding Content.LastModified}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                        <TextBlock
                             Text="&#xF738;"
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                        <TextBlock
-                            Text="{Binding Content.LastModified}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -117,7 +120,7 @@
                     <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
                     <ColumnDefinition x:Name="Size" Width="100"/>
                     <ColumnDefinition x:Name="FileCount" Width="100"/>
-                    <ColumnDefinition x:Name="LastModifiedDate" Width="170"/>
+                    <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
                     <ColumnDefinition Width="0.1*"/>
                 </Grid.ColumnDefinitions>
 
@@ -159,13 +162,13 @@
                         Spacing="5">
 
                         <TextBlock
-                            Text="&#xE9F9;"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                        <TextBlock
                             Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
                             Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
 
+                        <TextBlock
+                            Text="&#xE9F9;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
                     </StackPanel>
                 </Border>
 
@@ -177,12 +180,13 @@
                         Spacing="5">
 
                         <TextBlock
+                            Text="{Binding Content.FileCount}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                        <TextBlock
                             Text="&#xE8A5;"
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                        <TextBlock
-                            Text="{Binding Content.FileCount}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
                     </StackPanel>
                 </Border>
 
@@ -192,15 +196,16 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="5">
+                        
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            Text="{Binding Content.LastModified}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
 
                         <TextBlock
-                            Margin="20,0,0,0"
                             Text="&#xF738;"
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                        <TextBlock
-                            Text="{Binding Content.LastModified}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -213,7 +218,7 @@
                     <ColumnDefinition x:Name="ProgressBar" Width="100"/>
                     <ColumnDefinition x:Name="Percentage" Width="50"/>
                     <ColumnDefinition x:Name="Size" Width="100"/>
-                    <ColumnDefinition x:Name="LastModifiedDate" Width="170"/>
+                    <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
                     <ColumnDefinition Width="0.1*"/>
                 </Grid.ColumnDefinitions>
 
@@ -256,13 +261,13 @@
                         Spacing="5">
 
                         <TextBlock
-                            Text="&#xE9F9;"
-                            VerticalAlignment="Center"
-                            Style="{ThemeResource FileNodeInfoTextIconStyle}"/>
-                        <TextBlock
                             Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
                             Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
 
+                        <TextBlock
+                            Text="&#xE9F9;"
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource FileNodeInfoTextIconStyle}"/>
                     </StackPanel>
                 </Border>
 
@@ -274,13 +279,14 @@
                         Spacing="5">
 
                         <TextBlock
-                            Margin="20,0,0,0"
+                            Margin="10,0,0,0"
+                            Text="{Binding Content.LastModified}"
+                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
+
+                        <TextBlock
                             Text="&#xF738;"
                             VerticalAlignment="Center"
                             Style="{ThemeResource FileNodeInfoTextIconStyle}"/>
-                        <TextBlock
-                            Text="{Binding Content.LastModified}"
-                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
                     </StackPanel>
                 </Border>
             </Grid>

@@ -2,13 +2,9 @@
 {
     public class TotalScanValues
     {
-        public TotalScanValues(long totalFileCount, long totalSize)
-        {
-            TotalFileCount = totalFileCount;
-            TotalSize = totalSize;
-        }
+        public TotalScanValues() { }
 
-        public long TotalFileCount { get; private set; }
-        public long TotalSize { get; private set; }
+        public long TotalFileCount { get; set; }
+        public long TotalSizeInBytes { get; set; }
     }
 }
