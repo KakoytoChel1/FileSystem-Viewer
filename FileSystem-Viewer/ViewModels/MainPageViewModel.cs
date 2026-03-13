@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -25,62 +24,23 @@ namespace FileSystemViewer.ViewModels
             DriveNodes = new ObservableCollection<DriveNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
-
-            DriveUtilsService.DrivesUpdated += OnDrivesUpdated;
+            SelectedDirectoryNodes = new ObservableCollection<DirectoryNode>();
 
             SelectedScanningTargetIndex = 0;
-            IsScanningNow = false;
-
-
-
-            //---Test-- -
-            //var driveC = new DriveNode("Local Disk", 504658657280, 246960619520, "(C:)", @"C:\\", 8192, DateTime.Now);
-            //driveC.FileCount = 567891;
-
-            //var programFiles = new DirectoryNode(driveC, "Program Files", @"C:\\Program Files", 3072, DateTime.Now);
-            //programFiles.FileSystemNodes.Add(new FileNode(programFiles, "readme.txt", @"C:\\Program Files\\readme.txt", 1024, DateTime.Now));
-            //driveC.FileSystemNodes.Add(programFiles);
-
-            //DriveNodes.Add(driveC);
-
-            //driveC.Size = 100000;
-
-        }
-
-        // Вызывается для отправки нового буфера отсканированной информации, чтобы через Dispatcher добавить в UI
-        private void OnDrivesUpdated(DirectoryNode node, List<FileSystemNode>? list, long size, long fileCount)
-        {
-            DispatcherQueueProvider.DispatcherQueue.TryEnqueue(() =>
-            {
-                try
-                {
-                    if (list != null && list.Any())
-                    {
-                        foreach (FileSystemNode item in list)
-                        {
-                            if (item is DirectoryNode directoryNode)
-                            {
-                                node.FileSystemNodes.Add(directoryNode);
-                            }
-                            else if (item is FileNode fileNode)
-                            {
-                                node.FileSystemNodes.Add(fileNode);
-                            }
-                        }
-                    }
-
-                    node.Size += size;
-                    node.FileCount += fileCount;
-                }
-                catch (Exception)
-                {
-
-                }
-            });
+            CurrentScanningState = ScanningStates.None;
+            DirectoriesSelectionMode = TreeViewSelectionMode.None;
         }
 
         #region Properties
 
+        public enum ScanningStates
+        {
+            None,
+            Completed,
+            Paused,
+            Canceled,
+            InProgress
+        }
         private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; } // Для отмены
         private PauseResetTokenSource? PauseResetTokenSource { get; set; } // Для паузы/возобновления
 
@@ -96,6 +56,10 @@ namespace FileSystemViewer.ViewModels
         /// Выбранные диски среди доступных.
         /// </summary>
         public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
+        /// <summary>
+        /// Выбранные (выделенные) узлы директорий 
+        /// </summary>
+        public ObservableCollection<DirectoryNode> SelectedDirectoryNodes { get; set; }
 
         // Режим выбора: Все диски или выбранные
         private int _selectedScanningTargetIndex;
@@ -105,45 +69,47 @@ namespace FileSystemViewer.ViewModels
             set { SetProperty(ref _selectedScanningTargetIndex, value); }
         }
 
-        // Выбранная директория в визуальном дереве.
-        private DirectoryNode? _selectedDirectoryNodeNode;
-        public DirectoryNode? SelectedDirectoryNode
+        private ScanningStates _currentScanningState;
+        public ScanningStates CurrentScanningState
         {
-            get { return _selectedDirectoryNodeNode; }
-            set { SetProperty(ref _selectedDirectoryNodeNode, value); }
-        }
-
-        private bool _isScanningNow;
-        public bool IsScanningNow
-        {
-            get { return _isScanningNow; }
+            get { return _currentScanningState; }
             set 
             { 
-                if(SetProperty(ref _isScanningNow, value))
+                if (SetProperty(ref _currentScanningState, value))
                 {
                     (OpenTargetSelectDialogCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
                     (RefreshScanningCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
-                    (RescanSelectedDirectoryCommand as RelayCommand)!.NotifyCanExecuteChanged();
+                    (RescanSelectedDirectoriesCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
                     (CancelScanningCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
                     (ResumeScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
                     (PauseScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
-                }
+
+                    (ResumeScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
+                    (PauseScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
+                } 
             }
         }
 
-        private bool _isPausedNow;
-        public bool IsPausedNow
+        private TreeViewSelectionMode _directoriesSelectionMode;
+        public TreeViewSelectionMode DirectoriesSelectionMode
         {
-            get { return _isPausedNow; }
-            set
-            {
-                if(SetProperty(ref _isPausedNow, value))
+            get { return _directoriesSelectionMode; }
+            set 
+            { 
+                if (SetProperty(ref _directoriesSelectionMode, value))
                 {
-                    (ResumeScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
-                    (PauseScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
-                }
+                    (RescanSelectedDirectoriesCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
+                } 
             }
         }
+
+        private Visibility _progressBarVisibility;
+        public Visibility ProgressBarVisibility
+        {
+            get { return _progressBarVisibility; }
+            set { SetProperty(ref _progressBarVisibility, value); }
+        }
+
         #endregion
 
         #region Commands
@@ -198,7 +164,7 @@ namespace FileSystemViewer.ViewModels
                 }
             }
             
-        }, (xamltoor) => !IsScanningNow);
+        }, (xamltoor) => CurrentScanningState == ScanningStates.None || CurrentScanningState == ScanningStates.Completed || CurrentScanningState == ScanningStates.Canceled);
 
 
         // Обновляет список доступных дисков, в меню выбора целей для сканирования
@@ -213,9 +179,12 @@ namespace FileSystemViewer.ViewModels
         private ICommand? _refreshScanningCommand;
         public ICommand RefreshScanningCommand => _refreshScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
+            if (!DriveNodes.Any())
+                return;
+
             var dialogResult = await DialogManager.ShowContentDialog(xamlRoot!, "Rescan target confirmation", "Confirm",
                ContentDialogButton.Primary, $"Are you sure you want to rescan the following count of drives: " +
-               $"{(SelectedScanningTargetIndex == 1 ? SelectedTargetDrives.Count : AllAvailableDrives.Count)}?", "Cancel", null);
+               $"{DriveNodes.Count}?", "Cancel", null);
 
             if(dialogResult == ContentDialogResult.Primary)
             {
@@ -234,33 +203,51 @@ namespace FileSystemViewer.ViewModels
 
                 await ScanSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
             }
-        }, (xamlRoot) => !IsScanningNow);
+        }, (xamlRoot) => CurrentScanningState == ScanningStates.None || CurrentScanningState == ScanningStates.Completed || CurrentScanningState == ScanningStates.Canceled);
 
 
         // Запускает повторное сканирование для выбранной директории
-        private ICommand? _rescanSelectedDirectoryCommand;
-        public ICommand RescanSelectedDirectoryCommand => _rescanSelectedDirectoryCommand ??= new RelayCommand(async () =>
+        private ICommand? _rescanSelectedDirectoriesCommand;
+        public ICommand RescanSelectedDirectoriesCommand => _rescanSelectedDirectoriesCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
-            if(SelectedDirectoryNode != null)
+            if (SelectedDirectoryNodes.Any() && DirectoriesSelectionMode == TreeViewSelectionMode.Multiple)
             {
-                if (IsScanningNow || IsPausedNow)
-                    return;
+                var dialogResult = await DialogManager.ShowContentDialog(xamlRoot!, "Rescan targets confirmation", "Confirm",
+                   ContentDialogButton.Primary, $"Are you sure you want to rescan the selected directories?", "Cancel", null);
 
-                if (CurrentScanningCancellationTokenSource != null)
-                    CurrentScanningCancellationTokenSource.Dispose();
+                if (dialogResult == ContentDialogResult.Primary)
+                {
+                    if (CurrentScanningCancellationTokenSource != null)
+                        CurrentScanningCancellationTokenSource.Dispose();
 
-                CurrentScanningCancellationTokenSource = new CancellationTokenSource();
-                PauseResetTokenSource = new PauseResetTokenSource();
+                    CurrentScanningCancellationTokenSource = new CancellationTokenSource();
+                    PauseResetTokenSource = new PauseResetTokenSource();
 
-                SelectedDirectoryNode.FileSystemNodes.Clear();
-                SelectedDirectoryNode.FileCount = 0;
-                SelectedDirectoryNode.Size = 0;
+                    foreach (var directoryNode in SelectedDirectoryNodes)
+                    {
+                        directoryNode.FileSystemNodes.Clear();
+                        directoryNode.FileCount = 0;
+                        directoryNode.Size = 0;
+                    }
 
-                await ScanSelectedTargetAsync(SelectedDirectoryNode, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
-
+                    await ScanSelectedTargetAsync(SelectedDirectoryNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                }
             }
+        }, (xamlRoot) => (CurrentScanningState == ScanningStates.Completed || CurrentScanningState == ScanningStates.Canceled) && (DirectoriesSelectionMode == TreeViewSelectionMode.Multiple));
 
-        }, () => !IsScanningNow);
+        private ICommand? _switchSelectionModeCommand;
+        public ICommand SwitchSelectionModeCommand => _switchSelectionModeCommand ??= new RelayCommand(() =>
+        {
+            switch (DirectoriesSelectionMode)
+            {
+                case TreeViewSelectionMode.None:
+                    DirectoriesSelectionMode = TreeViewSelectionMode.Multiple;
+                    break;
+                case TreeViewSelectionMode.Multiple:
+                    DirectoriesSelectionMode = TreeViewSelectionMode.None;
+                    break;
+            }
+        });
 
 
         #region Scanning managing commands
@@ -275,27 +262,28 @@ namespace FileSystemViewer.ViewModels
             if (dialogResult == ContentDialogResult.Primary)
             {
                 CurrentScanningCancellationTokenSource!.Cancel();
+                CurrentScanningState = ScanningStates.Canceled;
             }
 
-        }, (xamlRoot) => IsScanningNow);
+        }, (xamlRoot) => CurrentScanningState == ScanningStates.InProgress || CurrentScanningState == ScanningStates.Paused);
 
         // Возобновляет процесс сканирования после паузы
         private ICommand? _resumeScanningCommand;
         public ICommand ResumeScanningCommand => _resumeScanningCommand ??= new RelayCommand(async () =>
         {
             PauseResetTokenSource!.Reset();
-            IsPausedNow = false;
+            CurrentScanningState = ScanningStates.InProgress;
 
-        }, () => IsScanningNow && IsPausedNow);
+        }, () => CurrentScanningState == ScanningStates.Paused);
 
         // Ставит процесс сканирования на паузу
         private ICommand? _pauseScanningCommand;
         public ICommand PauseScanningCommand => _pauseScanningCommand ??= new RelayCommand(async () =>
         {
             PauseResetTokenSource!.Pause();
-            IsPausedNow = true;
+            CurrentScanningState = ScanningStates.Paused;
 
-        }, () => IsScanningNow && !IsPausedNow);
+        }, () => CurrentScanningState == ScanningStates.InProgress);
 
         // Устанавливает выбранную директорию
         /*
@@ -303,17 +291,20 @@ namespace FileSystemViewer.ViewModels
          поэтому в code behind главной страницы вручную обрабатывается событие изменения и передает информацию сюда.
          */
         private ICommand? _fileSystemNodeSelectionChanged;
-        public ICommand FileSystemNodeSelectionChanged => _fileSystemNodeSelectionChanged ??= new RelayCommand<TreeViewNode?>(async (node) =>
+        public ICommand FileSystemNodeSelectionChanged => _fileSystemNodeSelectionChanged ??= new RelayCommand<IList<object>>(async (nodes) =>
         {
-            if(node == null)
+            if(nodes == null)
             {
-                SelectedDirectoryNode = null;
+                SelectedDirectoryNodes.Clear();
                 return;
             }
 
-            if (node.Content is DirectoryNode directoryNode)
+            foreach (var node in nodes)
             {
-                SelectedDirectoryNode = directoryNode;
+                if (node is TreeViewNode treeViewNode && treeViewNode.Content is DirectoryNode directoryNode)
+                {
+                    SelectedDirectoryNodes.Add(directoryNode);
+                }
             }
         });
         #endregion
@@ -329,7 +320,7 @@ namespace FileSystemViewer.ViewModels
         /// <param name="cts"></param>
         /// <param name="prts"></param>
         /// <returns></returns>
-        private async Task ScanSelectedTargetAsync<T>(T target, CancellationTokenSource cts, PauseResetTokenSource prts)
+        private async Task ScanSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode
         {
             var progress = new Progress<List<FileSystemNode>>(data =>
             {
@@ -364,29 +355,24 @@ namespace FileSystemViewer.ViewModels
                 foreach (var pair in totalScanValues)
                 {
                     var current = pair.Key;
+
                     while (current != null)
                     {
                         current.Size += pair.Value.TotalSizeInBytes;
                         current.FileCount += pair.Value.TotalFileCount;
+
+                        if (target.Contains(current))
+                            break;
+
                         current = current.ParentNode as DirectoryNode;
                     }
                 }
             });
 
-            IsScanningNow = true;
+            CurrentScanningState = ScanningStates.InProgress;
 
-            if (target is DirectoryNode directoryNode)
-            {
-                //await DriveUtilsService.ScanSpecifiedDirectoryAsync(directoryNode, cts.Token, prts.Token);
-            }
-            else if (target is ObservableCollection<DriveNode> collection)
-            {
-                await DriveUtilsService.ScanProvidedDrivesAsync(collection, progress, cts.Token, prts.Token);
-            }
-            
-            IsScanningNow = false;
-            IsPausedNow = false;
-            
+            await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, cts.Token, prts.Token);
+
             foreach (var drive in DriveNodes)
             {
                 if (drive.IsExpanded)
@@ -397,6 +383,11 @@ namespace FileSystemViewer.ViewModels
 
             if (CurrentScanningCancellationTokenSource != null)
                 CurrentScanningCancellationTokenSource.Dispose();
+
+            if (CurrentScanningState == ScanningStates.Canceled)
+                return;
+
+            CurrentScanningState = ScanningStates.Completed;
         }
 
         /// <summary>

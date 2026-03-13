@@ -12,12 +12,14 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:view="using:FileSystemViewer.Views"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
     x:Name="mainPage">
 
     <Page.Resources>
         <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
         <converters:DriveFreeSpaceIntoPercentsConverter x:Key="DriveFreeSpaceIntoPercentsConverter"/>
         <converters:DoubleIntoStringConverter x:Key="DoubleIntoStringConverter"/>
+        <converters:EnumPropertyToIntConverter x:Key="EnumPropertyToIntConverter"/>
 
         <DataTemplate x:Key="DriveTemplate">
             <Grid>
@@ -304,6 +306,7 @@
             <RowDefinition Height="40"/>
             <RowDefinition Height="35"/>
             <RowDefinition/>
+            <RowDefinition Height="10"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.7*"/>
@@ -318,7 +321,7 @@
                 <MenuFlyoutItem Text="Select target.." Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}" CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"/>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Refresh scanning" Command="{x:Bind ViewModel.RefreshScanningCommand}" CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"/>
-                <MenuFlyoutItem Text="Rescan selected" Command="{x:Bind ViewModel.RescanSelectedDirectoryCommand}"/>
+                <MenuFlyoutItem Text="Rescan selected" Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}"/>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Exit"/>
             </MenuBarItem>
@@ -326,7 +329,7 @@
 
         <Border
             Grid.Row="1"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
             Grid.Column="0"
             Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
             Opacity="0.5"/>
@@ -391,22 +394,73 @@
                 CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
             </Button>
 
-            <Button
-                Style="{StaticResource CommandBarButtonStyle}"
-                Content="&#xE8F7;"
-                FontSize="16"
-                ToolTipService.ToolTip="Refresh selected"
-                Command="{x:Bind ViewModel.RescanSelectedDirectoryCommand}">
-            </Button>
+            <Border
+                CornerRadius="5"
+                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button
+                        Style="{StaticResource CommandBarButtonStyle}"
+                        Content="&#xE762;"
+                        FontSize="16"
+                        ToolTipService.ToolTip="Switch selection mode"
+                        Command="{x:Bind ViewModel.SwitchSelectionModeCommand}">
+                    </Button>
+
+                    <Button
+                        Style="{StaticResource CommandBarButtonStyle}"
+                        Content="&#xE8F7;"
+                        FontSize="16"
+                        ToolTipService.ToolTip="Refresh selected"
+                        Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}"
+                        CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+                    </Button>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <TreeView Grid.Row="2" Grid.ColumnSpan="2"
           x:Name="FileSystemTreeView"
           Collapsed="FileSystemTreeView_Collapsed"
           Expanding="FileSystemTreeView_Expanding"
+          SelectionMode="{x:Bind ViewModel.DirectoriesSelectionMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
           ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
           SelectionChanged="FileSystemTreeView_SelectionChanged">
         </TreeView>
 
+        <ProgressBar 
+            Grid.Row="3" 
+            Grid.ColumnSpan="2"
+            Background="Transparent"
+            BorderThickness="0">
+
+            <i:Interaction.Behaviors>
+                <!--InProgress-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="4">
+                    <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorAttentionBrush}"/>
+                    <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="True"/>
+                </i:DataTriggerBehavior>
+
+                <!--Paused-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="2">
+                    <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorCautionBrush}"/>
+                    <i:ChangePropertyAction PropertyName="Value" Value="100"/>
+                    <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="False"/>
+                </i:DataTriggerBehavior>
+
+                <!--Canceled-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="3">
+                    <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}"/>
+                    <i:ChangePropertyAction PropertyName="Value" Value="100"/>
+                    <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="False"/>
+                </i:DataTriggerBehavior>
+
+                <!--Completed-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="1">
+                    <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorSuccessBrush}"/>
+                    <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="False"/>
+                    <i:ChangePropertyAction PropertyName="Value" Value="100"/>
+                </i:DataTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </ProgressBar>
     </Grid>
 </Page>

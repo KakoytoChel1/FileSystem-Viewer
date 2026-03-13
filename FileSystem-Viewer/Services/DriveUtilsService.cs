@@ -13,8 +13,6 @@ namespace FileSystemViewer.Services
 {
     public class DriveUtilsService : IDriveUtilsService
     {
-        public event Action<DirectoryNode, List<FileSystemNode>?, long, long> DrivesUpdated = null!;
-
         public DriveUtilsService() { }
 
         public List<DriveInfo> GetAvailableDrives()
@@ -31,9 +29,9 @@ namespace FileSystemViewer.Services
             return AvailableDrives;
         }
 
-        public async Task ScanProvidedDrivesAsync(ObservableCollection<DriveNode> diskNodes, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken)
+        public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode
         {
-            if (diskNodes == null || !diskNodes.Any()) { return; }
+            if (nodes == null || !nodes.Any()) { return; }
 
             var parallelOptions = new ParallelOptions()
             {
@@ -50,7 +48,7 @@ namespace FileSystemViewer.Services
             {
                 try
                 {
-                    await Parallel.ForEachAsync(diskNodes, parallelOptions, async (driveNode, cancellationToken) =>
+                    await Parallel.ForEachAsync(nodes, parallelOptions, async (driveNode, cancellationToken) =>
                     {
                         await ScanAsync(driveNode, driveNode.FullPath, scanChannel.Writer, cancellationToken, pauseResetToken);
                     });
@@ -152,11 +150,6 @@ namespace FileSystemViewer.Services
             }
             catch (OperationCanceledException) { }
             catch (Exception) { }
-        }
-
-        public async Task ScanSpecifiedDirectoryAsync(DirectoryNode directoryNode, CancellationToken token, PauseResetToken pauseResetToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }

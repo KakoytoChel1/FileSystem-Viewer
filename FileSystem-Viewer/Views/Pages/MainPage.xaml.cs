@@ -128,7 +128,7 @@ public sealed partial class MainPage : Page
     private void FileSystemTreeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
     {
         if (args.AddedItems.Count > 0)
-            ViewModel.FileSystemNodeSelectionChanged.Execute((TreeViewNode)args.AddedItems.First());
+            ViewModel.FileSystemNodeSelectionChanged.Execute(args.AddedItems);
         else if (args.RemovedItems.Count > 0)
             ViewModel.FileSystemNodeSelectionChanged.Execute(null);
     }
