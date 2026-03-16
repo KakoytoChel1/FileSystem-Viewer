@@ -8,7 +8,6 @@ namespace FileSystemViewer.Views
     {
         public DataTemplate DriveTemplate { get; set; } = null!;
         public DataTemplate DirectoryTemplate { get; set; } = null!;
-
         public DataTemplate FileTemplate { get; set; } = null!;
         
         protected override DataTemplate? SelectTemplateCore(object item)

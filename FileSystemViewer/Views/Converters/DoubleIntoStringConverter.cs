@@ -7,7 +7,7 @@ namespace FileSystemViewer.Views.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if(value is double percent)
+            if (value is double percent)
             {
                 return $"{(percent).ToString("F2")}%";
             }

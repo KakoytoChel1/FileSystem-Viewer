@@ -25,12 +25,12 @@ public sealed partial class MainPage : Page
         dispatcherQueueProvider = (Application.Current as App)!.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>();
 
 
-        foreach (var drive in ViewModel.DriveNodes)
+        foreach (DriveNode drive in ViewModel.DriveNodes)
         {
             AddDriveNode(drive);
         }
 
-        // Подписка на отслеживание изменений в главной коллекции
+        // Подписка на отслеживание изменений в главной коллекции.
         ViewModel.DriveNodes.CollectionChanged += (s, e) =>
         {
             if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
@@ -47,13 +47,14 @@ public sealed partial class MainPage : Page
         };
     }
 
-    // Ручное добавление корневих элементов (дисков) главной коллекции в TreeView
+    // Ручное добавление корневих элементов (дисков) главной коллекции в TreeView.
     private void AddDriveNode(DirectoryNode drive)
     {
         var node = new TreeViewNode
         {
             Content = drive,
-            HasUnrealizedChildren = true // Имеет ли или будет иметь в себе вложенные данные
+            // Имеет ли или будет иметь в себе вложенные данные.
+            HasUnrealizedChildren = true 
         };
         FileSystemTreeView.RootNodes.Add(node);
     }
@@ -75,7 +76,7 @@ public sealed partial class MainPage : Page
                 AddFileSystemNode(args.Node, childNode);
             }
 
-            // Устанавливает подписку на изменение вложенной коллекции, только для тех кому еще не ставили
+            // Устанавливает подписку на изменение вложенной коллекции, только для тех кому еще не ставили.
             if (dirNode.FileSystemNodes is INotifyCollectionChanged observable &&
             !_subscribedNodes.Contains(args.Node))
             {
@@ -113,8 +114,6 @@ public sealed partial class MainPage : Page
         if (childModel is FileNode fileNode)
         {
             treeViewNode.HasUnrealizedChildren = false;
-            BitmapImage bitmapImage = new BitmapImage(new Uri("ms-appx:///Assets/file.png"));
-            childModel.Icon = bitmapImage;
         }
         else if (childModel is DirectoryNode dirNode)
         {
@@ -124,7 +123,7 @@ public sealed partial class MainPage : Page
         parentNode.Children.Add(treeViewNode);
     }
 
-    // Сигнализирует об изменении выбранного элемента в TreeView
+    // Сигнализирует об изменении выбранного элемента в TreeView.
     private void FileSystemTreeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
     {
         if (args.AddedItems.Count > 0)

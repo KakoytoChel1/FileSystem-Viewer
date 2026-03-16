@@ -71,11 +71,11 @@ namespace FileSystemViewer.Services
             cancellationToken.ThrowIfCancellationRequested();
             await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
-            var CurrentDirectoryInfo = new DirectoryInfo(directory);
+            var currentDirectoryInfo = new DirectoryInfo(directory);
 
             try
             {
-                foreach (var fileInfo in CurrentDirectoryInfo.EnumerateFiles())
+                foreach (FileInfo fileInfo in currentDirectoryInfo.EnumerateFiles())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
@@ -103,7 +103,7 @@ namespace FileSystemViewer.Services
 
             try
             {
-                foreach (var subDirectoryInfo in CurrentDirectoryInfo.EnumerateDirectories())
+                foreach (DirectoryInfo subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
@@ -132,7 +132,7 @@ namespace FileSystemViewer.Services
 
             try
             {
-                await foreach (var node in reader.ReadAllAsync(cancellationToken))
+                await foreach (FileSystemNode node in reader.ReadAllAsync(cancellationToken))
                 {
                     buffer.Add(node);
 

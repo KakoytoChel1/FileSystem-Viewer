@@ -7,7 +7,7 @@ namespace FileSystemViewer.ViewModels.Tools
 {
     public static class DialogManager
     {
-        public static async Task<ContentDialogResult> ShowContentDialog<TContent>(XamlRoot root, string title,
+        public static async Task<ContentDialogResult> ShowContentDialogAsync<TContent>(XamlRoot root, string title,
             string primaryBtnText, ContentDialogButton defaultBtn, TContent content, string? secondarybtnText = null, string? closeBtnText = null)
         {
             ContentDialog dialog = new ContentDialog();

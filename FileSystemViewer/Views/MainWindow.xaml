@@ -20,14 +20,15 @@
         </Grid.RowDefinitions>
 
         <TitleBar
-            x:Name="titleBar"
+            x:Name="TitleBar"
             Grid.Row="0" 
+            Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
             Title="File Viewer"
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False"/>
 
         <Frame 
-            x:Name="rootFrame"
+            x:Name="RootFrame"
             Grid.Row="1"/>
     </Grid>
 </Window>

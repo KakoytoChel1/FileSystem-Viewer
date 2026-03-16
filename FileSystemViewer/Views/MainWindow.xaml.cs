@@ -16,7 +16,7 @@ namespace FileSystemViewer
 
             (Application.Current as App)?.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>().Initialize(this.DispatcherQueue);
 
-            rootFrame.Navigate(typeof(MainPage));
+            RootFrame.Navigate(typeof(MainPage));
         }
     }
 }

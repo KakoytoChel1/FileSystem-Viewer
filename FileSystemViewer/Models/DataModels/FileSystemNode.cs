@@ -1,17 +1,22 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using System.Collections.ObjectModel;
 
 namespace FileSystemViewer.Models
 {
     public abstract class FileSystemNode : ObservableObject
     {
-        private BitmapImage? _icon;
-        public BitmapImage? Icon
+        protected FileSystemNode(FileSystemNode? parentNode)
         {
-            get { return _icon; }
-            set { SetProperty(ref _icon, value); }
+            ParentNode = parentNode;
+        }
+
+        protected FileSystemNode(FileSystemNode? parentNode, string name, string fullPath, long size, DateTime lastModified)
+        {
+            Name = name;
+            FullPath = fullPath;
+            Size = size;
+            LastModified = lastModified;
+            ParentNode = parentNode;
         }
 
         private string _name = null!;
@@ -33,9 +38,7 @@ namespace FileSystemViewer.Models
         {
             get { return _size; }
             set 
-            {
-                SetProperty(ref _size, value);
-            }
+            { SetProperty(ref _size, value); }
         }
 
         private DateTime? _lastModified;
@@ -68,20 +71,6 @@ namespace FileSystemViewer.Models
         public void UpdatePercentForUI()
         {
             OnPropertyChanged(nameof(PercentProperty));
-        }
-
-        protected FileSystemNode(FileSystemNode? parentNode)
-        {
-            ParentNode = parentNode;
-        }
-
-        protected FileSystemNode(FileSystemNode? parentNode, string name, string fullPath, long size, DateTime lastModified)
-        {
-            Name = name;
-            FullPath = fullPath;
-            Size = size;
-            LastModified = lastModified;
-            ParentNode = parentNode;
         }
     }
 }

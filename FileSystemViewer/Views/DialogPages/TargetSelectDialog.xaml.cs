@@ -17,7 +17,7 @@ public sealed partial class TargetSelectDialog : UserControl
         ViewModel = (Application.Current as App)!.ServiceProvider.GetRequiredService<MainPageViewModel>();
     }
 
-    private void availableDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void AvailableDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         foreach (DriveInfo item in e.AddedItems)
         {

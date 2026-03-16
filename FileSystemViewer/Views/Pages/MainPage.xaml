@@ -232,7 +232,7 @@
                     Grid.Column="0">
 
                     <!--Icon-->
-                    <Image Width="20" Source="{Binding Content.Icon}"/>
+                    <Image Width="20" Source="/Assets/file.png"/>
 
                     <!--Name-->
                     <TextBlock Text="{Binding Content.Name}"/>
@@ -303,7 +303,6 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
             <RowDefinition Height="35"/>
             <RowDefinition/>
             <RowDefinition Height="10"/>
@@ -313,30 +312,9 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
-        <!--Menu bar-->
-        <MenuBar Grid.Row="0"
-                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                 Grid.ColumnSpan="2">
-            <MenuBarItem Title="File">
-                <MenuFlyoutItem Text="Select target.." Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}" CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"/>
-                <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Refresh scanning" Command="{x:Bind ViewModel.RefreshScanningCommand}" CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"/>
-                <MenuFlyoutItem Text="Rescan selected" Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}"/>
-                <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Exit"/>
-            </MenuBarItem>
-        </MenuBar>
-
-        <Border
-            Grid.Row="1"
-            Grid.RowSpan="3"
-            Grid.Column="0"
-            Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
-            Opacity="0.5"/>
-        
         <!--Buttons bar-->
         <StackPanel
-            Grid.Row="1"
+            Grid.Row="0"
             Grid.ColumnSpan="2"
             Margin="5,5,5,0"
             Orientation="Horizontal"
@@ -418,17 +396,18 @@
             </Border>
         </StackPanel>
 
-        <TreeView Grid.Row="2" Grid.ColumnSpan="2"
-          x:Name="FileSystemTreeView"
-          Collapsed="FileSystemTreeView_Collapsed"
-          Expanding="FileSystemTreeView_Expanding"
-          SelectionMode="{x:Bind ViewModel.DirectoriesSelectionMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-          ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
-          SelectionChanged="FileSystemTreeView_SelectionChanged">
-        </TreeView>
+        <TreeView 
+            Grid.Row="1" 
+            Grid.ColumnSpan="2"
+            x:Name="FileSystemTreeView"
+            Collapsed="FileSystemTreeView_Collapsed"
+            Expanding="FileSystemTreeView_Expanding"
+            SelectionMode="{x:Bind ViewModel.DirectoriesSelectionMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
+            SelectionChanged="FileSystemTreeView_SelectionChanged"/>
 
         <ProgressBar 
-            Grid.Row="3" 
+            Grid.Row="2" 
             Grid.ColumnSpan="2"
             Background="Transparent"
             BorderThickness="0">
