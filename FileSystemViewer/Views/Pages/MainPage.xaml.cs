@@ -4,8 +4,6 @@ using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
-using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -59,29 +57,26 @@ public sealed partial class MainPage : Page
         FileSystemTreeView.RootNodes.Add(node);
     }
 
-    private HashSet<TreeViewNode> _subscribedNodes = new HashSet<TreeViewNode>();
-
     // Когда определенный TreeViewItem разворачивается, запрашиваются его вложенные элементы и сразу рисуются.
     private void FileSystemTreeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
     {
-        if (args.Node.Content is DirectoryNode dirNode)
+        if (args.Node.Content is DirectoryNode directoryNode)
         {
-            dirNode.IsExpanded = true;
+            directoryNode.IsExpanded = true;
 
             if (args.Node.Children.ToList().Any())
                 return;
 
-            foreach (FileSystemNode childNode in dirNode.FileSystemNodes)
+            foreach (FileSystemNode childNode in directoryNode.FileSystemNodes)
             {
                 AddFileSystemNode(args.Node, childNode);
             }
 
             // Устанавливает подписку на изменение вложенной коллекции, только для тех кому еще не ставили.
-            if (dirNode.FileSystemNodes is INotifyCollectionChanged observable &&
-            !_subscribedNodes.Contains(args.Node))
+            if (directoryNode.FileSystemNodes is INotifyCollectionChanged observableCollection && !directoryNode.IsObserving)
             {
-                _subscribedNodes.Add(args.Node);
-                observable.CollectionChanged += (s, e) =>
+                directoryNode.IsObserving = true;
+                observableCollection.CollectionChanged += (s, e) =>
                 {
                     if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
                     {

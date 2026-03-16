@@ -36,5 +36,7 @@ namespace FileSystemViewer.Models
             get { return _isExpanded; }
             set { SetProperty(ref _isExpanded, value); }
         }
+
+        public bool IsObserving { get; set; }
     }
 }
