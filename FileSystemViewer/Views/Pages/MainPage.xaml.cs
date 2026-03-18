@@ -4,7 +4,6 @@ using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
@@ -13,14 +12,12 @@ namespace FileSystemViewer.Views.Pages;
 public sealed partial class MainPage : Page
 {
     public MainPageViewModel ViewModel { get; private set; }
-    private IDispatcherQueueProvider dispatcherQueueProvider;
 
     public MainPage()
     {
         InitializeComponent();
 
         ViewModel = (Application.Current as App)!.ServiceProvider.GetRequiredService<MainPageViewModel>();
-        dispatcherQueueProvider = (Application.Current as App)!.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>();
 
 
         foreach (DriveNode drive in ViewModel.DriveNodes)
@@ -28,7 +25,6 @@ public sealed partial class MainPage : Page
             AddDriveNode(drive);
         }
 
-        // Подписка на отслеживание изменений в главной коллекции.
         ViewModel.DriveNodes.CollectionChanged += (s, e) =>
         {
             if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
@@ -45,19 +41,17 @@ public sealed partial class MainPage : Page
         };
     }
 
-    // Ручное добавление корневих элементов (дисков) главной коллекции в TreeView.
     private void AddDriveNode(DirectoryNode drive)
     {
         var node = new TreeViewNode
         {
             Content = drive,
-            // Имеет ли или будет иметь в себе вложенные данные.
+            // There is sub collection in node or not
             HasUnrealizedChildren = true 
         };
         FileSystemTreeView.RootNodes.Add(node);
     }
 
-    // Когда определенный TreeViewItem разворачивается, запрашиваются его вложенные элементы и сразу рисуются.
     private void FileSystemTreeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
     {
         if (args.Node.Content is DirectoryNode directoryNode)
@@ -72,7 +66,6 @@ public sealed partial class MainPage : Page
                 AddFileSystemNode(args.Node, childNode);
             }
 
-            // Устанавливает подписку на изменение вложенной коллекции, только для тех кому еще не ставили.
             if (directoryNode.FileSystemNodes is INotifyCollectionChanged observableCollection && !directoryNode.IsObserving)
             {
                 directoryNode.IsObserving = true;
@@ -118,7 +111,6 @@ public sealed partial class MainPage : Page
         parentNode.Children.Add(treeViewNode);
     }
 
-    // Сигнализирует об изменении выбранного элемента в TreeView.
     private void FileSystemTreeView_SelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs args)
     {
         if (args.AddedItems.Count > 0)

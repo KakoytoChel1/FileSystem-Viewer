@@ -17,16 +17,19 @@ namespace FileSystemViewer.Services
 
         public List<DriveInfo> GetAvailableDrives()
         {
-            List<DriveInfo> AvailableDrives = new List<DriveInfo>();
+            List<DriveInfo> availableDrives = new List<DriveInfo>();
 
-            DriveInfo[] AllDrives = DriveInfo.GetDrives();
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
 
-            foreach (DriveInfo drive in AllDrives)
+            foreach (DriveInfo driveInfo in allDrives)
             {
-                AvailableDrives.Add(drive);
+                if (driveInfo.IsReady)
+                {
+                    availableDrives.Add(driveInfo);
+                }
             }
 
-            return AvailableDrives;
+            return availableDrives;
         }
 
         public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode

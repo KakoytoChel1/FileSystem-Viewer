@@ -340,26 +340,27 @@
                         Style="{StaticResource MiniCommandBarButtonStyle}"
                         ToolTipService.ToolTip="Stop"
                         Command="{x:Bind ViewModel.CancelScanningCommand}"
-                        CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
-
-                        <Image Source="/Assets/stop.png" Margin="-4"/>
+                        CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"
+                        Content="&#xEE95;"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}">
                     </Button>
 
                     <Button
                         Style="{StaticResource MiniCommandBarButtonStyle}"
                         ToolTipService.ToolTip="Resume"
-                        Command="{x:Bind ViewModel.ResumeScanningCommand}">
-
-                        <Image Source="/Assets/continue.png" Margin="-6"/>
+                        Command="{x:Bind ViewModel.ResumeScanningCommand}"
+                        Content="&#xF5B0;"
+                        Foreground="{ThemeResource SystemFillColorSuccessBrush}">
                     </Button>
 
                     <Button
                         Style="{StaticResource MiniCommandBarButtonStyle}"
                         ToolTipService.ToolTip="Pause"
-                        Command="{x:Bind ViewModel.PauseScanningCommand}">
-
-                        <Image Source="/Assets/pause.png" Margin="-4"/>
+                        Command="{x:Bind ViewModel.PauseScanningCommand}"
+                        Content="&#xF8AE;"
+                        Foreground="{ThemeResource SystemFillColorCautionBrush}">
                     </Button>
+                    
                 </StackPanel>
             </Border>
 

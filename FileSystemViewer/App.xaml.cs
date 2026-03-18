@@ -1,9 +1,11 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using FileSystemViewer.ViewModels;
+﻿using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.Services;
+using FileSystemViewer.ViewModels;
+using FileSystemViewer.ViewModels.Tools;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using System;
 
 
 namespace FileSystemViewer
@@ -17,6 +19,19 @@ namespace FileSystemViewer
         public App()
         {
             InitializeComponent();
+            UnhandledException += App_UnhandledException;
+        }
+
+        private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            var exeption = e.Exception;
+
+            if (_window != null)
+            {
+                await DialogManager.ShowContentDialogAsync(_window.Content.XamlRoot,
+                    "Error", "Okay", ContentDialogButton.Primary, $"{exeption.Message}");
+            }
         }
 
         /// <summary>
