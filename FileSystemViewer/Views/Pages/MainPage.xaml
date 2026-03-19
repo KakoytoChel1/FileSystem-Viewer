@@ -56,7 +56,8 @@
                     </TextBlock>
                 </StackPanel>
 
-                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
+                <!--Size-->
+                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0"   >
                     <StackPanel 
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
@@ -73,8 +74,18 @@
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
 
                     </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
                 </Border>
 
+                <!--File count-->
                 <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
                     <StackPanel 
                         HorizontalAlignment="Right"
@@ -91,8 +102,47 @@
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
                     </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
                 </Border>
 
+                <Border
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2">
+
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="10">
+
+                        <ProgressRing
+                            IsActive="True"
+                            Width="15"
+                            Height="15"/>
+
+                        <TextBlock
+                            FontSize="13"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="In progress..."/>
+                    </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </Border>
+
+                <!--Last modification date-->
                 <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0">
                     <StackPanel 
                         HorizontalAlignment="Right"
@@ -156,7 +206,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0">
+                <!--Size-->
+                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0"   >
                     <StackPanel 
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
@@ -171,9 +222,20 @@
                             Text="&#xE9F9;"
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+
                     </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
                 </Border>
 
+                <!--File count-->
                 <Border Background="Transparent" Grid.Column="4" Margin="2,0,2,0">
                     <StackPanel 
                         HorizontalAlignment="Right"
@@ -190,15 +252,55 @@
                             VerticalAlignment="Center"
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
                     </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
                 </Border>
 
+                <Border
+                    Margin="10,0,0,0"
+                    Grid.Column="3"
+                    Grid.ColumnSpan="2">
+
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="10">
+
+                        <ProgressRing
+                            IsActive="True"
+                            Width="15"
+                            Height="15"/>
+
+                        <TextBlock
+                            FontSize="13"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="In progress..."/>
+                    </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </Border>
+
+                <!--Last modification date-->
                 <Border Background="Transparent" Grid.Column="5" Margin="2,0,2,0">
                     <StackPanel 
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="5">
-                        
+
                         <TextBlock
                             Margin="10,0,0,0"
                             Text="{Binding Content.LastModified}"

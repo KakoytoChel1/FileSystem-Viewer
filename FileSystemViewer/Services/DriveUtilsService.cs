@@ -1,4 +1,5 @@
-﻿using FileSystemViewer.Models;
+﻿using FileSystem_Viewer.Models.DataModels;
+using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -6,8 +7,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
+using Windows.Foundation.Collections;
 
 namespace FileSystemViewer.Services
 {
@@ -32,7 +34,7 @@ namespace FileSystemViewer.Services
             return availableDrives;
         }
 
-        public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode
+        public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, IProgress<List<FileSystemNode>> progress, IProgress<DirectoryNode> completeProgress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode
         {
             if (nodes == null || !nodes.Any()) { return; }
 
@@ -43,30 +45,92 @@ namespace FileSystemViewer.Services
 
             var scanChannel = Channel.CreateBounded<FileSystemNode>(new BoundedChannelOptions(10000)
             {
-                SingleWriter = true,
+                SingleWriter = false,
                 SingleReader = true
             });
 
-            var producerTask = Task.Run(async () =>
+            List<Task> producerTasks = new List<Task>();
+
+            foreach (DirectoryNode node in nodes)
             {
-                try
+                var producerTask = Task.Run(async () =>
                 {
-                    await Parallel.ForEachAsync(nodes, parallelOptions, async (driveNode, cancellationToken) =>
+                    DirectoryNode currentNode = node;
+
+                    try
                     {
-                        await ScanAsync(driveNode, driveNode.FullPath, scanChannel.Writer, cancellationToken, pauseResetToken);
-                    });
-                }
-                catch (OperationCanceledException) { }
-                catch (Exception) { }
-                finally
+                        await Parallel.ForEachAsync(node.FileSystemNodes, parallelOptions, async (fileSystemNode, ct) =>
+                        {
+                            if (fileSystemNode is DirectoryNode directoryNode)
+                            {
+                                await ScanAsync(directoryNode, directoryNode.FullPath, scanChannel.Writer, ct, pauseResetToken);
+                            }
+                        });
+                    }
+                    catch (OperationCanceledException) { }
+                    catch (Exception) { }
+
+                    completeProgress?.Report(currentNode);
+                });
+
+                producerTasks.Add(producerTask);
+            }
+
+            var consumerTask = Task.Run(async () => await ProccessAndSendNodesAsync(scanChannel.Reader, progress, cancellationToken));
+
+            await Task.WhenAll(producerTasks);
+
+            scanChannel.Writer.Complete();
+
+            await consumerTask;
+        }
+
+        public void ScanDirectoryLevel(DirectoryNode directoryNode, string directoryPath)
+        {
+            var currentDirectoryInfo = new DirectoryInfo(directoryPath);
+
+            try
+            {
+                foreach (FileInfo fileInfo in currentDirectoryInfo.EnumerateFiles())
                 {
-                    scanChannel.Writer.Complete();
+                    try
+                    {
+                        FileNode fileNode = new FileNode(
+                            parentNode: directoryNode,
+                            name: fileInfo.Name,
+                            fullPath: fileInfo.FullName,
+                            size: fileInfo.Length,
+                            lastModified: fileInfo.LastWriteTime);
+
+                        directoryNode.FileSystemNodes.Add(fileNode);
+                        directoryNode.FileCount++;
+                        directoryNode.Size += fileInfo.Length;
+
+                    }
+                    catch (FileNotFoundException) { }
+                    catch (Exception) { }
                 }
-            });
+            }
+            catch (UnauthorizedAccessException) { }
+            catch (Exception) { }
 
-            var consumerTask = Task.Run(async () => ProccessAndSendNodesAsync(scanChannel.Reader, progress, cancellationToken));
+            try
+            {
+                foreach (DirectoryInfo subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
+                {
+                    DirectoryNode subDirectoryNode = new DirectoryNode(
+                            parentNode: directoryNode,
+                            name: subDirectoryInfo.Name,
+                            fullPath: subDirectoryInfo.FullName,
+                            size: 0,
+                            lastModified: subDirectoryInfo.LastWriteTime);
 
-            await Task.WhenAll(producerTask, consumerTask);
+                    directoryNode.FileSystemNodes.Add(subDirectoryNode);
+                }
+            }
+            catch (UnauthorizedAccessException) { }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            { }
         }
 
         private async Task ScanAsync(DirectoryNode directoryNode, string directory, ChannelWriter<FileSystemNode> writer, CancellationToken cancellationToken, PauseResetToken pauseResetToken)
