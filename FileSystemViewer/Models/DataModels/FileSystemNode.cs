@@ -38,7 +38,7 @@ namespace FileSystemViewer.Models
         {
             get { return _size; }
             set 
-            { SetProperty(ref _size, value); }
+            { _size = value; }
         }
 
         private DateTime? _lastModified;
@@ -68,9 +68,14 @@ namespace FileSystemViewer.Models
             }
         }
 
-        public void UpdatePercentForUI()
+        public void UpdatePercentProperty()
         {
             OnPropertyChanged(nameof(PercentProperty));
+        }
+
+        public void UpdateSizeProperty()
+        {
+            OnPropertyChanged(nameof(Size));
         }
     }
 }

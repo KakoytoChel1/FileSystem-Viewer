@@ -58,7 +58,7 @@ public sealed partial class MainPage : Page
         {
             directoryNode.IsExpanded = true;
 
-            if (args.Node.Children.ToList().Any())
+            if (args.Node.Children.Count > 0)
                 return;
 
             foreach (FileSystemNode childNode in directoryNode.FileSystemNodes)
