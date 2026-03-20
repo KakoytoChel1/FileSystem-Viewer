@@ -1,4 +1,5 @@
-﻿using FileSystemViewer.Services;
+﻿using FileSystem_Viewer.ViewModels;
+using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
@@ -53,7 +54,9 @@ namespace FileSystemViewer
 
             #region ViewModels
 
+            services.AddSingleton<AppState>();
             services.AddSingleton<MainPageViewModel>();
+            services.AddSingleton<ChartPageViewModel>();
             #endregion
 
             #region Services

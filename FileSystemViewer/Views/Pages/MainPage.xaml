@@ -24,7 +24,7 @@
         <DataTemplate x:Key="DriveTemplate">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="Name"/>
+                    <ColumnDefinition x:Name="Name" Width="500"/>
                     <ColumnDefinition x:Name="Size" Width="100"/>
                     <ColumnDefinition x:Name="FileCount" Width="100"/>
                     <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
@@ -117,7 +117,7 @@
         <DataTemplate x:Key="DirectoryTemplate">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="Name"/>
+                    <ColumnDefinition x:Name="Name" Width="500"/>
                     <ColumnDefinition x:Name="ProgressBar" Width="100"/>
                     <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
                     <ColumnDefinition x:Name="Size" Width="100"/>
@@ -131,13 +131,17 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Left"
                     Spacing="10"
-                    Grid.Column="0">
+                    Grid.Column="0"
+                    ToolTipService.ToolTip="{Binding Content.Name}">
 
                     <!--Icon-->
                     <Image Width="20" Source="/Assets/directory.png"/>
 
                     <!--Name-->
-                    <TextBlock Text="{Binding Content.Name}"/>
+                    <TextBlock 
+                        Width="450"
+                        Text="{Binding Content.Name}"
+                        TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
 
                 <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
@@ -216,7 +220,7 @@
         <DataTemplate x:Key="FileTemplate">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="Name"/>
+                    <ColumnDefinition x:Name="Name" Width="500"/>
                     <ColumnDefinition x:Name="ProgressBar" Width="100"/>
                     <ColumnDefinition x:Name="Percentage" Width="50"/>
                     <ColumnDefinition x:Name="Size" Width="100"/>
@@ -229,13 +233,17 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Left"
                     Spacing="10"
-                    Grid.Column="0">
+                    Grid.Column="0"
+                    ToolTipService.ToolTip="{Binding Content.Name}">
 
                     <!--Icon-->
                     <Image Width="20" Source="/Assets/file.png"/>
 
                     <!--Name-->
-                    <TextBlock Text="{Binding Content.Name}"/>
+                    <TextBlock 
+                        Width="450"
+                        Text="{Binding Content.Name}"
+                        TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
 
                 <!--Percent bar-->
@@ -305,10 +313,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="35"/>
             <RowDefinition/>
-            <RowDefinition Height="10"/>
+            <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.7*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
@@ -399,7 +406,6 @@
 
         <TreeView 
             Grid.Row="1" 
-            Grid.ColumnSpan="2"
             x:Name="FileSystemTreeView"
             Collapsed="FileSystemTreeView_Collapsed"
             Expanding="FileSystemTreeView_Expanding"
@@ -409,8 +415,8 @@
 
         <ProgressBar 
             Grid.Row="2" 
-            Grid.ColumnSpan="2"
             Background="Transparent"
+            VerticalAlignment="Top"
             BorderThickness="0">
 
             <i:Interaction.Behaviors>
