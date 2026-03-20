@@ -1,11 +1,13 @@
-﻿using FileSystem_Viewer.Models.DataModels;
-using FileSystemViewer.Models;
+﻿using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -95,12 +97,7 @@ namespace FileSystemViewer.Services
                 {
                     try
                     {
-                        FileNode fileNode = new FileNode(
-                            parentNode: directoryNode,
-                            name: fileInfo.Name,
-                            fullPath: fileInfo.FullName,
-                            size: fileInfo.Length,
-                            lastModified: fileInfo.LastWriteTime);
+                        FileNode fileNode = CreateFileNode(directoryNode, fileInfo);
 
                         directoryNode.FileSystemNodes.Add(fileNode);
                         directoryNode.FileCount++;
@@ -118,12 +115,7 @@ namespace FileSystemViewer.Services
             {
                 foreach (DirectoryInfo subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
                 {
-                    DirectoryNode subDirectoryNode = new DirectoryNode(
-                            parentNode: directoryNode,
-                            name: subDirectoryInfo.Name,
-                            fullPath: subDirectoryInfo.FullName,
-                            size: 0,
-                            lastModified: subDirectoryInfo.LastWriteTime);
+                    DirectoryNode subDirectoryNode = CreateDirectoryNode(directoryNode, subDirectoryInfo);
 
                     directoryNode.FileSystemNodes.Add(subDirectoryNode);
                 }
@@ -149,12 +141,7 @@ namespace FileSystemViewer.Services
 
                     try
                     {
-                        FileNode fileNode = new FileNode(
-                            parentNode: directoryNode,
-                            name: fileInfo.Name,
-                            fullPath: fileInfo.FullName,
-                            size: fileInfo.Length,
-                            lastModified: fileInfo.LastWriteTime);
+                        FileNode fileNode = CreateFileNode(directoryNode, fileInfo);
 
                         await writer.WriteAsync(fileNode);
                     }
@@ -175,12 +162,7 @@ namespace FileSystemViewer.Services
                     cancellationToken.ThrowIfCancellationRequested();
                     await pauseResetToken.IfPauseRequestedPauseAsync(cancellationToken);
 
-                    DirectoryNode subDirectoryNode = new DirectoryNode(
-                            parentNode: directoryNode,
-                            name: subDirectoryInfo.Name,
-                            fullPath: subDirectoryInfo.FullName,
-                            size: 0,
-                            lastModified: subDirectoryInfo.LastWriteTime);
+                    DirectoryNode subDirectoryNode = CreateDirectoryNode(directoryNode, subDirectoryInfo);
 
                     await writer.WriteAsync(subDirectoryNode);
 
@@ -217,6 +199,26 @@ namespace FileSystemViewer.Services
             }
             catch (OperationCanceledException) { }
             catch (Exception) { }
+        }
+
+        private FileNode CreateFileNode(DirectoryNode parent, FileInfo fileInfo)
+        {
+            return new FileNode(
+                parentNode: parent,
+                name: fileInfo.Name,
+                fullPath: fileInfo.FullName,
+                size: fileInfo.Length,
+                lastModified: fileInfo.LastWriteTime);
+        }
+
+        private DirectoryNode CreateDirectoryNode(DirectoryNode parent, DirectoryInfo dirInfo)
+        {
+            return new DirectoryNode(
+                parentNode: parent,
+                name: dirInfo.Name,
+                fullPath: dirInfo.FullName,
+                size: 0,
+                lastModified: dirInfo.LastWriteTime);
         }
     }
 }
