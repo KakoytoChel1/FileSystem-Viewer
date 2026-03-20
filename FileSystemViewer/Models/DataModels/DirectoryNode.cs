@@ -27,7 +27,7 @@ namespace FileSystemViewer.Models
         public long FileCount
         {
             get { return _fileCount; }
-            set { SetProperty(ref _fileCount, value); }
+            set { _fileCount = value; }
         }
 
         private bool _isExpanded;
@@ -38,5 +38,17 @@ namespace FileSystemViewer.Models
         }
 
         public bool IsObserving { get; set; }
+
+        private bool _isInProgress;
+        public bool IsInProgress
+        {
+            get { return _isInProgress; }
+            set { SetProperty(ref _isInProgress, value); }
+        }
+
+        public void UpdateFileCountProperty()
+        {
+            OnPropertyChanged(nameof(FileCount));
+        }
     }
 }

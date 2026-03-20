@@ -1,4 +1,5 @@
-﻿using FileSystemViewer.Models;
+﻿using FileSystem_Viewer.Models.DataModels;
+using FileSystemViewer.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +12,8 @@ namespace FileSystemViewer.Services.Interfaces
     public interface IDriveUtilsService
     {
         public List<DriveInfo> GetAvailableDrives();
-        public Task ScanProvidedNodesAsync<T>(ObservableCollection<T> fileSystemNodes, IProgress<List<FileSystemNode>> progress, CancellationToken token, PauseResetToken pauseResetToken) where T : DirectoryNode;
+        public Task ScanProvidedNodesAsync<T>(ObservableCollection<T> fileSystemNodes, IProgress<List<FileSystemNode>> progress, IProgress<DirectoryNode> completeProgress, CancellationToken token, PauseResetToken pauseResetToken) where T : DirectoryNode;
+
+        public void ScanDirectoryLevel(DirectoryNode directoryNode, string directoryPath);
     }
 }

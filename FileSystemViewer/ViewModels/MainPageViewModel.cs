@@ -182,6 +182,9 @@ namespace FileSystemViewer.ViewModels
                     driveNode.FileSystemNodes.Clear();
                     driveNode.FileCount = 0;
                     driveNode.Size = 0;
+
+                    driveNode.UpdateSizeProperty();
+                    driveNode.UpdateFileCountProperty();
                 }
 
                 if (CurrentScanningCancellationTokenSource != null)
@@ -217,6 +220,10 @@ namespace FileSystemViewer.ViewModels
                         directoryNode.FileSystemNodes.Clear();
                         directoryNode.FileCount = 0;
                         directoryNode.Size = 0;
+
+                        directoryNode.UpdateSizeProperty();
+                        directoryNode.UpdateFileCountProperty();
+                        directoryNode.UpdatePercentProperty();
                     }
 
                     await ScanSelectedTargetAsync(SelectedDirectoryNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
@@ -296,7 +303,6 @@ namespace FileSystemViewer.ViewModels
         {
             var progress = new Progress<List<FileSystemNode>>(data =>
             {
-                //Stores the following values: file size and number of files for each parent node in this data set (up to 100 nodes)
                 Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
 
                 foreach (FileSystemNode node in data)
@@ -318,7 +324,7 @@ namespace FileSystemViewer.ViewModels
                         {
                             values = new TotalScanValues();
                             values.TotalSizeInBytes = fileNode.Size;
-                            values.TotalFileCount++;    
+                            values.TotalFileCount++;
                             totalScanValues.Add(parentNode, values);
                         }
                     }
@@ -341,12 +347,35 @@ namespace FileSystemViewer.ViewModels
                 }
             });
 
+            // Created to change scanning status for particular drive/directory.
+            var completeProgress = new Progress<DirectoryNode>(directoryNode =>
+            {
+                directoryNode.IsInProgress = false;
+                directoryNode.UpdatePercentProperty();
+                directoryNode.UpdateFileCountProperty();
+                directoryNode.UpdateSizeProperty();
+            });
+
             CurrentScanningState = ScanningStates.InProgress;
 
-            await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, cts.Token, prts.Token);
+            foreach (DirectoryNode directoryNode in target)
+            {
+                directoryNode.IsInProgress = true;
+                DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
+            }
+
+            await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, completeProgress, cts.Token, prts.Token);
+
+            foreach (DirectoryNode directoryNode in target)
+            {
+                directoryNode.IsInProgress = false;
+            }
 
             foreach (DriveNode drive in DriveNodes)
             {
+                drive.UpdateFileCountProperty();
+                drive.UpdateSizeProperty();
+
                 if (drive.IsExpanded)
                 {
                     RefreshExpandedNodesRecursive(drive.FileSystemNodes);
@@ -376,11 +405,17 @@ namespace FileSystemViewer.ViewModels
         {
             foreach (FileSystemNode node in nodes)
             {
-                node.UpdatePercentForUI();
+                node.UpdatePercentProperty();
+                node.UpdateSizeProperty();
 
-                if (node is DirectoryNode directoryNode && directoryNode.IsExpanded && directoryNode.FileSystemNodes.Any())
+                if (node is DirectoryNode directoryNode)
                 {
-                    RefreshExpandedNodesRecursive(directoryNode.FileSystemNodes);
+                    directoryNode.UpdateFileCountProperty();
+
+                    if (directoryNode.IsExpanded && directoryNode.FileSystemNodes.Any())
+                    {
+                        RefreshExpandedNodesRecursive(directoryNode.FileSystemNodes);
+                    }
                 }
             }
         }
