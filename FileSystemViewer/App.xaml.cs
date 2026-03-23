@@ -63,6 +63,7 @@ namespace FileSystemViewer
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
+            services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
             #endregion
 
             ServiceProvider = services.BuildServiceProvider();

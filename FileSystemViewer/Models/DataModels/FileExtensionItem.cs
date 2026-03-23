@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System.Drawing;
+using Windows.UI;
 
 namespace FileSystem_Viewer.Models.DataModels
 {
@@ -9,8 +9,8 @@ namespace FileSystem_Viewer.Models.DataModels
 
         private long _commonSize = 0;
 
-        public string? Extension { get; set; }
-        public Color Colour { get; set; }
+        public string Extension { get; set; } = null!;
+        public Color? Color { get; set; }
 
         public long Size { get; set; }
         public long FileCount { get; set; }

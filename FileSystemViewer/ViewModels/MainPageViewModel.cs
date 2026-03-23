@@ -5,8 +5,12 @@ using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
 using FileSystemViewer.Views.DialogPages;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,7 +24,7 @@ namespace FileSystemViewer.ViewModels
 {
     public class MainPageViewModel : ViewModelBase
     {
-        public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, appState)
+        public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState)
         {
             DriveNodes = new ObservableCollection<DriveNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
@@ -125,6 +129,8 @@ namespace FileSystemViewer.ViewModels
                     if (!SelectedTargetDrives.Any()) { return; }
 
                     DriveNodes.Clear();
+                    FileExtentionItemService.ClearFileExtensionCollection();
+                    ApplicationState.FileExtensionItems.Clear();
 
                     if (CurrentScanningCancellationTokenSource != null)
                         CurrentScanningCancellationTokenSource.Dispose();
@@ -141,6 +147,8 @@ namespace FileSystemViewer.ViewModels
                 else
                 {
                     DriveNodes.Clear();
+                    FileExtentionItemService.ClearFileExtensionCollection();
+                    ApplicationState.FileExtensionItems.Clear();
 
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
@@ -177,6 +185,9 @@ namespace FileSystemViewer.ViewModels
 
             if(dialogResult == ContentDialogResult.Primary)
             {
+                FileExtentionItemService.ClearFileExtensionCollection();
+                ApplicationState.FileExtensionItems.Clear();
+
                 foreach (DirectoryNode driveNode in DriveNodes)
                 {
                     driveNode.FileSystemNodes.Clear();
@@ -327,6 +338,8 @@ namespace FileSystemViewer.ViewModels
                             values.TotalFileCount++;
                             totalScanValues.Add(parentNode, values);
                         }
+
+                        FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
                     }
                 }
 
@@ -382,6 +395,16 @@ namespace FileSystemViewer.ViewModels
                 }
             }
 
+            long sum = DriveNodes.Sum(dn => dn.Size);
+
+            foreach (FileExtensionItem item in FileExtentionItemService.GetOrderedExtensionCollection())
+            {
+                ApplicationState.FileExtensionItems.Add(item);
+                item.UpdateParameters(sum);
+            }
+
+            UpdateChart(ApplicationState.FileExtensionItems);
+
             if (CurrentScanningCancellationTokenSource != null)
                 CurrentScanningCancellationTokenSource.Dispose();
 
@@ -417,6 +440,43 @@ namespace FileSystemViewer.ViewModels
                         RefreshExpandedNodesRecursive(directoryNode.FileSystemNodes);
                     }
                 }
+            }
+        }
+
+        public void UpdateChart(IEnumerable<FileExtensionItem> fileItems)
+        {
+            ApplicationState.FileExtensionSeriesCollection.Clear();
+
+            var validItems = fileItems
+                .Where(item => item.Percent >= 0.1)
+                .ToList();
+
+            var seriesList = validItems.Select(item =>
+            {
+                var pieSeries = new PieSeries<long>
+                {
+                    Values = new long[] { item.Size },
+                    Name = item.Extension,
+
+                    ToolTipLabelFormatter = point => $"{item.Percent:F2}%",
+
+                    InnerRadius = 0,
+                    HoverPushout = 5,
+                    Pushout = 2
+                };
+
+                if (item.Color.HasValue)
+                {
+                    var winColor = item.Color.Value;
+                    pieSeries.Fill = new SolidColorPaint(new SKColor(winColor.R, winColor.G, winColor.B, winColor.A));
+                }
+
+                return (ISeries)pieSeries;
+            });
+
+            foreach (var series in seriesList)
+            {
+                ApplicationState.FileExtensionSeriesCollection.Add(series);
             }
         }
         #endregion

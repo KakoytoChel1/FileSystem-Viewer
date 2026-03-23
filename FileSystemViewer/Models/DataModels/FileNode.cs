@@ -6,9 +6,11 @@ namespace FileSystemViewer.Models
     {
         public FileNode(FileSystemNode parentNode) : base(parentNode) { }
 
-        public FileNode(FileSystemNode parentNode, string name, string fullPath, long size, DateTime lastModified) : base(parentNode, name, fullPath, size, lastModified)
+        public FileNode(FileSystemNode parentNode, string name, string fullPath, long size, string extension, DateTime lastModified) : base(parentNode, name, fullPath, size, lastModified)
         {
-
+            Extension = extension;
         }
+
+        public string Extension { get; set; } = null!;
     }
 }

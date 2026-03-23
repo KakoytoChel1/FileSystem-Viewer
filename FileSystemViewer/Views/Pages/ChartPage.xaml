@@ -8,7 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
+    xmlns:converters="using:FileSystemViewer.Views.Converters"
     Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
+
+    <Page.Resources>
+        <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
+        <converters:DoubleIntoStringConverter x:Key="DoubleIntoStringConverter"/>
+        <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
+    </Page.Resources>
 
     <Grid>
         <Pivot>
@@ -28,11 +35,87 @@
                     </StackPanel>
                 </PivotItem.Header>
 
-                <Grid>
-                    <ListView>
-                        
-                    </ListView>
-                </Grid>
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Visible" 
+                    VerticalScrollBarVisibility="Disabled"
+                    HorizontalScrollMode="Enabled"
+                    VerticalScrollMode="Disabled">
+                    
+                    <Grid>
+                        <ListView
+                            ItemsSource="{x:Bind ViewModel.ApplicationState.FileExtensionItems}"
+                            ShowsScrollingPlaceholders="True">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="ListViewItem">
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="auto" MinWidth="100"/>
+                                            <ColumnDefinition Width="auto" MinWidth="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!--Extension-->
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            TextTrimming="CharacterEllipsis"
+                                            Text="{Binding Extension}"
+                                            ToolTipService.ToolTip="{Binding Extension}"/>
+
+                                        <!--Color-->
+                                        <Border
+                                            Grid.Column="1"
+                                            Width="25"
+                                            Height="25"
+                                            Background="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                            CornerRadius="6"/>
+
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right"
+                                            Grid.Column="2"
+                                            Text="{Binding Percent, Converter={StaticResource DoubleIntoStringConverter}}"/>
+
+                                        <!--Size-->
+                                        <StackPanel
+                                            Grid.Column="3"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right"
+                                            Orientation="Horizontal"
+                                            Spacing="5">
+
+                                            <TextBlock
+                                                Text="{Binding Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"/>
+
+                                            <FontIcon
+                                                FontSize="14"
+                                                Glyph="&#xE9F9;"/>
+                                        </StackPanel>
+
+                                        <!--File count-->
+                                        <StackPanel
+                                            Grid.Column="4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="5">
+
+                                            <TextBlock
+                                                Text="{Binding FileCount}"/>
+
+                                            <FontIcon
+                                                FontSize="14"
+                                                Glyph="&#xE7C3;"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </ScrollViewer>
             </PivotItem>
 
             <PivotItem>
@@ -53,7 +136,9 @@
 
                 <Grid>
                     <lvc:PieChart
-                        Background="Transparent"/>
+                        Series="{x:Bind ViewModel.ApplicationState.FileExtensionSeriesCollection}"
+                        Background="Transparent"
+                        TooltipPosition="Center"/>
                 </Grid>
             </PivotItem>
         </Pivot>
