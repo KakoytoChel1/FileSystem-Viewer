@@ -9,16 +9,23 @@
     mc:Ignorable="d"
     xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
     Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
 
     <Page.Resources>
         <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
         <converters:DoubleIntoStringConverter x:Key="DoubleIntoStringConverter"/>
         <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
+        <converters:EnumPropertyToIntConverter x:Key="EnumPropertyToIntConverter"/>
     </Page.Resources>
 
     <Grid>
-        <Pivot>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Pivot Grid.Row="1">
             <PivotItem>
                 <PivotItem.Header>
                     <StackPanel
@@ -142,5 +149,69 @@
                 </Grid>
             </PivotItem>
         </Pivot>
+
+        <Expander
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            VerticalAlignment="Top"
+            Canvas.ZIndex="1"
+            Margin="10,10,10,0"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch">
+
+            <Expander.Header>
+                <StackPanel
+                    Spacing="10"
+                    Orientation="Horizontal">
+
+                    <FontIcon
+                        Glyph="&#xED25;"/>
+
+                    <TextBlock
+                        Text="Directories"/>
+                </StackPanel>
+            </Expander.Header>
+
+            <ListView 
+                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                Margin="-15"
+                SelectionMode="None"
+                ItemsSource="{x:Bind ViewModel.ApplicationState.ScannedRootNodeNames}">
+            </ListView>
+        </Expander>
+
+        <ProgressRing
+            Width="45"
+            Height="45"
+            Grid.Row="1">
+
+            <i:Interaction.Behaviors>
+                <!--Paused-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="2">
+                    <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                </i:DataTriggerBehavior>
+
+                <!--In progress-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="4">
+                    <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                </i:DataTriggerBehavior>
+
+                <!--Completed-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="1">
+                    <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                </i:DataTriggerBehavior>
+
+                <!--Canceled-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="3">
+                    <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                </i:DataTriggerBehavior>
+
+                <!--None-->
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="0">
+                    <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                </i:DataTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </ProgressRing>
     </Grid>
 </Page>

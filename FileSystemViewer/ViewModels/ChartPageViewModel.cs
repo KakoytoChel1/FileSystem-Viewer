@@ -1,7 +1,5 @@
 ﻿using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
-using LiveChartsCore;
-using System.Collections.ObjectModel;
 
 namespace FileSystem_Viewer.ViewModels
 {
@@ -11,7 +9,5 @@ namespace FileSystem_Viewer.ViewModels
         {
             
         }
-
-        
     }
 }

@@ -1,4 +1,4 @@
-﻿using FileSystemViewer.ViewModels;
+﻿using FileSystem_Viewer.ViewModels;
 using Microsoft.UI.Xaml.Data;
 using System;
 
@@ -8,7 +8,7 @@ namespace FileSystemViewer.Views.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is MainPageViewModel.ScanningStates state)
+            if (value is AppState.ScanningStates state)
             {
                 return (int)state;
             }

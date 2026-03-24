@@ -523,27 +523,27 @@
 
             <i:Interaction.Behaviors>
                 <!--InProgress-->
-                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="4">
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="4">
                     <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorAttentionBrush}"/>
                     <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="True"/>
                 </i:DataTriggerBehavior>
 
                 <!--Paused-->
-                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="2">
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="2">
                     <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorCautionBrush}"/>
                     <i:ChangePropertyAction PropertyName="Value" Value="100"/>
                     <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="False"/>
                 </i:DataTriggerBehavior>
 
                 <!--Canceled-->
-                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="3">
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="3">
                     <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}"/>
                     <i:ChangePropertyAction PropertyName="Value" Value="100"/>
                     <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="False"/>
                 </i:DataTriggerBehavior>
 
                 <!--Completed-->
-                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="1">
+                <i:DataTriggerBehavior Binding="{x:Bind ViewModel.ApplicationState.CurrentScanningState, Mode=OneWay, Converter={StaticResource EnumPropertyToIntConverter}}" ComparisonCondition="Equal" Value="1">
                     <i:ChangePropertyAction PropertyName="Foreground" Value="{ThemeResource SystemFillColorSuccessBrush}"/>
                     <i:ChangePropertyAction PropertyName="IsIndeterminate" Value="False"/>
                     <i:ChangePropertyAction PropertyName="Value" Value="100"/>
