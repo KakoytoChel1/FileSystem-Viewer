@@ -1,0 +1,83 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ModernControls">
+
+    <Style TargetType="local:Treemap">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:Treemap">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        
+                        CornerRadius="5">
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition x:Name="TitleBar" Height="35"/>
+                                <RowDefinition x:Name="Content"/>
+                            </Grid.RowDefinitions>
+
+                            <Border
+                                x:Name="titleBorder"
+                                Background="{ThemeResource ControlAltFillColorTertiaryBrush}"
+                                Grid.Row="0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+                                        Margin="5,0,0,0"
+                                        Grid.Column="0"
+                                        Height="25"
+                                        Width="35">
+
+                                        <Viewbox>
+                                            <FontIcon
+                                                Glyph="&#xE72B;"/>
+                                        </Viewbox>
+                                    </Button>
+
+                                    <Grid
+                                        Grid.Column="1"
+                                        x:Name="CurentSectionName">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition x:Name="SectionNameColumn"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <FontIcon
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Glyph="&#xE81B;"/>
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="13"
+                                            Width="{Binding ElementName=SectionNameColumn, Path=ActualWidth}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            VerticalAlignment="Center"
+                                            Text="C:/Title/HelloWorld/"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTipService.ToolTip="C:/Title/HelloWorld/"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <Grid
+                                x:Name="content"
+                                Grid.Row="1">
+                                
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

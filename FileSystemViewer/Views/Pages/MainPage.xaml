@@ -13,6 +13,8 @@
     xmlns:view="using:FileSystemViewer.Views"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:mControls="using:ModernControls"
     x:Name="mainPage">
 
     <Page.Resources>
