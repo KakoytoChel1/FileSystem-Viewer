@@ -1,18 +1,21 @@
-﻿using FileSystem_Viewer.ViewModels;
-using Microsoft.UI.Xaml.Data;
+﻿using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using System;
+using Windows.UI;
 
 namespace FileSystemViewer.Views.Converters
 {
-    public class EnumPropertyToIntConverter : IValueConverter
+    public class ColorToSolidColorBrushConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is AppState.ScanningStates state)
+            if (value is Color color)
             {
-                return (int)state;
+                return new SolidColorBrush(color);
             }
-            return 0;
+
+            // Gray color #808080
+            return new SolidColorBrush(Color.FromArgb(255, 128, 128, 128));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

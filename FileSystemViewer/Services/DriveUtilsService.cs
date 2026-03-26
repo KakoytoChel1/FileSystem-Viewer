@@ -1,23 +1,25 @@
-﻿using FileSystemViewer.Models;
+﻿using FileSystem_Viewer.ViewModels;
+using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Windows.Foundation.Collections;
 
 namespace FileSystemViewer.Services
 {
     public class DriveUtilsService : IDriveUtilsService
     {
-        public DriveUtilsService() { }
+        private IFileExtentionItemService _fileExtentionItemService;
+
+        public DriveUtilsService(IFileExtentionItemService fileExtentionItemService)
+        {
+            _fileExtentionItemService = fileExtentionItemService;
+        }
 
         public List<DriveInfo> GetAvailableDrives()
         {
@@ -102,6 +104,8 @@ namespace FileSystemViewer.Services
                         directoryNode.FileSystemNodes.Add(fileNode);
                         directoryNode.FileCount++;
                         directoryNode.Size += fileInfo.Length;
+
+                        _fileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
 
                     }
                     catch (FileNotFoundException) { }
@@ -208,17 +212,18 @@ namespace FileSystemViewer.Services
                 name: fileInfo.Name,
                 fullPath: fileInfo.FullName,
                 size: fileInfo.Length,
-                lastModified: fileInfo.LastWriteTime);
+                lastModified: fileInfo.LastWriteTime,
+                extension: fileInfo.Extension);
         }
 
-        private DirectoryNode CreateDirectoryNode(DirectoryNode parent, DirectoryInfo dirInfo)
+        private DirectoryNode CreateDirectoryNode(DirectoryNode parent, DirectoryInfo directoryInfo)
         {
             return new DirectoryNode(
                 parentNode: parent,
-                name: dirInfo.Name,
-                fullPath: dirInfo.FullName,
+                name: directoryInfo.Name,
+                fullPath: directoryInfo.FullName,
                 size: 0,
-                lastModified: dirInfo.LastWriteTime);
+                lastModified: directoryInfo.LastWriteTime);
         }
     }
 }

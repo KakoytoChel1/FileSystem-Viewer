@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     Title="FileSystem-Viewer">
 
     <Window.SystemBackdrop>
@@ -27,8 +28,31 @@
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False"/>
 
-        <Frame 
-            x:Name="RootFrame"
-            Grid.Row="1"/>
+        <Grid
+            Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="0.4*"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Visible" 
+                VerticalScrollBarVisibility="Disabled"
+                HorizontalScrollMode="Enabled"
+                VerticalScrollMode="Disabled">
+                <Frame 
+                    x:Name="RootFrame"
+                    Grid.Column="0"/>
+            </ScrollViewer>
+
+            <controls:GridSplitter
+                Grid.Column="1"/>
+
+            <Frame
+                x:Name="ChartFrame"
+                Grid.Column="2"/>
+        </Grid>
     </Grid>
 </Window>
