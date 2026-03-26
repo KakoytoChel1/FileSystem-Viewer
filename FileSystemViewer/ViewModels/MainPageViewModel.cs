@@ -433,37 +433,72 @@ namespace FileSystemViewer.ViewModels
         {
             ApplicationState.FileExtensionSeriesCollection.Clear();
 
+            List<FileExtensionItem> otherItems = new List<FileExtensionItem>();
+
             var validItems = fileItems
-                .Where(item => item.Percent >= 0.1)
-                .ToList();
+                .Where((item) => 
+                { 
+                    if (item.Percent <= 1)
+                    {
+                        otherItems.Add(item);
+                        return false;
+                    }
 
-            var seriesList = validItems.Select(item =>
-            {
-                var pieSeries = new PieSeries<long>
-                {
-                    Values = new long[] { item.Size },
-                    Name = item.Extension,
+                    return true; 
 
-                    ToolTipLabelFormatter = point => $"{item.Percent:F2}%",
+                }).ToList();
 
-                    InnerRadius = 0,
-                    HoverPushout = 5,
-                    Pushout = 2
-                };
-
-                if (item.Color.HasValue)
-                {
-                    var winColor = item.Color.Value;
-                    pieSeries.Fill = new SolidColorPaint(new SKColor(winColor.R, winColor.G, winColor.B, winColor.A));
-                }
-
-                return (ISeries)pieSeries;
-            });
+            var seriesList = validItems.Select(TransformIntoSeries);
+            var otherSeries = ArrangeOtherSeries(otherItems);
 
             foreach (var series in seriesList)
             {
                 ApplicationState.FileExtensionSeriesCollection.Add(series);
             }
+            ApplicationState.FileExtensionSeriesCollection.Add(otherSeries);
+        }
+
+        private ISeries TransformIntoSeries(FileExtensionItem item)
+        {
+            var pieSeries = new PieSeries<long>
+            {
+                Values = new long[] { item.Size },
+                Name = item.Extension,
+
+                ToolTipLabelFormatter = point => $"{item.Percent:F2}%",
+
+                InnerRadius = 0,
+                HoverPushout = 5,
+                Pushout = 2
+            };
+
+            if (item.Color.HasValue)
+            {
+                var winColor = item.Color.Value;
+                pieSeries.Fill = new SolidColorPaint(new SKColor(winColor.R, winColor.G, winColor.B, winColor.A));
+            }
+
+            return pieSeries;
+        }
+
+        private ISeries ArrangeOtherSeries(List<FileExtensionItem> others)
+        {
+            PieSeries<long> pieSeries = new PieSeries<long>()
+            {
+                Values = new long[] { others.Sum(i => i.Size) },
+
+                Name = "Other",
+                ToolTipLabelFormatter = point => $"{others.Sum(i => i.Percent):F2}%",
+
+                InnerRadius = 0,
+                HoverPushout = 5,
+                Pushout = 2
+            };
+
+            var otherColor = ColorsByFileExtension.OtherColor;
+            pieSeries.Fill = new SolidColorPaint(new SKColor(otherColor.R, otherColor.G, otherColor.B, otherColor.A));
+
+            return pieSeries;
         }
         #endregion
     }
