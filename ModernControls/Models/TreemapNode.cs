@@ -10,5 +10,6 @@ namespace ModernControls.Models
         public double Percent { get; set; }
         public Color BackgroundColor { get; set; }
         public List<TreemapNode> Children { get; set; } = new List<TreemapNode>();
+        public TreemapNode Parent { get; set; }
     }
 }

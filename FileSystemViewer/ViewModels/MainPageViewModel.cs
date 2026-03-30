@@ -10,6 +10,7 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using ModernControls.Models;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,7 @@ namespace FileSystemViewer.ViewModels
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
             SelectedDirectoryNodes = new ObservableCollection<DirectoryNode>();
+            TreemapNodes = new ObservableCollection<TreemapNode>();
 
             SelectedScanningTargetIndex = 0;
             ApplicationState.CurrentScanningState = AppState.ScanningStates.None;
@@ -64,6 +66,7 @@ namespace FileSystemViewer.ViewModels
         public ObservableCollection<DriveInfo> AllAvailableDrives { get; set; }
         public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
         public ObservableCollection<DirectoryNode> SelectedDirectoryNodes { get; set; }
+        public ObservableCollection<TreemapNode> TreemapNodes { get; set; }
 
         // Selection mode: All drives (0) or selected (1).
         private int _selectedScanningTargetIndex;

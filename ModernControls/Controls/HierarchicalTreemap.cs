@@ -10,7 +10,7 @@ namespace ModernControls.Controls
 {
     [TemplatePart(Name = "PART_BackButton", Type = typeof(Button))]
     [TemplatePart(Name = "PART_Canvas", Type = typeof(Canvas))]
-    public sealed partial class Treemap : Control
+    public sealed partial class HierarchicalTreemap : Control
     {
         private Button _backButton;
         private Canvas _canvas;
@@ -19,9 +19,11 @@ namespace ModernControls.Controls
 
         private DispatcherTimer _resizeTimer;
 
-        public Treemap()
+        private Stack<HistoryLevel> _history = new();
+
+        public HierarchicalTreemap()
         {
-            DefaultStyleKey = typeof(Treemap);
+            DefaultStyleKey = typeof(HierarchicalTreemap);
             this.Loaded += Treemap_Loaded;
 
             _resizeTimer = new DispatcherTimer();
@@ -38,8 +40,8 @@ namespace ModernControls.Controls
             DependencyProperty.Register(
                 nameof(CurrentLevelName),
                 typeof(string),
-                typeof(Treemap),
-                new PropertyMetadata("..."));
+                typeof(HierarchicalTreemap),
+                new PropertyMetadata("../"));
 
         public string CurrentLevelName
         {
@@ -47,11 +49,37 @@ namespace ModernControls.Controls
             set => SetValue(CurrentLevelNameProperty, value);
         }
 
+        public static readonly DependencyProperty SeparatorProperty =
+            DependencyProperty.Register(
+                nameof(Separator),
+                typeof(string),
+                typeof(HierarchicalTreemap),
+                new PropertyMetadata("/"));
+
+        public string Separator
+        {
+            get => (string)GetValue(SeparatorProperty);
+            set => SetValue(SeparatorProperty, value);
+        }
+
+        public static readonly DependencyProperty GlyphIconProperty =
+            DependencyProperty.Register(
+                nameof(GlyphIcon),
+                typeof(string),
+                typeof(HierarchicalTreemap),
+                new PropertyMetadata("\uE76C"));
+
+        public string GlyphIcon
+        {
+            get => (string)GetValue(GlyphIconProperty);
+            set => SetValue(GlyphIconProperty, value);
+        }
+
         public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register(
                 nameof(ItemsSource),
                 typeof(IEnumerable<TreemapNode>),
-                typeof(Treemap),
+                typeof(HierarchicalTreemap),
                 new PropertyMetadata(null, OnItemsSourceChanged));
 
         public IEnumerable<TreemapNode> ItemsSource
@@ -62,7 +90,7 @@ namespace ModernControls.Controls
 
         private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is Treemap treemap)
+            if (d is HierarchicalTreemap treemap)
             {
                 treemap.RenderTreemap();
             }
@@ -101,9 +129,15 @@ namespace ModernControls.Controls
 
         private void OnBackButtonClicked(object sender, RoutedEventArgs e)
         {
-            //...
-        }
+            if (_history.Any())
+            {
+                var previousState = _history.Pop();
 
+                this.CurrentLevelName = previousState.LevelName;
+
+                this.ItemsSource = previousState.Items;
+            }
+        }
 
         private void RenderTreemap()
         {
@@ -113,6 +147,13 @@ namespace ModernControls.Controls
                 return;
             }
 
+            foreach (var child in _canvas.Children)
+            {
+                if (child is TreemapItem oldItem)
+                {
+                    oldItem.ItemClicked -= OnTreemapItemClicked;
+                }
+            }
             _canvas.Children.Clear();
 
             double totalScreenArea = _canvas.ActualWidth * _canvas.ActualHeight;
@@ -139,11 +180,25 @@ namespace ModernControls.Controls
                     Height = wrappedNode.Bounds.Height
                 };
 
+                itemControl.ItemClicked += OnTreemapItemClicked;
+
                 Canvas.SetLeft(itemControl, wrappedNode.Bounds.X);
                 Canvas.SetTop(itemControl, wrappedNode.Bounds.Y);
 
                 _canvas.Children.Add(itemControl);
             }
+        }
+
+        private void OnTreemapItemClicked(object sender, TreemapNode clickedNode)
+        {
+            if (clickedNode.Children == null || !clickedNode.Children.Any())
+                return;
+
+            _history.Push(new HistoryLevel(this.ItemsSource, this.CurrentLevelName));
+
+            this.CurrentLevelName = $"{this.CurrentLevelName}{clickedNode.LabeledName}{this.Separator}";
+
+            this.ItemsSource = clickedNode.Children;
         }
     }
 }

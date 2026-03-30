@@ -62,8 +62,9 @@
                 <Grid
                     Grid.Row="2">
 
-                    <mControls:Treemap
-                        x:Name="MyTreemap"
+                    <mControls:HierarchicalTreemap
+                        x:Name="hierarchicalTreemap"
+                        GlyphIcon="&#xE838;"
                         Grid.Row="2"/>
                 </Grid>
             </Grid>
