@@ -9,6 +9,8 @@ namespace FileSystemViewer
 {
     public sealed partial class MainWindow : Window
     {
+        public MainPageViewModel? MainPageViewModel { get; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -20,9 +22,7 @@ namespace FileSystemViewer
             RootFrame.Navigate(typeof(MainPage));
             ChartFrame.Navigate(typeof(ChartPage));
 
-            var mainPageViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<MainPageViewModel>();
-
-            hierarchicalTreemap.ItemsSource = mainPageViewModel?.TreemapNodes;
+            MainPageViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<MainPageViewModel>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Windows.UI;
 
 namespace ModernControls.Models
@@ -8,8 +9,9 @@ namespace ModernControls.Models
         public string LabeledName { get; set; }
         public bool IsContainer { get; set; }
         public double Percent { get; set; }
+        public long Size { get; set; }
         public Color BackgroundColor { get; set; }
-        public List<TreemapNode> Children { get; set; } = new List<TreemapNode>();
+        public ObservableCollection<TreemapNode> Children { get; set; } = new ObservableCollection<TreemapNode>();
         public TreemapNode Parent { get; set; }
     }
 }

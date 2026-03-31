@@ -59,7 +59,7 @@ namespace FileSystemViewer.Models
         {
             get
             {
-                if (ParentNode == null) return 100;
+                if (ParentNode == null) return -1;
 
                 if (ParentNode.Size == 0) return 0;
 

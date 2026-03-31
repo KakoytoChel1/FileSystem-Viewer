@@ -515,7 +515,8 @@
             Expanding="FileSystemTreeView_Expanding"
             SelectionMode="{x:Bind ViewModel.DirectoriesSelectionMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
-            SelectionChanged="FileSystemTreeView_SelectionChanged"/>
+            SelectionChanged="FileSystemTreeView_SelectionChanged"
+            ScrollViewer.VerticalScrollBarVisibility="Visible"/>
 
         <ProgressBar 
             Grid.Row="2" 

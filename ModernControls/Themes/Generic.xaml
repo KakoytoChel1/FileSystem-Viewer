@@ -6,6 +6,7 @@
     xmlns:tools="using:ModernControls.Tools">
 
     <converters:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+    <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
 
     <DataTemplate x:Key="RegularTreemapItemTemplate">
         <Grid>
@@ -32,7 +33,7 @@
                 CornerRadius="2">
 
                 <TextBlock
-                    Text="{Binding Percent}"
+                    Text="{Binding Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
                     Foreground="White"
                     Opacity="0.7"
                     FontSize="12"/>
@@ -71,7 +72,7 @@
                 CornerRadius="2">
 
                 <TextBlock
-                    Text="{Binding Percent}"
+                    Text="{Binding Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
                     Foreground="White"
                     Opacity="0.7"
                     FontSize="12"/>
@@ -180,6 +181,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border" Storyboard.TargetProperty="BorderThickness">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="2"/>
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
 
@@ -197,24 +201,25 @@
                         <Border
                             x:Name="border"
                             Background="{Binding NodeData.BackgroundColor, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource ColorToBrushConverter}}"
-                            CornerRadius="4"
                             BorderBrush="White"
+                            BorderThickness="0"
+                            CornerRadius="3"
                             Margin="1" 
-                            Padding="4"
-                            ToolTipService.ToolTip="{Binding NodeData.LabeledName, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                            Padding="4">
 
+                            <ToolTipService.ToolTip>
+                                <StackPanel>
+                                    <TextBlock TextWrapping="Wrap" Text="{Binding NodeData.LabeledName, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                                    <TextBlock Text="{Binding NodeData.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                                </StackPanel>
+                            </ToolTipService.ToolTip>
+                            
                             <Grid>
                                 <ContentControl
                                     Content="{TemplateBinding NodeData}"
                                     ContentTemplateSelector="{StaticResource TreemapItemTemplateSelector}"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch"/>
-
-                                <!--<Border x:Name="HoverOverlay" 
-                                    Background="White" 
-                                    Opacity="0" 
-                                    CornerRadius="4" 
-                                    IsHitTestVisible="False"/>-->
 
                                 <Border x:Name="PressedOverlay" 
                                     Background="Black" 

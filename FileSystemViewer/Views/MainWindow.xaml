@@ -65,7 +65,9 @@
                     <mControls:HierarchicalTreemap
                         x:Name="hierarchicalTreemap"
                         GlyphIcon="&#xE838;"
-                        Grid.Row="2"/>
+                        Separator="\"
+                        Grid.Row="2"
+                        ItemsSource="{x:Bind MainPageViewModel.TreemapNodes, Mode=OneWay}"/>
                 </Grid>
             </Grid>
 

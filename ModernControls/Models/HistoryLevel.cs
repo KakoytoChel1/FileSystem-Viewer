@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ModernControls.Models
 {
@@ -6,13 +7,13 @@ namespace ModernControls.Models
     {
         public HistoryLevel() { }
 
-        public HistoryLevel(IEnumerable<TreemapNode> items, string levelName)
+        public HistoryLevel(ObservableCollection<TreemapNode> items, string levelName)
         {
-            Items = items;
+            Items = new ObservableCollection<TreemapNode>(items);
             LevelName = levelName;
         }
 
-        public IEnumerable<TreemapNode> Items { get; set; }
+        public ObservableCollection<TreemapNode> Items { get; set; }
         public string LevelName { get; set; }
     }
 }
