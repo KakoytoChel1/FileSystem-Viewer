@@ -3,14 +3,15 @@ using Windows.UI;
 
 namespace FileSystemViewer.Models
 {
-    public static class ColorsByFileExtension
+    public static class ColorManager
     {
         private static readonly Color _defaultColor = Color.FromArgb(255, 128, 128, 128);
         private static readonly Color _otherColor = Color.FromArgb(255, 79, 79, 79);
+        private static readonly Color _directoryTreemapNodeColor = Color.FromArgb(255, 89, 94, 171);
 
         private static Dictionary<string, Color> _extensionColorPairs = new Dictionary<string, Color>()
         {
-            {string.Empty, Color.FromArgb(255, 89, 94, 171) },
+            {string.Empty, Color.FromArgb(255, 50, 89, 125) },
 
             {".jpg", Color.FromArgb(255, 56, 161, 199) },
             { ".jpeg", Color.FromArgb(255, 56, 161, 199) },
@@ -51,9 +52,25 @@ namespace FileSystemViewer.Models
             get { return _otherColor; }
         }
 
+        public static Color DirectoryTreemapNodeColor
+        {
+            get { return _directoryTreemapNodeColor; }
+        }
+
         public static Dictionary<string, Color> ExtensionColorPairs
         {
             get { return _extensionColorPairs; }
+        }
+
+        public static Color GetColorByExtension(string extension)
+        {
+            if (string.IsNullOrEmpty(extension))
+                return _extensionColorPairs[string.Empty];
+
+            if (_extensionColorPairs.TryGetValue(extension, out var color))
+                return color;
+
+            return _defaultColor;
         }
     }
 }

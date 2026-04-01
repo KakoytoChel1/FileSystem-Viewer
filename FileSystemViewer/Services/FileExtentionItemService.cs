@@ -31,10 +31,10 @@ namespace FileSystemViewer.Services
                     FileCount = fileCount
                 };
 
-                if (ColorsByFileExtension.ExtensionColorPairs.TryGetValue(fileExtensionItem.Extension, out Color color))
+                if (ColorManager.ExtensionColorPairs.TryGetValue(fileExtensionItem.Extension, out Color color))
                     fileExtensionItem.Color = color;
                 else
-                    fileExtensionItem.Color = ColorsByFileExtension.DefaultColor;
+                    fileExtensionItem.Color = ColorManager.DefaultColor;
 
                 _fileExtensionsItems.Add(fileExtensionItem.Extension, fileExtensionItem);
             }

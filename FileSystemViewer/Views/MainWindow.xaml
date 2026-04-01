@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:mControls="using:ModernControls.Controls"
     Title="FileSystem-Viewer">
 
     <Window.SystemBackdrop>
@@ -37,15 +38,38 @@
                 <ColumnDefinition Width="0.4*"/>
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer
-                HorizontalScrollBarVisibility="Visible" 
-                VerticalScrollBarVisibility="Disabled"
-                HorizontalScrollMode="Enabled"
-                VerticalScrollMode="Disabled">
-                <Frame 
-                    x:Name="RootFrame"
-                    Grid.Column="0"/>
-            </ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                
+                <ScrollViewer
+                    Grid.Row="0"
+                    HorizontalScrollBarVisibility="Visible" 
+                    VerticalScrollBarVisibility="Disabled"
+                    HorizontalScrollMode="Enabled"
+                    VerticalScrollMode="Disabled">
+                    <Frame 
+                        x:Name="RootFrame"/>
+                </ScrollViewer>
+
+                <controls:GridSplitter
+                    
+                    Grid.Row="1"/>
+
+                <Grid
+                    Grid.Row="2">
+
+                    <mControls:HierarchicalTreemap
+                        x:Name="hierarchicalTreemap"
+                        GlyphIcon="&#xE838;"
+                        Separator="\"
+                        Grid.Row="2"
+                        ItemsSource="{x:Bind MainPageViewModel.TreemapNodes, Mode=OneWay}"/>
+                </Grid>
+            </Grid>
 
             <controls:GridSplitter
                 Grid.Column="1"/>

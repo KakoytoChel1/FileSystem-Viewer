@@ -4,12 +4,14 @@ using FileSystem_Viewer.ViewModels;
 using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
+using FileSystemViewer.Views.Converters;
 using FileSystemViewer.Views.DialogPages;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using ModernControls.Models;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -19,6 +21,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Windows.UI;
 
 namespace FileSystemViewer.ViewModels
 {
@@ -30,6 +33,7 @@ namespace FileSystemViewer.ViewModels
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
             SelectedDirectoryNodes = new ObservableCollection<DirectoryNode>();
+            TreemapNodes = new ObservableCollection<TreemapNode>();
 
             SelectedScanningTargetIndex = 0;
             ApplicationState.CurrentScanningState = AppState.ScanningStates.None;
@@ -64,6 +68,13 @@ namespace FileSystemViewer.ViewModels
         public ObservableCollection<DriveInfo> AllAvailableDrives { get; set; }
         public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
         public ObservableCollection<DirectoryNode> SelectedDirectoryNodes { get; set; }
+
+        private ObservableCollection<TreemapNode>? _treemapNodes;
+        public ObservableCollection<TreemapNode>? TreemapNodes
+        {
+            get { return _treemapNodes; }
+            set { SetProperty(ref _treemapNodes, value); }
+        }
 
         // Selection mode: All drives (0) or selected (1).
         private int _selectedScanningTargetIndex;
@@ -391,6 +402,9 @@ namespace FileSystemViewer.ViewModels
 
             UpdateChart(ApplicationState.FileExtensionItems);
 
+            // Build hierarchical TreemapNodes structure
+            BuildHierarchicalTreemapStructure(DriveNodes);
+
             if (CurrentScanningCancellationTokenSource != null)
                 CurrentScanningCancellationTokenSource.Dispose();
 
@@ -408,6 +422,104 @@ namespace FileSystemViewer.ViewModels
             {
                 AllAvailableDrives.Add(drive);
             }
+        }
+
+        private void BuildHierarchicalTreemapStructure<T>(ObservableCollection<T> rootNodes) where T : DirectoryNode
+        {
+            var newTreemanCollection = new ObservableCollection<TreemapNode>();
+
+            foreach (var rootNode in rootNodes)
+            {
+                var rootTreemapNode = CreateTreemapNodeFromDirectoryNode(rootNode);
+
+                if (rootTreemapNode == null)
+                    return;
+
+                newTreemanCollection.Add(rootTreemapNode);
+            }
+
+            TreemapNodes = newTreemanCollection;
+        }
+
+        private TreemapNode? CreateTreemapNodeFromDirectoryNode(DirectoryNode directoryNode)
+        {
+            const int maxSubdirectories = 200;
+            const double minPercent = 0.01;
+
+            var treemapNode = new TreemapNode
+            {
+                LabeledName = directoryNode.Name,
+                IsContainer = true,
+                Size = directoryNode.Size,
+                BackgroundColor = ColorManager.DirectoryTreemapNodeColor,
+                Percent = 0,
+                Children = new ObservableCollection<TreemapNode>()
+            };
+
+            var subDirectories = directoryNode.FileSystemNodes
+                .OfType<DirectoryNode>();
+                
+            var orderedDirectories = subDirectories
+                .Where(d => d.PercentProperty >= minPercent)
+                .OrderByDescending(d => d.PercentProperty)
+                .Take(maxSubdirectories)
+                .ToList();
+
+            var extensionGroups = directoryNode.FileSystemNodes
+                .OfType<FileNode>()
+                .GroupBy(f => f.Extension);
+                
+            var sortedFilesExtensionGroups = extensionGroups
+                .Where(g => g.Sum(i => i.PercentProperty) >= minPercent)
+                .ToList();
+
+            // File extension groups
+            foreach (var extensionGroup in sortedFilesExtensionGroups)
+            {
+                string extension = extensionGroup.Key;
+                long totalSizeForExtension = extensionGroup.Sum(f => f.Size);
+                double totalPercent = extensionGroup.Sum(f => f.PercentProperty);
+
+                var fileExtensionNode = new TreemapNode
+                {
+                    LabeledName = string.IsNullOrEmpty(extension) ? "No extension" : extension,
+                    IsContainer = false,
+                    Size = totalSizeForExtension,
+                    BackgroundColor = ColorManager.GetColorByExtension(extension),
+                    Percent = totalPercent,
+                    Parent = treemapNode,
+                    Children = null
+                };
+
+                treemapNode.Children.Add(fileExtensionNode);
+            }
+
+            // Directories
+            foreach (var subDirectory in orderedDirectories)
+            {
+                var childTreemapNode = CreateTreemapNodeFromDirectoryNode(subDirectory);
+
+                if (childTreemapNode == null)
+                    continue;
+
+                childTreemapNode.Parent = treemapNode;
+                treemapNode.Children.Add(childTreemapNode);
+            }
+
+            // Calculate percentages for this node's children
+            if (treemapNode.Children.Any())
+            {
+                long totalChildSize = treemapNode.Children.Sum(c => c.Size);
+                if (totalChildSize > 0)
+                {
+                    foreach (var child in treemapNode.Children)
+                    {
+                        child.Percent = (double)child.Size / totalChildSize * 100;
+                    }
+                }
+            }
+
+            return treemapNode;
         }
 
         private void RefreshExpandedNodesRecursive(ObservableCollection<FileSystemNode> nodes)
@@ -495,7 +607,7 @@ namespace FileSystemViewer.ViewModels
                 Pushout = 2
             };
 
-            var otherColor = ColorsByFileExtension.OtherColor;
+            var otherColor = ColorManager.OtherColor;
             pieSeries.Fill = new SolidColorPaint(new SKColor(otherColor.R, otherColor.G, otherColor.B, otherColor.A));
 
             return pieSeries;

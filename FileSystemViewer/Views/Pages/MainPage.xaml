@@ -13,6 +13,8 @@
     xmlns:view="using:FileSystemViewer.Views"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:mControls="using:ModernControls"
     x:Name="mainPage">
 
     <Page.Resources>
@@ -513,7 +515,8 @@
             Expanding="FileSystemTreeView_Expanding"
             SelectionMode="{x:Bind ViewModel.DirectoriesSelectionMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
-            SelectionChanged="FileSystemTreeView_SelectionChanged"/>
+            SelectionChanged="FileSystemTreeView_SelectionChanged"
+            ScrollViewer.VerticalScrollBarVisibility="Visible"/>
 
         <ProgressBar 
             Grid.Row="2" 
