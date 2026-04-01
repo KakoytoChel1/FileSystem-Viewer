@@ -456,14 +456,25 @@ namespace FileSystemViewer.ViewModels
                 Children = new ObservableCollection<TreemapNode>()
             };
 
-            var subDirectories = directoryNode.FileSystemNodes.OfType<DirectoryNode>().ToList();
-            var filesByExtension = directoryNode.FileSystemNodes
+            var subDirectories = directoryNode.FileSystemNodes
+                .OfType<DirectoryNode>();
+                
+            var orderedDirectories = subDirectories
+                .Where(d => d.PercentProperty >= minPercent)
+                .OrderByDescending(d => d.PercentProperty)
+                .Take(maxSubdirectories)
+                .ToList();
+
+            var extensionGroups = directoryNode.FileSystemNodes
                 .OfType<FileNode>()
-                .GroupBy(f => f.Extension)
+                .GroupBy(f => f.Extension);
+                
+            var sortedFilesExtensionGroups = extensionGroups
+                .Where(g => g.Sum(i => i.PercentProperty) >= minPercent)
                 .ToList();
 
             // File extension groups
-            foreach (var extensionGroup in filesByExtension.Where(g => g.Sum(i => i.PercentProperty) >= minPercent))
+            foreach (var extensionGroup in sortedFilesExtensionGroups)
             {
                 string extension = extensionGroup.Key;
                 long totalSizeForExtension = extensionGroup.Sum(f => f.Size);
@@ -484,7 +495,7 @@ namespace FileSystemViewer.ViewModels
             }
 
             // Directories
-            foreach (var subDirectory in subDirectories.Where(d => d.PercentProperty >= minPercent).OrderByDescending(d => d.PercentProperty).Take(maxSubdirectories))
+            foreach (var subDirectory in orderedDirectories)
             {
                 var childTreemapNode = CreateTreemapNodeFromDirectoryNode(subDirectory);
 

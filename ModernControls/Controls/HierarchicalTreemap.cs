@@ -18,14 +18,9 @@ namespace ModernControls.Controls
         private Canvas _canvas;
 
         private SpaceCalculator _calculator = new SpaceCalculator();
-
         private DispatcherTimer _resizeTimer;
-
         private Stack<HistoryLevel> _history = new();
 
-        /// <summary>
-        /// Внутренняя коллекция для управления состоянием навигации внутри контрола
-        /// </summary>
         private ObservableCollection<TreemapNode> _internalItemsSource;
 
         public HierarchicalTreemap()

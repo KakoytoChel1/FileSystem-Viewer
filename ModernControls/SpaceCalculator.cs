@@ -25,10 +25,9 @@ namespace ModernControls
                 return;
 
             double shortestSide = Math.Min(currentFreeSpace.Width, currentFreeSpace.Height);
+            double currentRatio = double.MaxValue;
 
             List<WrappedTreemapNode> currentRowGroup = new List<WrappedTreemapNode>();
-
-            double currentRatio = double.MaxValue;
 
             while (remainingNodes.Count > 0)
             {
@@ -72,7 +71,6 @@ namespace ModernControls
             foreach (var node in rowGroup)
             {
                 double length = node.AreaSize / thickness;
-
                 double ratio = Math.Max(length / thickness, thickness / length);
 
                 if (ratio > worstRatio)
@@ -84,10 +82,8 @@ namespace ModernControls
         private Rect LayoutRow(List<WrappedTreemapNode> rowGroup, Rect spaceBounds)
         {
             double rowArea = rowGroup.Sum(n => n.AreaSize);
-
             bool isHorizontal = spaceBounds.Width >= spaceBounds.Height;
-
-            double lenght = isHorizontal ? rowArea / spaceBounds.Height : rowArea / spaceBounds.Width;
+            double length = isHorizontal ? rowArea / spaceBounds.Height : rowArea / spaceBounds.Width;
 
             double currentX = spaceBounds.X;
             double currentY = spaceBounds.Y;
@@ -96,25 +92,25 @@ namespace ModernControls
             {
                 if (isHorizontal)
                 {
-                    double nodeHeight = node.AreaSize / lenght;
-                    node.Bounds = new Rect(currentX, currentY, lenght, nodeHeight);
+                    double nodeHeight = node.AreaSize / length;
+                    node.Bounds = new Rect(currentX, currentY, length, nodeHeight);
                     currentY += nodeHeight;
                 }
                 else
                 {
-                    double nodeWidth = node.AreaSize / lenght;
-                    node.Bounds = new Rect(currentX, currentY, nodeWidth, lenght);
+                    double nodeWidth = node.AreaSize / length;
+                    node.Bounds = new Rect(currentX, currentY, nodeWidth, length);
                     currentX += nodeWidth;
                 }
             }
 
             if (isHorizontal)
             {
-                return new Rect(spaceBounds.X + lenght, spaceBounds.Y, Math.Max(0, spaceBounds.Width - lenght), spaceBounds.Height);
+                return new Rect(spaceBounds.X + length, spaceBounds.Y, Math.Max(0, spaceBounds.Width - length), spaceBounds.Height);
             }
             else
             {
-                return new Rect(spaceBounds.X, spaceBounds.Y + lenght, spaceBounds.Width, Math.Max(0, spaceBounds.Height - lenght));
+                return new Rect(spaceBounds.X, spaceBounds.Y + length, spaceBounds.Width, Math.Max(0, spaceBounds.Height - length));
             }
         }
     }
