@@ -100,6 +100,8 @@ namespace FileSystemViewer
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
             #endregion
 
+            services.AddSingleton(TimeProvider.System);
+
             ServiceProvider = services.BuildServiceProvider();
         }
     }

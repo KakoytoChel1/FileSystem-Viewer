@@ -6,6 +6,7 @@ using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
 using FileSystemViewer.Views.Converters;
 using FileSystemViewer.Views.DialogPages;
+using Humanizer;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -28,13 +29,15 @@ namespace FileSystemViewer.ViewModels
 {
     public class MainPageViewModel : ViewModelBase
     {
-        public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState)
+        public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState, TimeProvider timeProvider) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState)
         {
             DriveNodes = new ObservableCollection<DriveNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
             SelectedDirectoryNodes = new ObservableCollection<DirectoryNode>();
             TreemapNodes = new ObservableCollection<TreemapNode>();
+
+            TimeProvider = timeProvider;
 
             SelectedScanningTargetIndex = 0;
             ApplicationState.CurrentScanningState = AppState.ScanningStates.None;
@@ -58,8 +61,8 @@ namespace FileSystemViewer.ViewModels
 
         #region Properties
 
-        private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; } 
-        
+        TimeProvider TimeProvider { get; }
+        private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; }
         private PauseResetTokenSource? PauseResetTokenSource { get; set; } 
 
         /// <summary>
@@ -371,6 +374,7 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.TotalDirectoriesScanned = 0;
 
             ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
+            long startTime = TimeProvider.GetTimestamp();
 
             // Scans the first level of every root node
             foreach (DirectoryNode directoryNode in target)
@@ -420,14 +424,18 @@ namespace FileSystemViewer.ViewModels
             if (CurrentScanningCancellationTokenSource != null)
                 CurrentScanningCancellationTokenSource.Dispose();
 
+            TimeSpan elapsedTime = TimeProvider.GetElapsedTime(startTime);
+
             if (ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled)
             {
                 string cancelImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
 
                 ToastContentBuilder cancelNotification = new ToastContentBuilder()
                     .AddText("Scanning canceled!")
-                    .AddText($"The operation of scanning has been canceled.")
-                    .AddAppLogoOverride(new Uri($"file:///{cancelImagePath}"), ToastGenericAppLogoCrop.Circle);
+                    .AddText($"The operation of scanning has been canceled.");
+
+                if (File.Exists(cancelImagePath))
+                    cancelNotification.AddAppLogoOverride(new Uri($"file:///{cancelImagePath}"), ToastGenericAppLogoCrop.Circle);
 
                 cancelNotification.Show();
                 return;
@@ -440,7 +448,10 @@ namespace FileSystemViewer.ViewModels
             ToastContentBuilder successNotification = new ToastContentBuilder()
                 .AddText("Scanning successfully completed!")
                 .AddText($"Scanned: directories {ApplicationState.TotalDirectoriesScanned}; files: {ApplicationState.TotalFilesScanned};")
-                .AddAppLogoOverride(new Uri($"file:///{successImagePath}"), ToastGenericAppLogoCrop.Circle);
+                .AddText($"Elapsed time: {elapsedTime.Humanize()}");
+
+            if (File.Exists(successImagePath))
+                successNotification.AddAppLogoOverride(new Uri($"file:///{successImagePath}"), ToastGenericAppLogoCrop.Circle);
 
             successNotification.Show();
         }
