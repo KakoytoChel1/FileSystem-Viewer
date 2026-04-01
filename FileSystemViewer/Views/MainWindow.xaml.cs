@@ -3,7 +3,11 @@ using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.UI.Xaml;
+using System;
+using System.IO;
+using WinUIEx;
 
 namespace FileSystemViewer
 {

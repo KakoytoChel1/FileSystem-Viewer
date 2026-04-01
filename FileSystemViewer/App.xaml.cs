@@ -7,12 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using Windows.UI.Notifications;
+using WinUIEx;
 
 
 namespace FileSystemViewer
 {
     public partial class App : Application
     {
+        private TrayIcon? icon;
         private Window? _window;
 
         public IServiceProvider ServiceProvider { get; private set; } = null!;
@@ -35,6 +38,19 @@ namespace FileSystemViewer
             }
         }
 
+        private Window GetMainWindow()
+        {
+            if (_window is not null)
+                return _window;
+            _window = new MainWindow();
+            _window.AppWindow.Closing += (window, args) =>
+            {
+                args.Cancel = true;
+                window.Hide();
+            };
+            return _window;
+        }
+
         /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
@@ -43,10 +59,28 @@ namespace FileSystemViewer
         {
             InitializeServices();
 
-            _window = new MainWindow();
-            _window.Activate();
-        }
+            Window window = GetMainWindow();
+            window.Activate();
 
+            icon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
+            icon.IsVisible = true;
+            icon.Selected += (s, e) => window.Activate();
+            icon.ContextMenu += (w, e) =>
+            {
+                var flyout = new MenuFlyout();
+
+                flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
+                ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+
+                flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
+                ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
+                {
+                    _window?.Close();
+                    icon.Dispose();
+                };
+                e.Flyout = flyout;
+            };
+        }
 
         private void InitializeServices()
         {

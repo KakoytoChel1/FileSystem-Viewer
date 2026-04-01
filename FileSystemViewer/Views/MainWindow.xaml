@@ -27,7 +27,12 @@
             Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
             Title="File Viewer"
             IsBackButtonVisible="False"
-            IsPaneToggleButtonVisible="False"/>
+            IsPaneToggleButtonVisible="False">
+
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/drive.ico"/>
+            </TitleBar.IconSource>
+        </TitleBar>
 
         <Grid
             Grid.Row="1">
@@ -66,7 +71,6 @@
                         x:Name="hierarchicalTreemap"
                         GlyphIcon="&#xE838;"
                         Separator="\"
-                        Grid.Row="2"
                         ItemsSource="{x:Bind MainPageViewModel.TreemapNodes, Mode=OneWay}"/>
                 </Grid>
             </Grid>

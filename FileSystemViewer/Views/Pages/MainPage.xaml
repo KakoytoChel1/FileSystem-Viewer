@@ -435,9 +435,9 @@
                 Style="{StaticResource CommandBarButtonStyle}"
                 ToolTipService.ToolTip="Select target..."
                 Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}"
-                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
-
-                <Image Source="/Assets/disk.png" Margin="-4"/>
+                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"
+                Content="&#xE958;"
+                Foreground="{ThemeResource AccentAAFillColorDefaultBrush}">
             </Button>
 
             <!--Scanning managing command bar-->

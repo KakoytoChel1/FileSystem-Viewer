@@ -1,4 +1,5 @@
-﻿using FileSystem_Viewer.ViewModels;
+﻿using FileSystem_Viewer.Models.DataModels;
+using FileSystem_Viewer.ViewModels;
 using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using System;
@@ -89,9 +90,12 @@ namespace FileSystemViewer.Services
             await consumerTask;
         }
 
-        public void ScanDirectoryLevel(DirectoryNode directoryNode, string directoryPath)
+        public TotalScanValues ScanDirectoryLevel(DirectoryNode directoryNode, string directoryPath)
         {
             var currentDirectoryInfo = new DirectoryInfo(directoryPath);
+
+            int totalFilesForThisLevel = 0;
+            int totalDirectoriesForThisLevel = 0;
 
             try
             {
@@ -104,6 +108,7 @@ namespace FileSystemViewer.Services
                         directoryNode.FileSystemNodes.Add(fileNode);
                         directoryNode.FileCount++;
                         directoryNode.Size += fileInfo.Length;
+                        totalFilesForThisLevel++;
 
                         _fileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
 
@@ -120,6 +125,7 @@ namespace FileSystemViewer.Services
                 foreach (DirectoryInfo subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
                 {
                     DirectoryNode subDirectoryNode = CreateDirectoryNode(directoryNode, subDirectoryInfo);
+                    totalDirectoriesForThisLevel++;
 
                     directoryNode.FileSystemNodes.Add(subDirectoryNode);
                 }
@@ -127,6 +133,8 @@ namespace FileSystemViewer.Services
             catch (UnauthorizedAccessException) { }
             catch (Exception ex) when (ex is not OperationCanceledException)
             { }
+
+            return new TotalScanValues() { TotalDirectoryCount = totalDirectoriesForThisLevel, TotalFileCount = totalFilesForThisLevel};
         }
 
         private async Task ScanAsync(DirectoryNode directoryNode, string directory, ChannelWriter<FileSystemNode> writer, CancellationToken cancellationToken, PauseResetToken pauseResetToken)

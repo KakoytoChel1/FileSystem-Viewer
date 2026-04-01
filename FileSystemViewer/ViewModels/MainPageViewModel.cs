@@ -9,6 +9,7 @@ using FileSystemViewer.Views.DialogPages;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ModernControls.Models;
@@ -309,8 +310,13 @@ namespace FileSystemViewer.ViewModels
 
                     parentNode.FileSystemNodes.Add(node);
 
+                    if (node is DirectoryNode)
+                        ApplicationState.TotalDirectoriesScanned++;
+
                     if (node is FileNode fileNode)
                     {
+                        ApplicationState.TotalFilesScanned++;
+
                         var values = new TotalScanValues();
 
                         if (totalScanValues.TryGetValue(parentNode, out values))
@@ -361,14 +367,20 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.FileExtensionItems.Clear();
             ApplicationState.ScannedRootNodeNames.Clear();
 
+            ApplicationState.TotalFilesScanned = 0;
+            ApplicationState.TotalDirectoriesScanned = 0;
+
             ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
 
             // Scans the first level of every root node
             foreach (DirectoryNode directoryNode in target)
             {
                 directoryNode.IsInProgress = true;
-                DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
-                ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath); 
+                TotalScanValues values = DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
+                ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath);
+
+                ApplicationState.TotalDirectoriesScanned += values.TotalDirectoryCount;
+                ApplicationState.TotalFilesScanned += values.TotalFileCount;
             }
 
             // Scanning
@@ -409,9 +421,28 @@ namespace FileSystemViewer.ViewModels
                 CurrentScanningCancellationTokenSource.Dispose();
 
             if (ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled)
+            {
+                string cancelImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
+
+                ToastContentBuilder cancelNotification = new ToastContentBuilder()
+                    .AddText("Scanning canceled!")
+                    .AddText($"The operation of scanning has been canceled.")
+                    .AddAppLogoOverride(new Uri($"file:///{cancelImagePath}"), ToastGenericAppLogoCrop.Circle);
+
+                cancelNotification.Show();
                 return;
+            }
 
             ApplicationState.CurrentScanningState = AppState.ScanningStates.Completed;
+
+            string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
+
+            ToastContentBuilder successNotification = new ToastContentBuilder()
+                .AddText("Scanning successfully completed!")
+                .AddText($"Scanned: directories {ApplicationState.TotalDirectoriesScanned}; files: {ApplicationState.TotalFilesScanned};")
+                .AddAppLogoOverride(new Uri($"file:///{successImagePath}"), ToastGenericAppLogoCrop.Circle);
+
+            successNotification.Show();
         }
 
         private void LoadAvailableDrives()
