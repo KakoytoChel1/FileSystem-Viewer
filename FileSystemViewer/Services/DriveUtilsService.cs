@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Windows.UI;
 
 namespace FileSystemViewer.Services
 {
@@ -64,7 +65,7 @@ namespace FileSystemViewer.Services
 
                     try
                     {
-                        await Parallel.ForEachAsync(node.FileSystemNodes, parallelOptions, async (fileSystemNode, ct) =>
+                        await Parallel.ForEachAsync(node.FileSystemNodes!, parallelOptions, async (fileSystemNode, ct) =>
                         {
                             if (fileSystemNode is DirectoryNode directoryNode)
                             {
@@ -105,7 +106,7 @@ namespace FileSystemViewer.Services
                     {
                         FileNode fileNode = CreateFileNode(directoryNode, fileInfo);
 
-                        directoryNode.FileSystemNodes.Add(fileNode);
+                        directoryNode.FileSystemNodes!.Add(fileNode);
                         directoryNode.FileCount++;
                         directoryNode.Size += fileInfo.Length;
                         totalFilesForThisLevel++;
@@ -127,7 +128,7 @@ namespace FileSystemViewer.Services
                     DirectoryNode subDirectoryNode = CreateDirectoryNode(directoryNode, subDirectoryInfo);
                     totalDirectoriesForThisLevel++;
 
-                    directoryNode.FileSystemNodes.Add(subDirectoryNode);
+                    directoryNode.FileSystemNodes!.Add(subDirectoryNode);
                 }
             }
             catch (UnauthorizedAccessException) { }
@@ -215,23 +216,32 @@ namespace FileSystemViewer.Services
 
         private FileNode CreateFileNode(DirectoryNode parent, FileInfo fileInfo)
         {
-            return new FileNode(
-                parentNode: parent,
-                name: fileInfo.Name,
-                fullPath: fileInfo.FullName,
-                size: fileInfo.Length,
-                lastModified: fileInfo.LastWriteTime,
-                extension: fileInfo.Extension);
+            FileNode fileNode = new FileNode(parent)
+            {
+                Name = fileInfo.Name,
+                FullPath = fileInfo.FullName,
+                Size = fileInfo.Length,
+                LastModified = fileInfo.LastWriteTime,
+                Extension = fileInfo.Extension,
+                UnicodeIcon = UnicodeManager.FileIcon,
+                IconColor = ColorManager.FileIconColor,
+                FileCount = 1
+            };
+            return fileNode;
         }
 
         private DirectoryNode CreateDirectoryNode(DirectoryNode parent, DirectoryInfo directoryInfo)
         {
-            return new DirectoryNode(
-                parentNode: parent,
-                name: directoryInfo.Name,
-                fullPath: directoryInfo.FullName,
-                size: 0,
-                lastModified: directoryInfo.LastWriteTime);
+            DirectoryNode directoryNode = new DirectoryNode(parent)
+            {
+                Name = directoryInfo.Name,
+                FullPath = directoryInfo.FullName,
+                Size = 0,
+                LastModified = directoryInfo.LastWriteTime,
+                UnicodeIcon = UnicodeManager.DirectoryIcon,
+                IconColor= ColorManager.DirectoryIconColor
+            };
+            return directoryNode;
         }
     }
 }

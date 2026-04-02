@@ -9,6 +9,10 @@ namespace FileSystemViewer.Models
         private static readonly Color _otherColor = Color.FromArgb(255, 79, 79, 79);
         private static readonly Color _directoryTreemapNodeColor = Color.FromArgb(255, 89, 94, 171);
 
+        private static readonly Color _directoryIconColor = Color.FromArgb(255, 235, 193, 70);
+        private static readonly Color _fileIconColor = Color.FromArgb(255, 207, 206, 204);
+        private static readonly Color _driveIconColor = Color.FromArgb(255, 89, 94, 171);
+
         private static Dictionary<string, Color> _extensionColorPairs = new Dictionary<string, Color>()
         {
             {string.Empty, Color.FromArgb(255, 50, 89, 125) },
@@ -55,6 +59,20 @@ namespace FileSystemViewer.Models
         public static Color DirectoryTreemapNodeColor
         {
             get { return _directoryTreemapNodeColor; }
+        }
+
+        public static Color DirectoryIconColor
+        {
+            get { return _directoryIconColor; }
+        }
+
+        public static Color FileIconColor
+        {
+            get { return _fileIconColor; }
+        }
+        public static Color DriveIconColor
+        {
+            get { return _driveIconColor; }
         }
 
         public static Dictionary<string, Color> ExtensionColorPairs

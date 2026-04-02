@@ -150,36 +150,52 @@
             </PivotItem>
         </Pivot>
 
-        <Expander
-            Grid.Row="0"
-            Grid.RowSpan="2"
-            VerticalAlignment="Top"
-            Canvas.ZIndex="1"
-            Margin="10,10,10,0"
-            HorizontalAlignment="Stretch"
-            HorizontalContentAlignment="Stretch"
-            VerticalContentAlignment="Stretch">
+        <Grid Canvas.ZIndex="1" Grid.RowSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="48"/>
+            </Grid.ColumnDefinitions>
+            
+            <Expander
+                Grid.Row="0"
+                VerticalAlignment="Top"
+                Margin="10,10,0,0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch">
 
-            <Expander.Header>
-                <StackPanel
-                    Spacing="10"
-                    Orientation="Horizontal">
+                <Expander.Header>
+                    <StackPanel
+                        Spacing="10"
+                        Orientation="Horizontal">
 
-                    <FontIcon
+                        <FontIcon
                         Glyph="&#xED25;"/>
 
-                    <TextBlock
+                        <TextBlock
                         Text="Directories"/>
-                </StackPanel>
-            </Expander.Header>
+                    </StackPanel>
+                </Expander.Header>
 
-            <ListView 
-                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                Margin="-15"
-                SelectionMode="None"
-                ItemsSource="{x:Bind ViewModel.ApplicationState.ScannedRootNodeNames}">
-            </ListView>
-        </Expander>
+                <ListView 
+                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                    Margin="-15"
+                    SelectionMode="None"
+                    ItemsSource="{x:Bind ViewModel.ApplicationState.ScannedRootNodeNames}">
+                </ListView>
+            </Expander>
+
+            <Button
+                Grid.Column="1"
+                VerticalAlignment="Top"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Center"
+                Height="45"
+                Style="{StaticResource CommandBarButtonStyle}"
+                ToolTipService.ToolTip="Open in new window"
+                Content="&#xE8A7;">
+            </Button>
+        </Grid>
 
         <ProgressRing
             Width="45"
