@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:FileSystemViewer.Models"
+    xmlns:view="using:FileSystemViewer.Views"
+    xmlns:converters="using:FileSystemViewer.Views.Converters"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:mControls="using:ModernControls">
+
+    <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
+    <converters:DoubleIntoStringConverter x:Key="DoubleIntoStringConverter"/>
+    <converters:EnumPropertyToIntConverter x:Key="EnumPropertyToIntConverter"/>
+    <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
+
+
+    <DataTemplate x:Key="FileSystemNodeTemplate">
+        <TreeViewItem ItemsSource="{Binding FileSystemNodes, Mode=OneWay}" IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="Name" Width="500"/>
+                    <ColumnDefinition x:Name="ProgressBar" Width="100"/>
+                    <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
+                    <ColumnDefinition x:Name="Size" Width="100"/>
+                    <ColumnDefinition x:Name="FileCount" Width="100"/>
+                    <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
+                    <ColumnDefinition Width="0.1*"/>
+                </Grid.ColumnDefinitions>
+
+                <!--General information-->
+                <StackPanel
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Left"
+                    Spacing="10"
+                    Grid.Column="0"
+                    Width="450"
+                    ToolTipService.ToolTip="{Binding Name}">
+
+                    <!--Icon-->
+                    <FontIcon 
+                        Glyph="{Binding UnicodeIcon}"
+                        Foreground="{Binding IconColor, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                        FontSize="16"
+                        FontFamily="Segoe Fluent Icons"
+                        VerticalAlignment="Center"/>
+
+                    <!--Name-->
+                    <TextBlock 
+                        Text="{Binding Name}"
+                        TextTrimming="CharacterEllipsis"/>
+
+                    <TextBlock
+                        Text="{Binding Tag}"
+                        FontSize="13"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
+                    <Grid>
+                        <ProgressBar 
+                            Margin="0,0,5,0"
+                            Value="{Binding PercentProperty, Mode=OneWay}"/>
+                    </Grid>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </Border>
+
+                <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
+                    <Grid>
+                        <TextBlock 
+                            Text="{Binding PercentProperty, Converter={StaticResource DoubleIntoStringConverter}, Mode=OneWay}"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+                    </Grid>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </Border>
+
+                <!--Size-->
+                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0"   >
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Text="{Binding Size, Converter={StaticResource BytesIntoSuitableFormatConverter}, Mode=OneWay}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                        <TextBlock
+                            Text="&#xE9F9;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+
+                    </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </Border>
+
+                <!--File count-->
+                <Border Background="Transparent" Grid.Column="4" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Text="{Binding FileCount, Mode=OneWay}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                        <TextBlock
+                            Text="&#xE8A5;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                    </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </Border>
+
+                <Border
+                    Margin="10,0,0,0"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2">
+
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="10">
+
+                        <ProgressRing
+                            IsActive="True"
+                            Width="15"
+                            Height="15"/>
+
+                        <TextBlock
+                            FontSize="13"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="In progress..."/>
+                    </StackPanel>
+
+                    <i:Interaction.Behaviors>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="False">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                        </i:DataTriggerBehavior>
+                        <i:DataTriggerBehavior Binding="{Binding IsInProgress}" ComparisonCondition="Equal" Value="True">
+                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                        </i:DataTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </Border>
+
+                <!--Last modification date-->
+                <Border Background="Transparent" Grid.Column="5" Margin="2,0,2,0">
+                    <StackPanel 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            Text="{Binding LastModified}"
+                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
+
+                        <TextBlock
+                            Text="&#xF738;"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </TreeViewItem>
+    </DataTemplate>
+</ResourceDictionary>

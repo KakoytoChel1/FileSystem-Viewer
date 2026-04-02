@@ -12,13 +12,6 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
 
-    <Page.Resources>
-        <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
-        <converters:DoubleIntoStringConverter x:Key="DoubleIntoStringConverter"/>
-        <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
-        <converters:EnumPropertyToIntConverter x:Key="EnumPropertyToIntConverter"/>
-    </Page.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="70"/>
@@ -193,7 +186,8 @@
                 Height="45"
                 Style="{StaticResource CommandBarButtonStyle}"
                 ToolTipService.ToolTip="Open in new window"
-                Content="&#xE8A7;">
+                Content="&#xE8A7;"
+                Command="{x:Bind ViewModel.OpenChartTabsNewWindowCommand}">
             </Button>
         </Grid>
 

@@ -4,8 +4,8 @@ using FileSystem_Viewer.ViewModels;
 using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
-using FileSystemViewer.Views.Converters;
 using FileSystemViewer.Views.DialogPages;
+using FileSystemViewer.Views.Windows;
 using Humanizer;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
@@ -23,6 +23,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace FileSystemViewer.ViewModels
 {
@@ -134,9 +135,11 @@ namespace FileSystemViewer.ViewModels
 
                     foreach (DriveInfo driveInfo in SelectedTargetDrives)
                     {
+                        var name = !string.IsNullOrWhiteSpace(driveInfo.VolumeLabel) ? $"{driveInfo.VolumeLabel} {driveInfo.Name}" : driveInfo.Name;
+
                         DriveNode drive = new DriveNode()
                         {
-                            Name = $"{driveInfo.VolumeLabel} {driveInfo.Name}",
+                            Name = name,
                             FullPath = driveInfo.RootDirectory.FullName,
                             Size = 0,
                             LastModified = driveInfo.RootDirectory.LastWriteTime,
@@ -160,9 +163,11 @@ namespace FileSystemViewer.ViewModels
 
                     foreach (DriveInfo driveInfo in AllAvailableDrives)
                     {
+                        var name = !string.IsNullOrWhiteSpace(driveInfo.VolumeLabel) ? $"{driveInfo.VolumeLabel} {driveInfo.Name}" : driveInfo.Name;
+
                         DriveNode drive = new DriveNode()
                         {
-                            Name = $" {driveInfo.VolumeLabel} {driveInfo.Name}",
+                            Name = name,
                             FullPath = driveInfo.RootDirectory.FullName,
                             Size = 0,
                             LastModified = driveInfo.RootDirectory.LastWriteTime,
@@ -289,6 +294,34 @@ namespace FileSystemViewer.ViewModels
 
         }, () => ApplicationState.CurrentScanningState == AppState.ScanningStates.InProgress);
         #endregion
+
+        private ICommand? _openTreeViewNewWindowCommand;
+        public ICommand OpenTreeViewNewWindowCommand => _openTreeViewNewWindowCommand ??= new RelayCommand(async () =>
+        {
+            string windowKey = nameof(TreeViewWindow);
+
+            if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
+            {
+                TreeViewWindow treeViewWindow = new TreeViewWindow();
+                treeViewWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
+                ApplicationState.ActiveSubWindows.Add(windowKey, treeViewWindow);
+                treeViewWindow.Activate();
+            }
+        });
+
+        private ICommand? _openTreeMapNewWindowCommand;
+        public ICommand OpenTreeMapNewWindowCommand => _openTreeMapNewWindowCommand ??= new RelayCommand(async () =>
+        {
+            string windowKey = nameof(TreemapWindow);
+
+            if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
+            {
+                TreemapWindow treemapWindow = new TreemapWindow();
+                treemapWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
+                ApplicationState.ActiveSubWindows.Add(windowKey, treemapWindow);
+                treemapWindow.Activate();
+            }
+        });
         #endregion
 
         #region Methods
@@ -445,8 +478,6 @@ namespace FileSystemViewer.ViewModels
                 successNotification.AddAppLogoOverride(new Uri($"file:///{successImagePath}"), ToastGenericAppLogoCrop.Circle);
 
             successNotification.Show();
-
-            var value = ApplicationState.ScannedRootNodeNames;
         }
 
         private void LoadAvailableDrives()

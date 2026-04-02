@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using Windows.UI.Notifications;
 using WinUIEx;
 
 
@@ -59,6 +58,8 @@ namespace FileSystemViewer
         {
             InitializeServices();
 
+            AppState appState = ServiceProvider.GetRequiredService<AppState>();
+
             Window window = GetMainWindow();
             window.Activate();
 
@@ -75,7 +76,11 @@ namespace FileSystemViewer
                 flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
                 ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                 {
-                    _window?.Close();
+                    foreach (Window subWindow in appState.ActiveSubWindows.Values)
+                    {
+                        subWindow.Close();
+                    }
+                    window?.Close();
                     icon.Dispose();
                 };
                 e.Flyout = flyout;
