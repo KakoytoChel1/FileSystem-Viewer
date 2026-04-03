@@ -6,5 +6,6 @@
 
         public long TotalFileCount { get; set; }
         public long TotalSizeInBytes { get; set; }
+        public long TotalDirectoryCount { get; set; }
     }
 }

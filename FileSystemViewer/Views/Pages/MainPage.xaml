@@ -9,409 +9,12 @@
     xmlns:vm="using:FileSystemViewer.ViewModels"
     mc:Ignorable="d"
     xmlns:models="using:FileSystemViewer.Models"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:view="using:FileSystemViewer.Views"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:mControls="using:ModernControls"
     x:Name="mainPage">
-
-    <Page.Resources>
-        <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
-        <converters:DriveFreeSpaceIntoPercentsConverter x:Key="DriveFreeSpaceIntoPercentsConverter"/>
-        <converters:DoubleIntoStringConverter x:Key="DoubleIntoStringConverter"/>
-        <converters:EnumPropertyToIntConverter x:Key="EnumPropertyToIntConverter"/>
-
-        <DataTemplate x:Key="DriveTemplate">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="Name" Width="500"/>
-                    <ColumnDefinition x:Name="Size" Width="100"/>
-                    <ColumnDefinition x:Name="FileCount" Width="100"/>
-                    <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
-                    <ColumnDefinition Width="0.1*"/>
-                </Grid.ColumnDefinitions>
-
-                <!--General information-->
-                <StackPanel
-                    Orientation="Horizontal" 
-                    HorizontalAlignment="Left"
-                    Spacing="10"
-                    Grid.Column="0">
-
-                    <!--Icon-->
-                    <Image Width="20" Source="/Assets/disk.png"/>
-
-                    <!--Volume label & Name-->
-                    <TextBlock>
-                        <Run Text="{Binding Content.VolumeName}"/>
-                        <Run Text="{Binding Content.Name}"/>
-                    </TextBlock>
-
-                    <!--Available space / Total space-->
-                    <TextBlock FontSize="13" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                        <Run Text="{Binding Content.TotalFreeSpace, Converter={StaticResource BytesIntoSuitableFormatConverter}}"/>
-                        <Run Text="free of"/>
-                        <Run Text="{Binding Content.TotalSize, Converter={StaticResource BytesIntoSuitableFormatConverter}}"/>
-                        <Run Text="{Binding Content, Converter={StaticResource DriveFreeSpaceIntoPercentsConverter}}"/>
-                    </TextBlock>
-                </StackPanel>
-
-                <!--Size-->
-                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0"   >
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
-
-                        <TextBlock
-                            Text="&#xE9F9;"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-
-                    </StackPanel>
-
-                    <i:Interaction.Behaviors>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                        </i:DataTriggerBehavior>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
-                        </i:DataTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </Border>
-
-                <!--File count-->
-                <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Text="{Binding Content.FileCount}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
-                        
-                        <TextBlock
-                            Text="&#xE8A5;"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                    </StackPanel>
-
-                    <i:Interaction.Behaviors>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                        </i:DataTriggerBehavior>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
-                        </i:DataTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </Border>
-
-                <Border
-                    Grid.Column="1"
-                    Grid.ColumnSpan="2">
-
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="10">
-
-                        <ProgressRing
-                            IsActive="True"
-                            Width="15"
-                            Height="15"/>
-
-                        <TextBlock
-                            FontSize="13"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="In progress..."/>
-                    </StackPanel>
-
-                    <i:Interaction.Behaviors>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                        </i:DataTriggerBehavior>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
-                        </i:DataTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </Border>
-
-                <!--Last modification date-->
-                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0">
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            Text="{Binding Content.LastModified}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
-
-                        <TextBlock
-                            Text="&#xF738;"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Key="DirectoryTemplate">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="Name" Width="500"/>
-                    <ColumnDefinition x:Name="ProgressBar" Width="100"/>
-                    <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
-                    <ColumnDefinition x:Name="Size" Width="100"/>
-                    <ColumnDefinition x:Name="FileCount" Width="100"/>
-                    <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
-                    <ColumnDefinition Width="0.1*"/>
-                </Grid.ColumnDefinitions>
-
-                <!--General information-->
-                <StackPanel
-                    Orientation="Horizontal" 
-                    HorizontalAlignment="Left"
-                    Spacing="10"
-                    Grid.Column="0"
-                    ToolTipService.ToolTip="{Binding Content.Name}">
-
-                    <!--Icon-->
-                    <Image Width="20" Source="/Assets/directory.png"/>
-
-                    <!--Name-->
-                    <TextBlock 
-                        Width="450"
-                        Text="{Binding Content.Name}"
-                        TextTrimming="CharacterEllipsis"/>
-                </StackPanel>
-
-                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
-                    <Grid>
-                        <ProgressBar 
-                            Value="{Binding Content.PercentProperty}"/>
-                    </Grid>
-                </Border>
-
-                <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
-                    <Grid>
-                        <TextBlock 
-                            Text="{Binding Content.PercentProperty, Converter={StaticResource DoubleIntoStringConverter}}"
-                            HorizontalAlignment="Right"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
-                    </Grid>
-                </Border>
-
-                <!--Size-->
-                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0"   >
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
-
-                        <TextBlock
-                            Text="&#xE9F9;"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-
-                    </StackPanel>
-
-                    <i:Interaction.Behaviors>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                        </i:DataTriggerBehavior>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
-                        </i:DataTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </Border>
-
-                <!--File count-->
-                <Border Background="Transparent" Grid.Column="4" Margin="2,0,2,0">
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Text="{Binding Content.FileCount}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
-
-                        <TextBlock
-                            Text="&#xE8A5;"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                    </StackPanel>
-
-                    <i:Interaction.Behaviors>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                        </i:DataTriggerBehavior>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
-                        </i:DataTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </Border>
-
-                <Border
-                    Margin="10,0,0,0"
-                    Grid.Column="3"
-                    Grid.ColumnSpan="2">
-
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="10">
-
-                        <ProgressRing
-                            IsActive="True"
-                            Width="15"
-                            Height="15"/>
-
-                        <TextBlock
-                            FontSize="13"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="In progress..."/>
-                    </StackPanel>
-
-                    <i:Interaction.Behaviors>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="False">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                        </i:DataTriggerBehavior>
-                        <i:DataTriggerBehavior Binding="{Binding Content.IsInProgress}" ComparisonCondition="Equal" Value="True">
-                            <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
-                        </i:DataTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </Border>
-
-                <!--Last modification date-->
-                <Border Background="Transparent" Grid.Column="5" Margin="2,0,2,0">
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            Text="{Binding Content.LastModified}"
-                            Style="{StaticResource DirectoryNodeInfoTextBlockStyle}"/>
-
-                        <TextBlock
-                            Text="&#xF738;"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Key="FileTemplate">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="Name" Width="500"/>
-                    <ColumnDefinition x:Name="ProgressBar" Width="100"/>
-                    <ColumnDefinition x:Name="Percentage" Width="50"/>
-                    <ColumnDefinition x:Name="Size" Width="100"/>
-                    <ColumnDefinition x:Name="LastModifiedDate" Width="auto" MinWidth="170"/>
-                    <ColumnDefinition Width="0.1*"/>
-                </Grid.ColumnDefinitions>
-
-                <!--General information-->
-                <StackPanel
-                    Orientation="Horizontal" 
-                    HorizontalAlignment="Left"
-                    Spacing="10"
-                    Grid.Column="0"
-                    ToolTipService.ToolTip="{Binding Content.Name}">
-
-                    <!--Icon-->
-                    <Image Width="20" Source="/Assets/file.png"/>
-
-                    <!--Name-->
-                    <TextBlock 
-                        Width="450"
-                        Text="{Binding Content.Name}"
-                        TextTrimming="CharacterEllipsis"/>
-                </StackPanel>
-
-                <!--Percent bar-->
-                <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
-                    <Grid>
-                        <ProgressBar 
-                            Value="{Binding Content.PercentProperty}"/>
-                    </Grid>
-                </Border>
-
-                <Border Background="Transparent" Grid.Column="2" Margin="2,0,2,0">
-                    <Grid>
-                        <TextBlock 
-                            Text="{Binding Content.PercentProperty, Converter={StaticResource DoubleIntoStringConverter}}"
-                            HorizontalAlignment="Right"
-                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
-                    </Grid>
-                </Border>
-
-                <Border Background="Transparent" Grid.Column="3" Margin="2,0,2,0">
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Text="{Binding Content.Size, Converter={StaticResource BytesIntoSuitableFormatConverter}}"
-                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
-
-                        <TextBlock
-                            Text="&#xE9F9;"
-                            VerticalAlignment="Center"
-                            Style="{ThemeResource FileNodeInfoTextIconStyle}"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Background="Transparent" Grid.Column="4" Margin="2,0,2,0">
-                    <StackPanel 
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="5">
-
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            Text="{Binding Content.LastModified}"
-                            Style="{StaticResource FileNodeInfoTextBlockStyle}"/>
-
-                        <TextBlock
-                            Text="&#xF738;"
-                            VerticalAlignment="Center"
-                            Style="{ThemeResource FileNodeInfoTextIconStyle}"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </DataTemplate>
-
-        <view:ExplorerTemplateSelector 
-            x:Key="ExplorerItemTemplateSelector"
-            DirectoryTemplate="{StaticResource DirectoryTemplate}"
-            FileTemplate="{StaticResource FileTemplate}"
-            DriveTemplate="{StaticResource DriveTemplate}"/>
-    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -435,9 +38,9 @@
                 Style="{StaticResource CommandBarButtonStyle}"
                 ToolTipService.ToolTip="Select target..."
                 Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}"
-                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
-
-                <Image Source="/Assets/disk.png" Margin="-4"/>
+                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"
+                Content="&#xE958;"
+                Foreground="{ThemeResource AccentAAFillColorDefaultBrush}">
             </Button>
 
             <!--Scanning managing command bar-->
@@ -471,7 +74,7 @@
                         Content="&#xF8AE;"
                         Foreground="{ThemeResource SystemFillColorCautionBrush}">
                     </Button>
-                    
+
                 </StackPanel>
             </Border>
 
@@ -484,38 +87,35 @@
                 CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
             </Button>
 
-            <Border
-                CornerRadius="5"
-                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-                <StackPanel Orientation="Horizontal" Spacing="2">
-                    <Button
-                        Style="{StaticResource CommandBarButtonStyle}"
-                        Content="&#xE762;"
-                        FontSize="16"
-                        ToolTipService.ToolTip="Switch selection mode"
-                        Command="{x:Bind ViewModel.SwitchSelectionModeCommand}">
-                    </Button>
+            <Button
+                Style="{StaticResource CommandBarButtonStyle}"
+                Content="&#xE8F7;"
+                FontSize="16"
+                ToolTipService.ToolTip="Refresh selected"
+                Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}"
+                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+            </Button>
 
-                    <Button
-                        Style="{StaticResource CommandBarButtonStyle}"
-                        Content="&#xE8F7;"
-                        FontSize="16"
-                        ToolTipService.ToolTip="Refresh selected"
-                        Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}"
-                        CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
-                    </Button>
-                </StackPanel>
+            <Border
+                BorderThickness="0.5,0,0,0"
+                BorderBrush="{ThemeResource ControlElevationBorderBrush}">
+                
+                <Button
+                    Margin="5,0,0,0"
+                    Style="{StaticResource CommandBarButtonStyle}"
+                    ToolTipService.ToolTip="Open in new window"
+                    Content="&#xE8A7;"
+                    Command="{x:Bind ViewModel.OpenTreeViewNewWindowCommand}">
+                </Button>
             </Border>
         </StackPanel>
 
         <TreeView 
             Grid.Row="1" 
             x:Name="FileSystemTreeView"
-            Collapsed="FileSystemTreeView_Collapsed"
-            Expanding="FileSystemTreeView_Expanding"
-            SelectionMode="{x:Bind ViewModel.DirectoriesSelectionMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
-            SelectionChanged="FileSystemTreeView_SelectionChanged"
+            ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
+            SelectedItem="{x:Bind ViewModel.SelectedFileSystemNode, Mode=TwoWay}"
+            ItemTemplate="{StaticResource FileSystemNodeTemplate}"
             ScrollViewer.VerticalScrollBarVisibility="Visible"/>
 
         <ProgressBar 

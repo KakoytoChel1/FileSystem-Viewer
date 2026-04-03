@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
+using System.Collections.ObjectModel;
+using Windows.UI;
 
 namespace FileSystemViewer.Models
 {
@@ -10,13 +12,18 @@ namespace FileSystemViewer.Models
             ParentNode = parentNode;
         }
 
-        protected FileSystemNode(FileSystemNode? parentNode, string name, string fullPath, long size, DateTime lastModified)
+        private string _unicodeIcon = null!;
+        public string UnicodeIcon
         {
-            Name = name;
-            FullPath = fullPath;
-            Size = size;
-            LastModified = lastModified;
-            ParentNode = parentNode;
+            get { return _unicodeIcon; }
+            set { SetProperty(ref _unicodeIcon, value); }
+        }
+
+        private Color _iconColor;
+        public Color IconColor
+        {
+            get { return _iconColor; }
+            set { SetProperty(ref _iconColor, value); }
         }
 
         private string _name = null!;
@@ -59,7 +66,7 @@ namespace FileSystemViewer.Models
         {
             get
             {
-                if (ParentNode == null) return -1;
+                if (ParentNode == null) return 100;
 
                 if (ParentNode.Size == 0) return 0;
 
@@ -67,6 +74,21 @@ namespace FileSystemViewer.Models
                 return result * 100;
             }
         }
+
+        private long _fileCount;
+        public long FileCount
+        {
+            get { return _fileCount; }
+            set { _fileCount = value; }
+        }
+
+        public virtual ObservableCollection<FileSystemNode>? FileSystemNodes { get; set; } = null;
+
+        public virtual bool? IsExpanded { get; set; } = null;
+
+        public virtual bool IsInProgress { get; set; } = false;
+
+        public virtual string Tag { get; set; } = string.Empty;
 
         public void UpdatePercentProperty()
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Humanizer;
 
 namespace FileSystemViewer.Models
 {
@@ -7,39 +6,31 @@ namespace FileSystemViewer.Models
     {
         public DriveNode() : base(null) { }
 
-        public DriveNode(string volumeName, long totalSize, long totalFreeSpace, string name, string fullPath, long size, DateTime lastModified) : base(null, name, fullPath, size, lastModified)
-        {
-            VolumeName = volumeName;
-            TotalSize = totalSize;
-            TotalFreeSpace = totalFreeSpace;
-        }
-
-        public DriveNode(string volumeName, long totalSize, long totalFreeSpace, string name, string fullPath, long size, DateTime lastModified, IEnumerable<FileSystemNode> fileSystemNodes) : base(null, name, fullPath, size, lastModified, fileSystemNodes)
-        {
-            VolumeName = volumeName;
-            TotalSize = totalSize;
-            TotalFreeSpace = totalFreeSpace;
-        }
-
-        private string? _volumeName;
-        public string? VolumeName
-        {
-            get { return _volumeName; }
-            set { SetProperty(ref _volumeName, value); }
-        }
+        public string? VolumeName { get; set; }
 
         private long _totalSize;
         public long TotalSize
         {
             get { return _totalSize; }
-            set { SetProperty(ref _totalSize, value); }
+            set { _totalSize = value; OnPropertyChanged(nameof(Tag)); }
         }
 
         private long _totalFreeSpace;
         public long TotalFreeSpace
         {
             get { return _totalFreeSpace; }
-            set { SetProperty(ref _totalFreeSpace, value); }
+            set { _totalFreeSpace = value; OnPropertyChanged(nameof(Tag)); }
+        }
+
+        public override string Tag
+        {
+            get { return $"{TotalFreeSpace.Bytes().Humanize()} free of {TotalSize.Bytes().Humanize()} {GetPercentString()}"; }
+        }
+
+        private string GetPercentString()
+        {
+            double result = (double)TotalFreeSpace / TotalSize;
+            return $"({result:P0})";
         }
     }
 }
