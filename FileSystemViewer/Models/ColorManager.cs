@@ -29,7 +29,7 @@ namespace FileSystemViewer.Models
             { ".avi", Color.FromArgb(255, 169, 39, 204) },
             { ".mkv", Color.FromArgb(255, 148, 6, 186) },
 
-            { ".mp3", Color.FromArgb(255, 21, 158, 171) },
+            { ".mp3", Color.FromArgb(255, 191, 31, 111) },
             { ".wav", Color.FromArgb(255, 7, 151, 173) },
 
             { ".zip", Color.FromArgb(255, 148, 34, 34) },
@@ -43,7 +43,9 @@ namespace FileSystemViewer.Models
             { ".dll", Color.FromArgb(255, 101, 107, 112) },
             { ".sys", Color.FromArgb(255, 90, 98, 105) },
             { ".ini", Color.FromArgb(255, 76, 85, 92) },
-            { ".dat", Color.FromArgb(255, 20, 38, 140) }
+            { ".dat", Color.FromArgb(255, 20, 38, 140) },
+
+            {".pdf", Color.FromArgb(255, 230, 85, 85) }
         };
 
         public static Color DefaultColor
@@ -89,6 +91,17 @@ namespace FileSystemViewer.Models
                 return color;
 
             return _defaultColor;
+        }
+
+        public static Color GetFileIconColorByExtension(string extension)
+        {
+            if (string.IsNullOrEmpty(extension))
+                return _extensionColorPairs[string.Empty];
+
+            if (_extensionColorPairs.TryGetValue(extension, out var color))
+                return color;
+
+            return _fileIconColor;
         }
     }
 }

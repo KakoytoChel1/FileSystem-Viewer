@@ -197,14 +197,6 @@ namespace ModernControls.Controls
                 _canvas?.Children.Clear();
                 return;
             }
-
-            foreach (var child in _canvas.Children)
-            {
-                if (child is TreemapItem oldItem)
-                {
-                    oldItem.ItemClicked -= OnTreemapItemClicked;
-                }
-            }
             _canvas.Children.Clear();
 
             double totalScreenArea = _canvas.ActualWidth * _canvas.ActualHeight;

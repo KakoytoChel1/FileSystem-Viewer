@@ -47,7 +47,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition Height="auto"/>
-                    <RowDefinition/>
+                    <RowDefinition Height="0.2*"/>
                 </Grid.RowDefinitions>
                 
                 <ScrollViewer

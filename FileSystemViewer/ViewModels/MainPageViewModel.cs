@@ -233,7 +233,7 @@ namespace FileSystemViewer.ViewModels
         private ICommand? _rescanSelectedDirectoriesCommand;
         public ICommand RescanSelectedDirectoriesCommand => _rescanSelectedDirectoriesCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
-            if (SelectedFileSystemNode != null)
+            if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode directoryNode)
             {
                 var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Rescan targets confirmation", "Confirm",
                    ContentDialogButton.Primary, $"Are you sure you want to rescan the selected directories?", "Cancel", null);
@@ -246,21 +246,18 @@ namespace FileSystemViewer.ViewModels
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
 
-                    if (SelectedFileSystemNode is DirectoryNode directoryNode)
-                    {
-                        directoryNode.FileSystemNodes!.Clear();
-                        directoryNode.FileCount = 0;
-                        directoryNode.Size = 0;
+                    directoryNode.FileSystemNodes!.Clear();
+                    directoryNode.FileCount = 0;
+                    directoryNode.Size = 0;
 
-                        directoryNode.UpdateSizeProperty();
-                        directoryNode.UpdateFileCountProperty();
-                        directoryNode.UpdatePercentProperty();
+                    directoryNode.UpdateSizeProperty();
+                    directoryNode.UpdateFileCountProperty();
+                    directoryNode.UpdatePercentProperty();
 
-                        await ScanSelectedTargetAsync(new ObservableCollection<DirectoryNode>() { directoryNode }, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
-                    }
+                    await ScanSelectedTargetAsync(new ObservableCollection<DirectoryNode>() { directoryNode }, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
             }
-        }, (xamlRoot) => (ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled) && (SelectedFileSystemNode != null));
+        }, (xamlRoot) => (ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled) && (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode));
 
         #region Scanning managing commands
 
@@ -380,15 +377,6 @@ namespace FileSystemViewer.ViewModels
                 }
             });
 
-            // Created to change scanning status for particular drive/directory.
-            var completeProgress = new Progress<DirectoryNode>(directoryNode =>
-            {
-                directoryNode.IsInProgress = false;
-                directoryNode.UpdatePercentProperty();
-                directoryNode.UpdateFileCountProperty();
-                directoryNode.UpdateSizeProperty();
-            });
-
             FileExtentionItemService.ClearFileExtensionCollection();
             ApplicationState.FileExtensionSeriesCollection.Clear();
             ApplicationState.FileExtensionItems.Clear();
@@ -412,11 +400,16 @@ namespace FileSystemViewer.ViewModels
             }
 
             // Scanning
-            await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, completeProgress, cts.Token, prts.Token);
+            await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, cts.Token, prts.Token);
 
             foreach (DirectoryNode directoryNode in target)
             {
                 directoryNode.IsInProgress = false;
+                directoryNode.UpdatePercentProperty();
+                directoryNode.UpdateFileCountProperty();
+                directoryNode.UpdateSizeProperty();
+
+                directoryNode.IsExpanded = true;
             }
 
             // Calls OnPropertyChanged events after scanning for specific properties
