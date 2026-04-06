@@ -8,12 +8,7 @@ namespace FileSystem_Viewer.ViewModels
 {
     public class ChartPageViewModel : ViewModelBase
     {
-        public ChartPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState)
-        {
-            
-        }
-
-        #region Commands
+        public ChartPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState) { }
 
         private ICommand? _openChartTabsWindowCommand;
         public ICommand OpenChartTabsNewWindowCommand => _openChartTabsWindowCommand ??= new RelayCommand(async () =>
@@ -28,6 +23,5 @@ namespace FileSystem_Viewer.ViewModels
                 chartTabsWindow.Activate();
             }
         });
-        #endregion
     }
 }

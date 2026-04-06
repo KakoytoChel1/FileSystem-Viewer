@@ -4,7 +4,6 @@ using ModernControls.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using Windows.Foundation;
 
@@ -34,8 +33,6 @@ namespace ModernControls.Controls
 
             _internalItemsSource = new ObservableCollection<TreemapNode>();
         }
-
-        #region Handlers
 
         private void Treemap_Loaded(object sender, RoutedEventArgs e)
         {
@@ -132,9 +129,6 @@ namespace ModernControls.Controls
 
             RenderTreemap();
         }
-        #endregion
-
-        #region Properties
 
         public static readonly DependencyProperty CurrentLevelNameProperty =
             DependencyProperty.Register(
@@ -187,8 +181,6 @@ namespace ModernControls.Controls
             get => (ObservableCollection<TreemapNode>)GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
         }
-
-        #endregion
 
         private void RenderTreemap()
         {

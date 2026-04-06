@@ -147,6 +147,7 @@ namespace FileSystemViewer.Services
 
             int totalFilesForThisLevel = 0;
             int totalDirectoriesForThisLevel = 0;
+            long totalSizeForThisLevel = 0;
 
             try
             {
@@ -157,8 +158,7 @@ namespace FileSystemViewer.Services
                         FileNode fileNode = CreateFileNode(directoryNode, fileInfo);
 
                         directoryNode.FileSystemNodes!.Add(fileNode);
-                        directoryNode.FileCount++;
-                        directoryNode.Size += fileInfo.Length;
+                        totalSizeForThisLevel += fileInfo.Length;
                         totalFilesForThisLevel++;
 
                         _fileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
@@ -183,7 +183,7 @@ namespace FileSystemViewer.Services
             catch (UnauthorizedAccessException) { }
             catch (Exception ex) when (ex is not OperationCanceledException) { }
 
-            return new TotalScanValues() { TotalDirectoryCount = totalDirectoriesForThisLevel, TotalFileCount = totalFilesForThisLevel };
+            return new TotalScanValues() { TotalDirectoryCount = totalDirectoriesForThisLevel, TotalFileCount = totalFilesForThisLevel, TotalSizeInBytes = totalSizeForThisLevel };
         }
 
         private async Task ProccessAndSendNodesAsync(ChannelReader<FileSystemNode> reader, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken)
