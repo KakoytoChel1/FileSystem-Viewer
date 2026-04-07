@@ -85,10 +85,14 @@ namespace FileSystemViewer.Models
         public static Color GetColorByExtension(string extension)
         {
             if (string.IsNullOrEmpty(extension))
+            {
                 return _extensionColorPairs[string.Empty];
+            }
 
             if (_extensionColorPairs.TryGetValue(extension, out var color))
+            {
                 return color;
+            }
 
             return _defaultColor;
         }
@@ -96,10 +100,14 @@ namespace FileSystemViewer.Models
         public static Color GetFileIconColorByExtension(string extension)
         {
             if (string.IsNullOrEmpty(extension))
+            {
                 return _extensionColorPairs[string.Empty];
+            }
 
             if (_extensionColorPairs.TryGetValue(extension, out var color))
+            {
                 return color;
+            }
 
             return _fileIconColor;
         }

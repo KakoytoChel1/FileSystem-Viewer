@@ -114,7 +114,9 @@ namespace FileSystemViewer.ViewModels
                     DriveNodes.Clear();
 
                     if (CurrentScanningCancellationTokenSource != null)
+                    {
                         CurrentScanningCancellationTokenSource.Dispose();
+                    }
 
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
@@ -201,7 +203,9 @@ namespace FileSystemViewer.ViewModels
                 }
 
                 if (CurrentScanningCancellationTokenSource != null)
+                {
                     CurrentScanningCancellationTokenSource.Dispose();
+                }
 
                 CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                 PauseResetTokenSource = new PauseResetTokenSource();
@@ -222,7 +226,9 @@ namespace FileSystemViewer.ViewModels
                 if (dialogResult == ContentDialogResult.Primary)
                 {
                     if (CurrentScanningCancellationTokenSource != null)
+                    {
                         CurrentScanningCancellationTokenSource.Dispose();
+                    }
 
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
@@ -340,7 +346,9 @@ namespace FileSystemViewer.ViewModels
             BuildHierarchicalTreemapStructure(DriveNodes);
 
             if (CurrentScanningCancellationTokenSource != null)
+            {
                 CurrentScanningCancellationTokenSource.Dispose();
+            }
 
             elapsedTime = TimeProvider.GetElapsedTime(startTime);
 
@@ -400,7 +408,9 @@ namespace FileSystemViewer.ViewModels
                 parentNode.FileSystemNodes!.Add(node);
 
                 if (node is DirectoryNode)
+                {
                     ApplicationState.TotalDirectoriesScanned++;
+                }
 
                 if (node is FileNode fileNode)
                 {

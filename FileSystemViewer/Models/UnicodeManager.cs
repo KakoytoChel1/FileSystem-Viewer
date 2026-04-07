@@ -4,9 +4,9 @@ namespace FileSystemViewer.Models
 {
     public static class UnicodeManager
     {
-        private static readonly string _directoryIcon = "\uE8D5";
-        private static readonly string _fileIcon = "\uE729";
-        private static readonly string _driveIcon = "\uE958";
+        private const string _directoryIcon = "\uE8D5";
+        private const string _fileIcon = "\uE729";
+        private const string _driveIcon = "\uE958";
 
         private static readonly Dictionary<string, string> _extensionColorPairs = new Dictionary<string, string>()
         {
@@ -58,10 +58,14 @@ namespace FileSystemViewer.Models
         public static string GetFileUnicodeByExtension(string extension)
         {
             if (string.IsNullOrEmpty(extension))
+            {
                 return _extensionColorPairs[string.Empty];
+            }
 
             if (_extensionColorPairs.TryGetValue(extension, out var color))
+            {
                 return color;
+            }
 
             return _fileIcon;
         }

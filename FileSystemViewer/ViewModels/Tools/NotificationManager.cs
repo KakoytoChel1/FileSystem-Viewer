@@ -16,7 +16,9 @@ namespace FileSystemViewer.ViewModels.Tools
             }
 
             if (!string.IsNullOrWhiteSpace(iconFilePath))
+            {
                 builder.AddAppLogoOverride(new Uri($"file:///{iconFilePath}"), ToastGenericAppLogoCrop.Circle);
+            }
 
             builder.Show();
         }

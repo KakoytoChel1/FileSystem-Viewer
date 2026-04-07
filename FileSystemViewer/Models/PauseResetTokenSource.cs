@@ -48,7 +48,9 @@ namespace FileSystemViewer.Models
             lock (_lock)
             {
                 if (!IsPauseRequested || _pauseTcs == null)
+                {
                     return Task.CompletedTask;
+                }
 
                 awaitingTask =  _pauseTcs.Task;
             }

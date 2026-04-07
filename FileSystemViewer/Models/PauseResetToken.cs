@@ -15,7 +15,9 @@ namespace FileSystemViewer.Models
         public Task IfPauseRequestedPauseAsync(CancellationToken cancellationToken)
         {
             if (_tokenSource == null)
+            {
                 return Task.CompletedTask;
+            }
 
             return _tokenSource.WaitIfPausedAsync(cancellationToken);
         }

@@ -72,7 +72,9 @@ namespace ModernControls
                 double ratio = Math.Max(length / thickness, thickness / length);
 
                 if (ratio > worstRatio)
+                {
                     worstRatio = ratio;
+                }
             }
             return worstRatio;
         }
@@ -103,9 +105,13 @@ namespace ModernControls
             }
 
             if (isHorizontal)
+            {
                 return new Rect(spaceBounds.X + length, spaceBounds.Y, Math.Max(0, spaceBounds.Width - length), spaceBounds.Height);
+            }
             else
+            {
                 return new Rect(spaceBounds.X, spaceBounds.Y + length, spaceBounds.Width, Math.Max(0, spaceBounds.Height - length));
+            }
         }
     }
 }

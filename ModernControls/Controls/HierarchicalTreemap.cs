@@ -69,18 +69,28 @@ namespace ModernControls.Controls
             base.OnApplyTemplate();
 
             if (_backButton != null)
+            {
                 _backButton.Click -= OnBackButtonClicked;
+            }
 
             _backButton = GetTemplateChild("PART_BackButton") as Button;
 
             if (_backButton != null)
+            {
                 _backButton.Click += OnBackButtonClicked;
+            }
 
-            if (_canvas != null) _canvas.SizeChanged -= OnCanvasSizeChanged;
+            if (_canvas != null)
+            {
+                _canvas.SizeChanged -= OnCanvasSizeChanged;
+            }
 
             _canvas = GetTemplateChild("PART_Canvas") as Canvas;
 
-            if (_canvas != null) _canvas.SizeChanged += OnCanvasSizeChanged;
+            if (_canvas != null)
+            {
+                _canvas.SizeChanged += OnCanvasSizeChanged;
+            }
         }
 
         private void OnCanvasSizeChanged(object sender, SizeChangedEventArgs e)

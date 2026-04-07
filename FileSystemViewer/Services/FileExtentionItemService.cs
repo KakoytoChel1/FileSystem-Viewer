@@ -15,7 +15,9 @@ namespace FileSystemViewer.Services
         {
             var properExtension = string.Empty;
             if (extension != null)
+            {
                 properExtension = extension.ToLower();
+            }
 
             if (_fileExtensionsItems.TryGetValue(properExtension, out FileExtensionItem? item) && item != null)
             {
@@ -27,9 +29,13 @@ namespace FileSystemViewer.Services
                 Color fileExtensionColor;
 
                 if (ColorManager.ExtensionColorPairs.TryGetValue(properExtension, out Color color))
+                {
                     fileExtensionColor = color;
+                }
                 else
+                {
                     fileExtensionColor = ColorManager.DefaultColor;
+                }
 
                 FileExtensionItem fileExtensionItem = new FileExtensionItem()
                 {
