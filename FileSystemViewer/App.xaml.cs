@@ -1,4 +1,5 @@
 ﻿using FileSystem_Viewer.ViewModels;
+using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Linq;
 using WinUIEx;
 
 
@@ -58,33 +60,47 @@ namespace FileSystemViewer
         {
             InitializeServices();
 
-            AppState appState = ServiceProvider.GetRequiredService<AppState>();
+            string[] cmdArgs = Environment.GetCommandLineArgs();
 
-            Window window = GetMainWindow();
-            window.Activate();
-
-            icon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
-            icon.IsVisible = true;
-            icon.Selected += (s, e) => window.Activate();
-            icon.ContextMenu += (w, e) =>
+            if (cmdArgs.Contains("--run-background"))
             {
-                var flyout = new MenuFlyout();
+                RunBackgroundTaskAndExit();
+            }
+            else
+            {
+                AppState appState = ServiceProvider.GetRequiredService<AppState>();
 
-                flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
-                ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+                Window window = GetMainWindow();
+                window.Activate();
 
-                flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
-                ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
+                icon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
+                icon.IsVisible = true;
+                icon.Selected += (s, e) => window.Activate();
+                icon.ContextMenu += (w, e) =>
                 {
-                    foreach (Window subWindow in appState.ActiveSubWindows.Values)
+                    var flyout = new MenuFlyout();
+
+                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
+                    ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+
+                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
+                    ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                     {
-                        subWindow.Close();
-                    }
-                    window?.Close();
-                    icon.Dispose();
+                        foreach (Window subWindow in appState.ActiveSubWindows.Values)
+                        {
+                            subWindow.Close();
+                        }
+                        window?.Close();
+                        icon.Dispose();
+                    };
+                    e.Flyout = flyout;
                 };
-                e.Flyout = flyout;
-            };
+            }    
+        }
+
+        private void RunBackgroundTaskAndExit()
+        {
+            
         }
 
         private void InitializeServices()
@@ -103,6 +119,7 @@ namespace FileSystemViewer
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
+            services.AddSingleton<IConfigurationService, ConfigurationService<AppSettings>>();
             #endregion
 
             services.AddSingleton(TimeProvider.System);
