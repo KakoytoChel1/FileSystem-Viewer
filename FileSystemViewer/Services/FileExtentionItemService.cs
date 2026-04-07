@@ -1,4 +1,4 @@
-﻿using FileSystem_Viewer.Models.DataModels;
+﻿using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using System.Collections.Generic;
@@ -24,17 +24,20 @@ namespace FileSystemViewer.Services
             }
             else
             {
+                Color fileExtensionColor;
+
+                if (ColorManager.ExtensionColorPairs.TryGetValue(properExtension, out Color color))
+                    fileExtensionColor = color;
+                else
+                    fileExtensionColor = ColorManager.DefaultColor;
+
                 FileExtensionItem fileExtensionItem = new FileExtensionItem()
                 {
                     Extension = properExtension,
                     Size = size,
-                    FileCount = fileCount
+                    FileCount = fileCount,
+                    Color = fileExtensionColor
                 };
-
-                if (ColorManager.ExtensionColorPairs.TryGetValue(fileExtensionItem.Extension, out Color color))
-                    fileExtensionItem.Color = color;
-                else
-                    fileExtensionItem.Color = ColorManager.DefaultColor;
 
                 _fileExtensionsItems.Add(fileExtensionItem.Extension, fileExtensionItem);
             }

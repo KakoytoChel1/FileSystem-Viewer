@@ -5,62 +5,15 @@ using Windows.UI;
 
 namespace FileSystemViewer.Models
 {
-    public abstract class FileSystemNode : ObservableObject
+    public abstract class FileSystemNode(FileSystemNode? parentNode) : ObservableObject
     {
-        protected FileSystemNode(FileSystemNode? parentNode)
-        {
-            ParentNode = parentNode;
-        }
-
-        private string _unicodeIcon = null!;
-        public string UnicodeIcon
-        {
-            get { return _unicodeIcon; }
-            set { SetProperty(ref _unicodeIcon, value); }
-        }
-
-        private Color _iconColor;
-        public Color IconColor
-        {
-            get { return _iconColor; }
-            set { SetProperty(ref _iconColor, value); }
-        }
-
-        private string _name = null!;
-        public string Name
-        {
-            get { return _name; }
-            set { SetProperty(ref _name, value); }
-        }
-
-        private string _fullPath = null!;
-        public string FullPath
-        {
-            get { return _fullPath; }
-            set { SetProperty(ref _fullPath, value); }
-        }
-
-        private long _size;
-        public long Size
-        {
-            get { return _size; }
-            set 
-            { _size = value; }
-        }
-
-        private DateTime? _lastModified;
-        public DateTime? LastModified
-        {
-            get { return _lastModified; }
-            set { SetProperty(ref _lastModified, value); }
-        }
-
-        private FileSystemNode? _parentNode;
-        public FileSystemNode? ParentNode
-        {
-            get { return _parentNode; }
-            private set { SetProperty(ref _parentNode, value); }
-        }
+        public required string UnicodeIcon { get; set; }
+        public required Color IconColor { get; set; }
+        public required string Name { get; set; }
+        public required string FullPath { get; set; }
+        public required long Size { get; set; }
+        public required DateTime? LastModified { get; set; }
+        public FileSystemNode? ParentNode { get; private set; } = parentNode;
 
         public double PercentProperty
         {
@@ -74,13 +27,7 @@ namespace FileSystemViewer.Models
                 return result * 100;
             }
         }
-
-        private long _fileCount;
-        public long FileCount
-        {
-            get { return _fileCount; }
-            set { _fileCount = value; }
-        }
+        public long FileCount { get; set;  }
 
         public virtual ObservableCollection<FileSystemNode>? FileSystemNodes { get; set; } = null;
 

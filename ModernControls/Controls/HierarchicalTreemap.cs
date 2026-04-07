@@ -117,7 +117,7 @@ namespace ModernControls.Controls
             if (clickedNode.Children == null || !clickedNode.Children.Any())
                 return;
 
-            _history.Push(new HistoryLevel(_internalItemsSource, this.CurrentLevelName));
+            _history.Push(new HistoryLevel() { Items = new ObservableCollection<TreemapNode>(_internalItemsSource), LevelName = this.CurrentLevelName});
 
             this.CurrentLevelName = $"{this.CurrentLevelName}{clickedNode.LabeledName}{this.Separator}";
 

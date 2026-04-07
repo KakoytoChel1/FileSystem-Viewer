@@ -13,7 +13,7 @@ namespace FileSystemViewer.Models
         private static readonly Color _fileIconColor = Color.FromArgb(255, 207, 206, 204);
         private static readonly Color _driveIconColor = Color.FromArgb(255, 89, 94, 171);
 
-        private static Dictionary<string, Color> _extensionColorPairs = new Dictionary<string, Color>()
+        private static readonly Dictionary<string, Color> _extensionColorPairs = new Dictionary<string, Color>()
         {
             {string.Empty, Color.FromArgb(255, 50, 89, 125) },
 

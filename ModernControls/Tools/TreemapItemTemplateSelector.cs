@@ -14,13 +14,9 @@ namespace ModernControls.Tools
             if (item is TreemapNode node)
             {
                 if (node.IsContainer)
-                {
                     return ContainerTemplate;
-                }
                 else
-                {
                     return RegularTemplate;
-                }
             }
             return base.SelectTemplateCore(item);
         }

@@ -2,16 +2,10 @@
 
 namespace ModernControls.Models
 {
-    public class WrappedTreemapNode
+    public class WrappedTreemapNode(TreemapNode treemapNode, double areaSize)
     {
-        public WrappedTreemapNode(TreemapNode treemapNode, double areaSize)
-        {
-            TreemapNode = treemapNode;
-            AreaSize = areaSize;
-        }
-
-        public TreemapNode TreemapNode { get; }
-        public double AreaSize { get; }
+        public TreemapNode TreemapNode { get; } = treemapNode;
+        public double AreaSize { get; } = areaSize;
         public Rect Bounds { get; set; }
     }
 }

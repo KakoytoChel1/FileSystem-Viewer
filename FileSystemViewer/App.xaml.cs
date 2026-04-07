@@ -1,7 +1,6 @@
-﻿using FileSystem_Viewer.ViewModels;
+﻿using FileSystemViewer.ViewModels;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -9,7 +8,6 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Linq;
 using WinUIEx;
-
 
 namespace FileSystemViewer
 {

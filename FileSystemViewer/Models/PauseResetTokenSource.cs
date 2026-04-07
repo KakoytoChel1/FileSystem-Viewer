@@ -53,7 +53,7 @@ namespace FileSystemViewer.Models
                 awaitingTask =  _pauseTcs.Task;
             }
 
-            return awaitingTask.WaitAsync(cancellationToken); ;
+            return awaitingTask.WaitAsync(cancellationToken);
         }
     }
 }

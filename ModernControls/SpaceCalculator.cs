@@ -15,7 +15,6 @@ namespace ModernControls
                 return;
 
             var sortedNodes = nodes.OrderByDescending(n => n.AreaSize).ToList();
-
             PlaceAndDecide(sortedNodes, freeSpace);
         }
 
@@ -48,7 +47,6 @@ namespace ModernControls
                 {
                     currentRowGroup.Add(currentNode);
                     remainingNodes.RemoveAt(0);
-
                     currentRatio = newRatio;
                 }
                 else
@@ -105,13 +103,9 @@ namespace ModernControls
             }
 
             if (isHorizontal)
-            {
                 return new Rect(spaceBounds.X + length, spaceBounds.Y, Math.Max(0, spaceBounds.Width - length), spaceBounds.Height);
-            }
             else
-            {
                 return new Rect(spaceBounds.X, spaceBounds.Y + length, spaceBounds.Width, Math.Max(0, spaceBounds.Height - length));
-            }
         }
     }
 }
