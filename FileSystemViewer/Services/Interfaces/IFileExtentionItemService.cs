@@ -1,6 +1,5 @@
-﻿using FileSystem_Viewer.Models.DataModels;
+﻿using FileSystemViewer.Models.DataModels;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace FileSystemViewer.Services.Interfaces
 {

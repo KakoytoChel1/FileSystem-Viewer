@@ -1,4 +1,4 @@
-using FileSystem_Viewer.ViewModels;
+using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 

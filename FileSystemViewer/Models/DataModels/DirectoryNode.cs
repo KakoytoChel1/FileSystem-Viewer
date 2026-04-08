@@ -2,10 +2,8 @@
 
 namespace FileSystemViewer.Models
 {
-    public class DirectoryNode : FileSystemNode
+    public class DirectoryNode(FileSystemNode? parentNode) : FileSystemNode(parentNode)
     {
-        public DirectoryNode(FileSystemNode? parentNode) : base(parentNode) { }
-
         private bool _isInProgress;
         public override bool IsInProgress 
         { 

@@ -1,10 +1,9 @@
-using FileSystem_Viewer.ViewModels;
-using FileSystemViewer;
+using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace FileSystem_Viewer.Views.Pages
+namespace FileSystemViewer.Views.Pages
 {
     public sealed partial class ChartPage : Page
     {

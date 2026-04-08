@@ -2,25 +2,11 @@
 
 namespace FileSystemViewer.Models
 {
-    public class DriveNode : DirectoryNode
+    public class DriveNode() : DirectoryNode(null)
     {
-        public DriveNode() : base(null) { }
-
         public string? VolumeName { get; set; }
-
-        private long _totalSize;
-        public long TotalSize
-        {
-            get { return _totalSize; }
-            set { _totalSize = value; OnPropertyChanged(nameof(Tag)); }
-        }
-
-        private long _totalFreeSpace;
-        public long TotalFreeSpace
-        {
-            get { return _totalFreeSpace; }
-            set { _totalFreeSpace = value; OnPropertyChanged(nameof(Tag)); }
-        }
+        public required long TotalSize { get; set; }
+        public required long TotalFreeSpace { get; set; }
 
         public override string Tag
         {

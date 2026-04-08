@@ -1,4 +1,4 @@
-﻿namespace FileSystem_Viewer.Models.DataModels
+﻿namespace FileSystemViewer.Models.DataModels
 {
     public class TotalScanValues
     {

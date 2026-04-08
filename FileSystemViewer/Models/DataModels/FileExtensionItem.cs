@@ -1,19 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.UI;
 
-namespace FileSystem_Viewer.Models.DataModels
+namespace FileSystemViewer.Models.DataModels
 {
     public class FileExtensionItem : ObservableObject
     {
-        public FileExtensionItem() { }
-
         private long _commonSize = 0;
 
-        public string Extension { get; set; } = null!;
-        public Color? Color { get; set; }
+        public required string Extension { get; set; }
+        public required Color Color { get; set; }
 
-        public long Size { get; set; }
-        public long FileCount { get; set; }
+        public required long Size { get; set; }
+        public required long FileCount { get; set; }
         public double Percent
         {
             get

@@ -1,14 +1,13 @@
-﻿using FileSystem_Viewer.ViewModels;
+﻿using FileSystemViewer.ViewModels;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Linq;
 using WinUIEx;
-
 
 namespace FileSystemViewer
 {
@@ -76,7 +75,9 @@ namespace FileSystemViewer
                 flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
                 ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                 {
-                    foreach (Window subWindow in appState.ActiveSubWindows.Values)
+                    var windows = appState.ActiveSubWindows.Values.ToList();
+
+                    foreach (Window subWindow in windows)
                     {
                         subWindow.Close();
                     }
@@ -91,19 +92,13 @@ namespace FileSystemViewer
         {
             var services = new ServiceCollection();
 
-            #region ViewModels
-
             services.AddSingleton<AppState>();
             services.AddSingleton<MainPageViewModel>();
             services.AddSingleton<ChartPageViewModel>();
-            #endregion
-
-            #region Services
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
-            #endregion
 
             services.AddSingleton(TimeProvider.System);
 
