@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace FileSystemViewer.Services
 {
-    public class ConfigurationService<T> : IConfigurationService where T : class, new()
+    public class ConfigurationService<T> : IConfigurationService<T> where T : class, new()
     {
         private readonly string _filePath;
         private readonly JsonSerializerOptions _jsonOptions;

@@ -25,6 +25,8 @@ namespace FileSystemViewer.Models
             set { SetProperty(ref _fileSystemNodes, value); }
         }
 
+        public long DirectoriesCount { get; set; }
+
         public void UpdateFileCountProperty()
         {
             OnPropertyChanged(nameof(FileCount));

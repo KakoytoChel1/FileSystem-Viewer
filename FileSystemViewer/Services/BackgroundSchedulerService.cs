@@ -1,11 +1,16 @@
-﻿using FileSystemViewer.Services.Interfaces;
+﻿using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Services.Interfaces;
 using Microsoft.Win32.TaskScheduler;
 using System;
 
 namespace FileSystemViewer.Services
 {
-    public class BackgroundSchedulerService : IBackgroundSchedulerService
+    public class BackgroundSchedulerService(IConfigurationService<AppSettings> configurationService) : IBackgroundSchedulerService
     {
+        private IConfigurationService<AppSettings> _configurationService = configurationService;
+
+        public static readonly string ArgumentName = "--run-background";
+
         public bool RegisterDailyTask(TimeSpan runTime)
         {
             string? exePath = Environment.ProcessPath;
@@ -18,7 +23,7 @@ namespace FileSystemViewer.Services
             using (TaskService taskService = new TaskService())
             {
                 TaskDefinition taskDefinition = taskService.NewTask();
-                taskDefinition.RegistrationInfo.Description = "Daily background scanning for File System Viewer application.";
+                taskDefinition.RegistrationInfo.Description = "Daily background scanning for FileSystemViewer application.";
                 DailyTrigger dailyTrigger = new DailyTrigger
                 {
                     StartBoundary = DateTime.Today + runTime,
@@ -26,25 +31,26 @@ namespace FileSystemViewer.Services
                 };
                 taskDefinition.Triggers.Add(dailyTrigger);
 
-                taskDefinition.Actions.Add(new ExecAction(exePath, "--run-background", null));
+                taskDefinition.Actions.Add(new ExecAction(exePath, ArgumentName, null));
 
                 taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
 
-                taskService.RootFolder.RegisterTaskDefinition(@"FileSystemViewer", taskDefinition);
+                string taskPath = _configurationService.Settings.ScheduledScanningTaskPath;
+                taskService.RootFolder.RegisterTaskDefinition(taskPath, taskDefinition);
                 return true;
             }
         }
 
-        public bool UpdateDailyTaskTime(string taskName, TimeSpan newTime)
+        public bool UpdateDailyTaskTime(string taskPath, TimeSpan newTime)
         {
-            if (string.IsNullOrWhiteSpace(taskName))
+            if (string.IsNullOrWhiteSpace(taskPath))
             {
                 return false;
             }
 
             using (TaskService taskService = new TaskService())
             {
-                Task? task = taskService.GetTask(taskName);
+                Task? task = taskService.GetTask(taskPath);
 
                 if (task == null)
                 {
@@ -56,30 +62,30 @@ namespace FileSystemViewer.Services
                 if (taskDefinition.Triggers.Count > 0 && taskDefinition.Triggers[0] is DailyTrigger dailyTrigger)
                 {
                     dailyTrigger.StartBoundary = DateTime.Today + newTime;
-                    taskService.RootFolder.RegisterTaskDefinition(taskName, taskDefinition);
+                    taskService.RootFolder.RegisterTaskDefinition(taskPath, taskDefinition);
                     return true;
                 }
             }
             return false;
         }
 
-        public bool DeleteDailyTask(string? taskName)
+        public bool DeleteDailyTask(string? taskPath)
         {
-            if (string.IsNullOrWhiteSpace(taskName))
+            if (string.IsNullOrWhiteSpace(taskPath))
             {
                 return false;
             }
 
             using (TaskService taskService = new TaskService())
             {
-                Task? task = taskService.GetTask(taskName);
+                Task? task = taskService.GetTask(taskPath);
 
                 if (task == null)
                 {
                     return false;
                 }
 
-                taskService.RootFolder.DeleteTask(taskName);
+                taskService.RootFolder.DeleteTask(taskPath);
                 return true;
             }
         }  

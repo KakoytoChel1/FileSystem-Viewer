@@ -1,14 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
 
 namespace FileSystemViewer.ViewModels
 {
     public abstract class ViewModelBase(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
-        IFileExtentionItemService fileExtentionItemService, AppState appState) : ObservableObject
+        IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, AppState appState) : ObservableObject
     {
         public IDriveUtilsService DriveUtilsService { get; } = driveUtilsService;
         public IDispatcherQueueProvider DispatcherQueueProvider { get; } = dispatcherQueueProvider;
         public IFileExtentionItemService FileExtentionItemService { get; } = fileExtentionItemService;
+        public IConfigurationService<AppSettings> ConfigurationService { get; } = configurationService;
         public AppState ApplicationState { get; } = appState;
     }
 }

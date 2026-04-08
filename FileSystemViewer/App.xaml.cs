@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using WinUIEx;
 
 namespace FileSystemViewer
@@ -54,15 +56,21 @@ namespace FileSystemViewer
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        protected async override void OnLaunched(LaunchActivatedEventArgs args)
         {
             InitializeServices();
 
             string[] cmdArgs = Environment.GetCommandLineArgs();
+            IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
+            IBackgroundSchedulerService backgroundSchedulerService = ServiceProvider.GetRequiredService<IBackgroundSchedulerService>();
 
-            if (cmdArgs.Contains("--run-background"))
+            //backgroundSchedulerService.RegisterDailyTask(new TimeSpan(18, 53, 0));
+            //backgroundSchedulerService.DeleteDailyTask("FileSystemViewer");
+            //backgroundSchedulerService.UpdateDailyTaskTime("FileSystemViewer", new TimeSpan(19, 6, 0));
+
+            if (cmdArgs.Contains(BackgroundSchedulerService.ArgumentName))
             {
-                RunBackgroundTaskAndExit();
+                await RunBackgroundTaskAndExit(backgroundScannerService);
             }
             else
             {
@@ -95,9 +103,17 @@ namespace FileSystemViewer
                 };
             }
         }
-        private void RunBackgroundTaskAndExit()
+        private async Task RunBackgroundTaskAndExit(IBackgroundScannerService backgroundScannerService)
         {
-            throw new NotImplementedException();
+            await backgroundScannerService.ProceedScan().ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    string errorImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
+                    NotificationManager.BuildAndShowToastNotification("Scanning was canceled", "Error occured.", errorImagePath);
+                }
+                Environment.Exit(0);
+            });
         }
 
         private void InitializeServices()
@@ -111,7 +127,9 @@ namespace FileSystemViewer
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
-            services.AddSingleton<IConfigurationService, ConfigurationService<AppSettings>>();
+            services.AddSingleton<IConfigurationService<AppSettings>, ConfigurationService<AppSettings>>();
+            services.AddSingleton<IBackgroundScannerService, BackgroundScannerService>();
+            services.AddSingleton<IBackgroundSchedulerService, BackgroundSchedulerService>();
 
             services.AddSingleton(TimeProvider.System);
 

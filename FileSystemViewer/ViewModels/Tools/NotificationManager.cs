@@ -5,19 +5,21 @@ namespace FileSystemViewer.ViewModels.Tools
 {
     public static class NotificationManager
     {
-        public static void BuildAndShowToastNotification(string title, string[] contentLines, string? iconFilePath = null)
+        public static void BuildAndShowToastNotification(string title, string content, string? iconFilePath = null, string? reportDocumentPath = null)
         {
             ToastContentBuilder builder = new ToastContentBuilder()
-                .AddText(title);
-
-            foreach (var line in contentLines)
-            {
-                builder.AddText(line);
-            }
+                .AddText(title)
+                .AddText(content);
 
             if (!string.IsNullOrWhiteSpace(iconFilePath))
             {
                 builder.AddAppLogoOverride(new Uri($"file:///{iconFilePath}"), ToastGenericAppLogoCrop.Circle);
+            }
+
+            if (!string.IsNullOrWhiteSpace(reportDocumentPath))
+            {
+                builder.SetProtocolActivation(new Uri($"file:///{reportDocumentPath}"));
+                builder.AddAttributionText("Click for more details...");
             }
 
             builder.Show();
