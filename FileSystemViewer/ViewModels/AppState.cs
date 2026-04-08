@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FileSystem_Viewer.Models.DataModels;
+using FileSystemViewer.Models.DataModels;
 using LiveChartsCore;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace FileSystem_Viewer.ViewModels
+namespace FileSystemViewer.ViewModels
 {
     public class AppState : ObservableObject
     {

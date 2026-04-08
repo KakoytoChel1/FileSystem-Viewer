@@ -15,7 +15,6 @@ namespace ModernControls
                 return;
 
             var sortedNodes = nodes.OrderByDescending(n => n.AreaSize).ToList();
-
             PlaceAndDecide(sortedNodes, freeSpace);
         }
 
@@ -48,7 +47,6 @@ namespace ModernControls
                 {
                     currentRowGroup.Add(currentNode);
                     remainingNodes.RemoveAt(0);
-
                     currentRatio = newRatio;
                 }
                 else
@@ -74,7 +72,9 @@ namespace ModernControls
                 double ratio = Math.Max(length / thickness, thickness / length);
 
                 if (ratio > worstRatio)
+                {
                     worstRatio = ratio;
+                }
             }
             return worstRatio;
         }

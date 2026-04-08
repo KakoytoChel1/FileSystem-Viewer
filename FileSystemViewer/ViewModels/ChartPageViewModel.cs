@@ -1,22 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels;
 using FileSystemViewer.Views.Windows;
-using System.Windows.Input;
 
-namespace FileSystem_Viewer.ViewModels
+namespace FileSystemViewer.ViewModels
 {
     public class ChartPageViewModel : ViewModelBase
     {
-        public ChartPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState)
-        {
-            
-        }
+        public ChartPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState) { }
 
-        #region Commands
-
-        private ICommand? _openChartTabsWindowCommand;
-        public ICommand OpenChartTabsNewWindowCommand => _openChartTabsWindowCommand ??= new RelayCommand(async () =>
+        private RelayCommand? _openChartTabsWindowCommand;
+        public RelayCommand OpenChartTabsNewWindowCommand => _openChartTabsWindowCommand ??= new RelayCommand(async () =>
         {
             string windowKey = nameof(ChartTabsWindow);
 
@@ -28,6 +21,5 @@ namespace FileSystem_Viewer.ViewModels
                 chartTabsWindow.Activate();
             }
         });
-        #endregion
     }
 }

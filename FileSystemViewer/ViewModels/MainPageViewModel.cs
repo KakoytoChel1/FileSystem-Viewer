@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using FileSystem_Viewer.Models.DataModels;
-using FileSystem_Viewer.ViewModels;
+using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
@@ -10,7 +9,6 @@ using Humanizer;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
-using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ModernControls.Models;
@@ -22,8 +20,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Xml.Linq;
 
 namespace FileSystemViewer.ViewModels
 {
@@ -46,18 +42,13 @@ namespace FileSystemViewer.ViewModels
 
         private void ApplicationState_ScanningStatePropertyChanged()
         {
-            (OpenTargetSelectDialogCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
-            (RefreshScanningCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
-            (RescanSelectedDirectoriesCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
-            (CancelScanningCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
-            (ResumeScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
-            (PauseScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
-
-            (ResumeScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
-            (PauseScanningCommand as RelayCommand)!.NotifyCanExecuteChanged();
+            OpenTargetSelectDialogCommand.NotifyCanExecuteChanged();
+            RefreshScanningCommand.NotifyCanExecuteChanged();
+            RescanSelectedDirectoriesCommand.NotifyCanExecuteChanged();
+            CancelScanningCommand.NotifyCanExecuteChanged();
+            ResumeScanningCommand.NotifyCanExecuteChanged();
+            PauseScanningCommand.NotifyCanExecuteChanged();
         }
-
-        #region Properties
 
         TimeProvider TimeProvider { get; }
         private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; }
@@ -85,12 +76,12 @@ namespace FileSystemViewer.ViewModels
             {
                 if (SetProperty(ref _selectedFileSystemNode, value))
                 {
-                    (RescanSelectedDirectoriesCommand as RelayCommand<XamlRoot>)!.NotifyCanExecuteChanged();
+                    RescanSelectedDirectoriesCommand.NotifyCanExecuteChanged();
                 }
             }
         }
 
-        // Selection mode: All drives (0) or selected (1).
+        // Selection mode: all drives (0) or selected (1).
         private int _selectedScanningTargetIndex;
         public int SelectedScanningTargetIndex
         {
@@ -105,15 +96,10 @@ namespace FileSystemViewer.ViewModels
             set { SetProperty(ref _progressBarVisibility, value); }
         }
 
-        #endregion
-
-        #region Commands
-
-        private ICommand? _openTargetSelectDialogCommand;
-        public ICommand OpenTargetSelectDialogCommand => _openTargetSelectDialogCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        private RelayCommand<XamlRoot>? _openTargetSelectDialogCommand;
+        public RelayCommand<XamlRoot> OpenTargetSelectDialogCommand => _openTargetSelectDialogCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
             LoadAvailableDrives();
-
             SelectedTargetDrives.Clear();
 
             var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Target selection...", "Apply",
@@ -128,7 +114,9 @@ namespace FileSystemViewer.ViewModels
                     DriveNodes.Clear();
 
                     if (CurrentScanningCancellationTokenSource != null)
+                    {
                         CurrentScanningCancellationTokenSource.Dispose();
+                    }
 
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
@@ -152,12 +140,11 @@ namespace FileSystemViewer.ViewModels
                         };
                         DriveNodes.Add(drive);
                     }
-                    await ScanSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                    await ProceedScanForSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
                 else
                 {
                     DriveNodes.Clear();
-
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
 
@@ -180,24 +167,21 @@ namespace FileSystemViewer.ViewModels
                         };
                         DriveNodes.Add(drive);
                     }
-                    await ScanSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                    await ProceedScanForSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
             }
-            
         }, (xamltoor) => ApplicationState.CurrentScanningState == AppState.ScanningStates.None || ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled);
 
-
-        // Updates drives list in selection target menu
-        private ICommand? _refreshAvailableDrivesCollectionCommand;
-        public ICommand RefreshAvailableDrivesCollectionCommand => _refreshAvailableDrivesCollectionCommand ??= new RelayCommand(() =>
+        // Updates drives list in selection target menu.
+        private RelayCommand? _refreshAvailableDrivesCollectionCommand;
+        public RelayCommand RefreshAvailableDrivesCollectionCommand => _refreshAvailableDrivesCollectionCommand ??= new RelayCommand(() =>
         {
             LoadAvailableDrives();
         });
 
-        
-        // Starts scanning target again
-        private ICommand? _refreshScanningCommand;
-        public ICommand RefreshScanningCommand => _refreshScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        // Starts scanning target again.
+        private RelayCommand<XamlRoot>? _refreshScanningCommand;
+        public RelayCommand<XamlRoot> RefreshScanningCommand => _refreshScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
             if (!DriveNodes.Any())
                 return;
@@ -219,21 +203,22 @@ namespace FileSystemViewer.ViewModels
                 }
 
                 if (CurrentScanningCancellationTokenSource != null)
+                {
                     CurrentScanningCancellationTokenSource.Dispose();
+                }
 
                 CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                 PauseResetTokenSource = new PauseResetTokenSource();
 
-                await ScanSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                await ProceedScanForSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
             }
         }, (xamlRoot) => ApplicationState.CurrentScanningState == AppState.ScanningStates.None || ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled);
 
-
-        // Starts scanning target again for selected directory nodes
-        private ICommand? _rescanSelectedDirectoriesCommand;
-        public ICommand RescanSelectedDirectoriesCommand => _rescanSelectedDirectoriesCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        // Starts scanning target again for selected directory nodes.
+        private RelayCommand<XamlRoot>? _rescanSelectedDirectoriesCommand;
+        public RelayCommand<XamlRoot> RescanSelectedDirectoriesCommand => _rescanSelectedDirectoriesCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
-            if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode directoryNode)
+            if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode selectedDirectoryNode)
             {
                 var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Rescan targets confirmation", "Confirm",
                    ContentDialogButton.Primary, $"Are you sure you want to rescan the selected directories?", "Cancel", null);
@@ -241,28 +226,26 @@ namespace FileSystemViewer.ViewModels
                 if (dialogResult == ContentDialogResult.Primary)
                 {
                     if (CurrentScanningCancellationTokenSource != null)
+                    {
                         CurrentScanningCancellationTokenSource.Dispose();
+                    }
 
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
 
-                    directoryNode.FileSystemNodes!.Clear();
-                    directoryNode.FileCount = 0;
-                    directoryNode.Size = 0;
+                    RemoveDataForRescannedDirectory(selectedDirectoryNode);
 
-                    directoryNode.UpdateSizeProperty();
-                    directoryNode.UpdateFileCountProperty();
-                    directoryNode.UpdatePercentProperty();
+                    selectedDirectoryNode.FileSystemNodes!.Clear();
+                    selectedDirectoryNode.FileCount = 0;
+                    selectedDirectoryNode.Size = 0;
 
-                    await ScanSelectedTargetAsync(new ObservableCollection<DirectoryNode>() { directoryNode }, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
+                    await ProceedScanForSelectedTargetAsync(new ObservableCollection<DirectoryNode>() { selectedDirectoryNode }, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
             }
         }, (xamlRoot) => (ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled) && (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode));
 
-        #region Scanning managing commands
-
-        private ICommand? _cancelScanningCommand;
-        public ICommand CancelScanningCommand => _cancelScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        private RelayCommand<XamlRoot>? _cancelScanningCommand;
+        public RelayCommand<XamlRoot> CancelScanningCommand => _cancelScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
         {
             var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Cancel scanning confirmation", "Yes",
                 ContentDialogButton.Primary, $"Are you sure you want to cancel the scanning process?", "No", null);
@@ -275,25 +258,24 @@ namespace FileSystemViewer.ViewModels
 
         }, (xamlRoot) => ApplicationState.CurrentScanningState == AppState.ScanningStates.InProgress || ApplicationState.CurrentScanningState == AppState.ScanningStates.Paused);
 
-        private ICommand? _resumeScanningCommand;
-        public ICommand ResumeScanningCommand => _resumeScanningCommand ??= new RelayCommand(async () =>
+        private RelayCommand? _resumeScanningCommand;
+        public RelayCommand ResumeScanningCommand => _resumeScanningCommand ??= new RelayCommand(async () =>
         {
             PauseResetTokenSource!.Reset();
             ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
 
         }, () => ApplicationState.CurrentScanningState == AppState.ScanningStates.Paused);
 
-        private ICommand? _pauseScanningCommand;
-        public ICommand PauseScanningCommand => _pauseScanningCommand ??= new RelayCommand(async () =>
+        private RelayCommand? _pauseScanningCommand;
+        public RelayCommand PauseScanningCommand => _pauseScanningCommand ??= new RelayCommand(async () =>
         {
             PauseResetTokenSource!.Pause();
             ApplicationState.CurrentScanningState = AppState.ScanningStates.Paused;
 
         }, () => ApplicationState.CurrentScanningState == AppState.ScanningStates.InProgress);
-        #endregion
 
-        private ICommand? _openTreeViewNewWindowCommand;
-        public ICommand OpenTreeViewNewWindowCommand => _openTreeViewNewWindowCommand ??= new RelayCommand(async () =>
+        private RelayCommand? _openTreeViewNewWindowCommand;
+        public RelayCommand OpenTreeViewNewWindowCommand => _openTreeViewNewWindowCommand ??= new RelayCommand(async () =>
         {
             string windowKey = nameof(TreeViewWindow);
 
@@ -306,8 +288,8 @@ namespace FileSystemViewer.ViewModels
             }
         });
 
-        private ICommand? _openTreeMapNewWindowCommand;
-        public ICommand OpenTreeMapNewWindowCommand => _openTreeMapNewWindowCommand ??= new RelayCommand(async () =>
+        private RelayCommand? _openTreeMapNewWindowCommand;
+        public RelayCommand OpenTreeMapNewWindowCommand => _openTreeMapNewWindowCommand ??= new RelayCommand(async () =>
         {
             string windowKey = nameof(TreemapWindow);
 
@@ -319,158 +301,76 @@ namespace FileSystemViewer.ViewModels
                 treemapWindow.Activate();
             }
         });
-        #endregion
 
-        #region Methods
-        private async Task ScanSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode
+        private async Task ProceedScanForSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode
         {
-            var progress = new Progress<List<FileSystemNode>>(data =>
-            {
-                Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
+            long targetSizeSum;
+            long startTime;
+            TimeSpan elapsedTime;
 
-                foreach (FileSystemNode node in data)
-                {
-                    DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
-
-                    parentNode.FileSystemNodes!.Add(node);
-
-                    if (node is DirectoryNode)
-                        ApplicationState.TotalDirectoriesScanned++;
-
-                    if (node is FileNode fileNode)
-                    {
-                        ApplicationState.TotalFilesScanned++;
-
-                        var values = new TotalScanValues();
-
-                        if (totalScanValues.TryGetValue(parentNode, out values))
-                        {
-                            values.TotalSizeInBytes += fileNode.Size;
-                            values.TotalFileCount++;
-                        }
-                        else
-                        {
-                            values = new TotalScanValues();
-                            values.TotalSizeInBytes = fileNode.Size;
-                            values.TotalFileCount++;
-                            totalScanValues.Add(parentNode, values);
-                        }
-
-                        FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
-                    }
-                }
-
-                foreach (KeyValuePair<DirectoryNode, TotalScanValues> pair in totalScanValues)
-                {
-                    var current = pair.Key;
-
-                    while (current != null)
-                    {
-                        current.Size += pair.Value.TotalSizeInBytes;
-                        current.FileCount += pair.Value.TotalFileCount;
-
-                        if (target.Contains(current))
-                            break;
-
-                        current = current.ParentNode as DirectoryNode;
-                    }
-                }
-            });
-
-            FileExtentionItemService.ClearFileExtensionCollection();
-            ApplicationState.FileExtensionSeriesCollection.Clear();
-            ApplicationState.FileExtensionItems.Clear();
-            ApplicationState.ScannedRootNodeNames.Clear();
-
-            ApplicationState.TotalFilesScanned = 0;
-            ApplicationState.TotalDirectoriesScanned = 0;
+            var progress = new Progress<List<FileSystemNode>>(ProcessReceivedScannedNodes);
+            ResetValuesAndCollections();
 
             ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
-            long startTime = TimeProvider.GetTimestamp();
+            startTime = TimeProvider.GetTimestamp();
 
-            // Scans the first level of every root node
+            // Scans the first level of every root node.
             foreach (DirectoryNode directoryNode in target)
             {
                 directoryNode.IsInProgress = true;
-                TotalScanValues values = DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
-                ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath);
-
-                ApplicationState.TotalDirectoriesScanned += values.TotalDirectoryCount;
-                ApplicationState.TotalFilesScanned += values.TotalFileCount;
+                ProccedScanForSelectedDirectoryLevel(directoryNode);
             }
-
-            // Scanning
+            // Scanning.
             await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, cts.Token, prts.Token);
 
             foreach (DirectoryNode directoryNode in target)
             {
                 directoryNode.IsInProgress = false;
-                directoryNode.UpdatePercentProperty();
-                directoryNode.UpdateFileCountProperty();
-                directoryNode.UpdateSizeProperty();
-
                 directoryNode.IsExpanded = true;
             }
 
-            // Calls OnPropertyChanged events after scanning for specific properties
-            foreach (DirectoryNode drive in DriveNodes)
-            {
-                drive.UpdateFileCountProperty();
-                drive.UpdateSizeProperty();
+            // Calls OnPropertyChanged events after scanning for specific properties.
+            UpdateInnerExpandedNodes(DriveNodes);
 
-                if (drive.IsExpanded == true)
-                {
-                    RefreshExpandedNodesRecursive(drive.FileSystemNodes!);
-                }
-            }
+            targetSizeSum = target.Sum(dn => dn.Size);
 
-            long sum = target.Sum(dn => dn.Size);
-
-            // Fills list with file categories by their extensions
+            // Fills list with file categories by their extensions.
             foreach (FileExtensionItem item in FileExtentionItemService.GetOrderedExtensionCollection())
             {
                 ApplicationState.FileExtensionItems.Add(item);
-                item.UpdateParameters(sum);
+                item.UpdateParameters(targetSizeSum);
             }
 
             UpdateChart(ApplicationState.FileExtensionItems);
-
-            // Build hierarchical TreemapNodes structure
+            // Build hierarchical TreemapNodes structure.
             BuildHierarchicalTreemapStructure(DriveNodes);
 
             if (CurrentScanningCancellationTokenSource != null)
+            {
                 CurrentScanningCancellationTokenSource.Dispose();
+            }
 
-            TimeSpan elapsedTime = TimeProvider.GetElapsedTime(startTime);
+            elapsedTime = TimeProvider.GetElapsedTime(startTime);
 
             if (ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled)
             {
                 string cancelImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
-
-                ToastContentBuilder cancelNotification = new ToastContentBuilder()
-                    .AddText("Scanning canceled!")
-                    .AddText($"The operation of scanning has been canceled.");
-
-                if (File.Exists(cancelImagePath))
-                    cancelNotification.AddAppLogoOverride(new Uri($"file:///{cancelImagePath}"), ToastGenericAppLogoCrop.Circle);
-
-                cancelNotification.Show();
+                NotificationManager.BuildAndShowToastNotification(
+                    "Scanning canceled!",
+                    new string[] { $"The operation of scanning has been canceled." },
+                    cancelImagePath
+                );
                 return;
             }
 
             ApplicationState.CurrentScanningState = AppState.ScanningStates.Completed;
 
             string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
-
-            ToastContentBuilder successNotification = new ToastContentBuilder()
-                .AddText("Scanning successfully completed!")
-                .AddText($"Scanned: directories {ApplicationState.TotalDirectoriesScanned}; files: {ApplicationState.TotalFilesScanned};")
-                .AddText($"Elapsed time: {elapsedTime.Humanize()}");
-
-            if (File.Exists(successImagePath))
-                successNotification.AddAppLogoOverride(new Uri($"file:///{successImagePath}"), ToastGenericAppLogoCrop.Circle);
-
-            successNotification.Show();
+            NotificationManager.BuildAndShowToastNotification(
+                "Scanning successfully completed!",
+                new string[] { $"Scanned: directories {ApplicationState.TotalDirectoriesScanned}; files: {ApplicationState.TotalFilesScanned};", $"Elapsed time: {elapsedTime.Humanize()}" },
+                successImagePath
+            );
         }
 
         private void LoadAvailableDrives()
@@ -480,6 +380,133 @@ namespace FileSystemViewer.ViewModels
             foreach (DriveInfo drive in drives)
             {
                 AllAvailableDrives.Add(drive);
+            }
+        }
+
+        private void RemoveDataForRescannedDirectory(DirectoryNode directoryNode)
+        {
+            long fileCount = directoryNode.FileCount;
+            long size = directoryNode.Size;
+            var current = directoryNode;
+
+            while (current != null)
+            {
+                current.Size -= size;
+                current.FileCount -= fileCount;
+                current = current.ParentNode as DirectoryNode;
+            }
+        }
+
+        private void ProcessReceivedScannedNodes(List<FileSystemNode> data)
+        {
+            Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
+
+            foreach (FileSystemNode node in data)
+            {
+                DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
+
+                parentNode.FileSystemNodes!.Add(node);
+
+                if (node is DirectoryNode)
+                {
+                    ApplicationState.TotalDirectoriesScanned++;
+                }
+
+                if (node is FileNode fileNode)
+                {
+                    ApplicationState.TotalFilesScanned++;
+
+                    var values = new TotalScanValues();
+
+                    if (totalScanValues.TryGetValue(parentNode, out values))
+                    {
+                        values.TotalSizeInBytes += fileNode.Size;
+                        values.TotalFileCount++;
+                    }
+                    else
+                    {
+                        values = new TotalScanValues();
+                        values.TotalSizeInBytes = fileNode.Size;
+                        values.TotalFileCount++;
+                        totalScanValues.Add(parentNode, values);
+                    }
+
+                    FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
+                }
+            }
+
+            foreach (KeyValuePair<DirectoryNode, TotalScanValues> pair in totalScanValues)
+            {
+                var current = pair.Key;
+
+                while (current != null)
+                {
+                    current.Size += pair.Value.TotalSizeInBytes;
+                    current.FileCount += pair.Value.TotalFileCount;
+                    current = current.ParentNode as DirectoryNode;
+                }
+            }
+        }
+
+        private void ResetValuesAndCollections()
+        {
+            FileExtentionItemService.ClearFileExtensionCollection();
+            ApplicationState.FileExtensionSeriesCollection.Clear();
+            ApplicationState.FileExtensionItems.Clear();
+            ApplicationState.ScannedRootNodeNames.Clear();
+
+            ApplicationState.TotalFilesScanned = 0;
+            ApplicationState.TotalDirectoriesScanned = 0;
+        }
+
+        private void ProccedScanForSelectedDirectoryLevel(DirectoryNode directoryNode)
+        {
+            TotalScanValues values = DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
+            ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath);
+
+            ApplicationState.TotalDirectoriesScanned += values.TotalDirectoryCount;
+            ApplicationState.TotalFilesScanned += values.TotalFileCount;
+
+            var current = directoryNode;
+            while (current != null)
+            {
+                current.Size += values.TotalSizeInBytes;
+                current.FileCount += values.TotalFileCount;
+                current = current.ParentNode as DirectoryNode;
+            }
+        }
+
+        private void UpdateInnerExpandedNodes<T>(ObservableCollection<T> nodes) where T : DirectoryNode
+        {
+            foreach (DirectoryNode drive in nodes)
+            {
+                drive.UpdatePercentProperty();
+                drive.UpdateFileCountProperty();
+                drive.UpdateSizeProperty();
+
+                if (drive.IsExpanded == true)
+                {
+                    RefreshExpandedNodesRecursive(drive.FileSystemNodes!);
+                }
+            }
+        }
+
+        private void RefreshExpandedNodesRecursive(ObservableCollection<FileSystemNode> nodes)
+        {
+            foreach (FileSystemNode node in nodes)
+            {
+                node.UpdatePercentProperty();
+                node.UpdateSizeProperty();
+
+                if (node is DirectoryNode directoryNode)
+                {
+                    directoryNode.UpdateFileCountProperty();
+
+                    if (directoryNode.IsExpanded == true && directoryNode.FileSystemNodes!.Any())
+                    {
+                        RefreshExpandedNodesRecursive(directoryNode.FileSystemNodes!);
+                    }
+                }
             }
         }
 
@@ -581,25 +608,6 @@ namespace FileSystemViewer.ViewModels
             return treemapNode;
         }
 
-        private void RefreshExpandedNodesRecursive(ObservableCollection<FileSystemNode> nodes)
-        {
-            foreach (FileSystemNode node in nodes)
-            {
-                node.UpdatePercentProperty();
-                node.UpdateSizeProperty();
-
-                if (node is DirectoryNode directoryNode)
-                {
-                    directoryNode.UpdateFileCountProperty();
-
-                    if (directoryNode.IsExpanded == true && directoryNode.FileSystemNodes!.Any())
-                    {
-                        RefreshExpandedNodesRecursive(directoryNode.FileSystemNodes!);
-                    }
-                }
-            }
-        }
-
         public void UpdateChart(IEnumerable<FileExtensionItem> fileItems)
         {
             ApplicationState.FileExtensionSeriesCollection.Clear();
@@ -635,19 +643,14 @@ namespace FileSystemViewer.ViewModels
             {
                 Values = new long[] { item.Size },
                 Name = item.Extension,
-
                 ToolTipLabelFormatter = point => $"{item.Percent:F2}%",
-
                 InnerRadius = 0,
                 HoverPushout = 5,
                 Pushout = 2
             };
 
-            if (item.Color.HasValue)
-            {
-                var winColor = item.Color.Value;
-                pieSeries.Fill = new SolidColorPaint(new SKColor(winColor.R, winColor.G, winColor.B, winColor.A));
-            }
+            var winColor = item.Color;
+            pieSeries.Fill = new SolidColorPaint(new SKColor(winColor.R, winColor.G, winColor.B, winColor.A));
 
             return pieSeries;
         }
@@ -657,10 +660,8 @@ namespace FileSystemViewer.ViewModels
             PieSeries<long> pieSeries = new PieSeries<long>()
             {
                 Values = new long[] { others.Sum(i => i.Size) },
-
                 Name = "Other",
                 ToolTipLabelFormatter = point => $"{others.Sum(i => i.Percent):F2}%",
-
                 InnerRadius = 0,
                 HoverPushout = 5,
                 Pushout = 2
@@ -671,6 +672,5 @@ namespace FileSystemViewer.ViewModels
 
             return pieSeries;
         }
-        #endregion
     }
 }
