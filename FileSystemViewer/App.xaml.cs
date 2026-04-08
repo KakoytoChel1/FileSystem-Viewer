@@ -1,7 +1,7 @@
-using FileSystemViewer.Models.DataModels;
-﻿using FileSystemViewer.ViewModels;
+﻿using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -84,8 +84,6 @@ namespace FileSystemViewer
                     flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
                     ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                     {
-                        var windows = appState.ActiveSubWindows.Values.ToList();
-
                         foreach (Window subWindow in appState.ActiveSubWindows.Values)
                         {
                             subWindow.Close();
@@ -95,12 +93,11 @@ namespace FileSystemViewer
                     };
                     e.Flyout = flyout;
                 };
-            }    
+            }
         }
-
         private void RunBackgroundTaskAndExit()
         {
-            
+            throw new NotImplementedException();
         }
 
         private void InitializeServices()
