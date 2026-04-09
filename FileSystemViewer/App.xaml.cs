@@ -95,6 +95,7 @@ namespace FileSystemViewer
             services.AddSingleton<AppState>();
             services.AddSingleton<MainPageViewModel>();
             services.AddSingleton<ChartPageViewModel>();
+            services.AddSingleton<SettingsViewModel>();
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();

@@ -48,5 +48,12 @@ namespace FileSystemViewer.ViewModels
 
         public long TotalFilesScanned { get; set; }
         public long TotalDirectoriesScanned { get; set; }
+
+        private Visibility _settingsMenuVisibility;
+        public Visibility SettingsMenuVisibility
+        {
+            get { return _settingsMenuVisibility; }
+            set { SetProperty(ref _settingsMenuVisibility, value); }
+        }
     }
 }

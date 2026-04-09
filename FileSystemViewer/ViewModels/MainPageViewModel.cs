@@ -302,6 +302,12 @@ namespace FileSystemViewer.ViewModels
             }
         });
 
+        private RelayCommand? _openSettingsMenuCommand;
+        public RelayCommand OpenSettingsMenuCommand => _openSettingsMenuCommand ??= new RelayCommand(async () =>
+        {
+            ApplicationState.SettingsMenuVisibility = Visibility.Visible;
+        });
+
         private async Task ProceedScanForSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode
         {
             long targetSizeSum;
