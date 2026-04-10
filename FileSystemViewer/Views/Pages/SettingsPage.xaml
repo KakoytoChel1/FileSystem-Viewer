@@ -37,6 +37,7 @@
 
                         <Button
                             Command="{x:Bind ViewModel.CloseSettingsMenuCommand}"
+                            CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
                             HorizontalAlignment="Right"
                             Content="&#xE711;"
                             Style="{StaticResource SettingsPageHeaderButtons}"/>
@@ -61,10 +62,10 @@
                                 Text="*">
                                 
                                 <i:Interaction.Behaviors>
-                                    <i:DataTriggerBehavior Binding="{x:Bind ViewModel.IsThereUnsavedChanges, Mode=TwoWay}" ComparisonCondition="Equal" Value="True">
+                                    <i:DataTriggerBehavior Binding="{x:Bind ViewModel.IsThereUnsavedChanges, Mode=OneWay}" ComparisonCondition="Equal" Value="True">
                                         <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
                                     </i:DataTriggerBehavior>
-                                    <i:DataTriggerBehavior Binding="{x:Bind ViewModel.IsThereUnsavedChanges, Mode=TwoWay}" ComparisonCondition="Equal" Value="False">
+                                    <i:DataTriggerBehavior Binding="{x:Bind ViewModel.IsThereUnsavedChanges, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
                                         <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
                                     </i:DataTriggerBehavior>
                                 </i:Interaction.Behaviors>
@@ -76,6 +77,7 @@
 
                                 <Button
                                     Command="{x:Bind ViewModel.ImportSettingsCommand}"
+                                    CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
                                     Content="&#xE8B5;"
                                     Style="{StaticResource SettingsPageHeaderButtons}"
                                     ToolTipService.ToolTip="Import settings"/>
@@ -87,6 +89,7 @@
 
                                 <Button
                                     Command="{x:Bind ViewModel.ExportSettingsCommand}"
+                                    CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
                                     Content="&#xEDE1;"
                                     Style="{StaticResource SettingsPageHeaderButtons}"
                                     ToolTipService.ToolTip="Export settings"/>
@@ -115,7 +118,8 @@
                                     Text="System tray"/>
 
                                 <ToggleSwitch
-                                    Margin="0,4,0,0"/>
+                                    Margin="0,4,0,0"
+                                    IsOn="{x:Bind ViewModel.IsTrayToggleOn, Mode=TwoWay}"/>
                             </StackPanel>
                         </Border>
 
@@ -144,7 +148,8 @@
 
                                     <ToggleSwitch
                                         x:Name="ScheduledScanToggle"
-                                        Margin="0,4,0,0"/>
+                                        Margin="0,4,0,0"
+                                        IsOn="{x:Bind ViewModel.IsSchedulerScanToggleOn, Mode=TwoWay}"/>
                                 </StackPanel>
 
                                 <!--Content-->
@@ -184,6 +189,22 @@
                         Margin="0,0,10,10"
                         Orientation="Horizontal"
                         Spacing="5">
+
+                        <Button
+                            Command="{x:Bind ViewModel.RestoreSettingsCommand}"
+                            CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot, Mode=TwoWay}">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="10">
+
+                                <FontIcon
+                                    Glyph="&#xE777;"
+                                    FontSize="16"/>
+
+                                <TextBlock
+                                    Text="Restore"/>
+                            </StackPanel>
+                        </Button>
 
                         <Button
                             Command="{x:Bind ViewModel.SetSettingsByDefaultCommand}"

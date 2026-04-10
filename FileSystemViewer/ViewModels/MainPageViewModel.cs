@@ -20,10 +20,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FileSystemViewer.ViewModels
 {
-    public class MainPageViewModel : ViewModelBase
+    public partial class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, AppState appState, 
@@ -63,43 +64,22 @@ namespace FileSystemViewer.ViewModels
         public ObservableCollection<DriveInfo> AllAvailableDrives { get; set; }
         public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
 
-        private ObservableCollection<TreemapNode>? _treemapNodes;
-        public ObservableCollection<TreemapNode>? TreemapNodes
-        {
-            get { return _treemapNodes; }
-            set { SetProperty(ref _treemapNodes, value); }
-        }
+        [ObservableProperty]
+        public partial ObservableCollection<TreemapNode>? TreemapNodes { get; set; }
 
-        private FileSystemNode? _selectedFileSystemNode;
-        public FileSystemNode? SelectedFileSystemNode
-        {
-            get { return _selectedFileSystemNode; }
-            set
-            {
-                if (SetProperty(ref _selectedFileSystemNode, value))
-                {
-                    RescanSelectedDirectoriesCommand.NotifyCanExecuteChanged();
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(RescanSelectedDirectoriesCommand))]
+        public partial FileSystemNode? SelectedFileSystemNode { get; set; }
 
         // Selection mode: all drives (0) or selected (1).
-        private int _selectedScanningTargetIndex;
-        public int SelectedScanningTargetIndex
-        {
-            get { return _selectedScanningTargetIndex; }
-            set { SetProperty(ref _selectedScanningTargetIndex, value); }
-        }
+        [ObservableProperty]
+        public partial int SelectedScanningTargetIndex { get; set; }
 
-        private Visibility _progressBarVisibility;
-        public Visibility ProgressBarVisibility
-        {
-            get { return _progressBarVisibility; }
-            set { SetProperty(ref _progressBarVisibility, value); }
-        }
+        [ObservableProperty]
+        public partial Visibility ProgressBarVisibility { get; set; }
 
-        private RelayCommand<XamlRoot>? _openTargetSelectDialogCommand;
-        public RelayCommand<XamlRoot> OpenTargetSelectDialogCommand => _openTargetSelectDialogCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        [RelayCommand(CanExecute = nameof(IsScanningOperationsAvailable))]
+        public async Task OpenTargetSelectDialog(XamlRoot xamlRoot)
         {
             LoadAvailableDrives();
             SelectedTargetDrives.Clear();
@@ -172,18 +152,19 @@ namespace FileSystemViewer.ViewModels
                     await ProceedScanForSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
             }
-        }, (xamltoor) => ApplicationState.CurrentScanningState == AppState.ScanningStates.None || ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled);
+        }
+        private bool IsScanningOperationsAvailable() => ApplicationState.CurrentScanningState == AppState.ScanningStates.None || ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled;
 
         // Updates drives list in selection target menu.
-        private RelayCommand? _refreshAvailableDrivesCollectionCommand;
-        public RelayCommand RefreshAvailableDrivesCollectionCommand => _refreshAvailableDrivesCollectionCommand ??= new RelayCommand(() =>
+        [RelayCommand]
+        public void RefreshAvailableDrivesCollection()
         {
             LoadAvailableDrives();
-        });
+        }
 
         // Starts scanning target again.
-        private RelayCommand<XamlRoot>? _refreshScanningCommand;
-        public RelayCommand<XamlRoot> RefreshScanningCommand => _refreshScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        [RelayCommand(CanExecute = nameof(IsScanningOperationsAvailable))]
+        public async Task RefreshScanning(XamlRoot xamlRoot)
         {
             if (!DriveNodes.Any())
                 return;
@@ -214,11 +195,11 @@ namespace FileSystemViewer.ViewModels
 
                 await ProceedScanForSelectedTargetAsync(DriveNodes, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
             }
-        }, (xamlRoot) => ApplicationState.CurrentScanningState == AppState.ScanningStates.None || ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled);
+        }
 
         // Starts scanning target again for selected directory nodes.
-        private RelayCommand<XamlRoot>? _rescanSelectedDirectoriesCommand;
-        public RelayCommand<XamlRoot> RescanSelectedDirectoriesCommand => _rescanSelectedDirectoriesCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        [RelayCommand(CanExecute = nameof(IsDirectoryScanningAvailable))]
+        public async Task RescanSelectedDirectories(XamlRoot xamlRoot)
         {
             if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode selectedDirectoryNode)
             {
@@ -244,10 +225,11 @@ namespace FileSystemViewer.ViewModels
                     await ProceedScanForSelectedTargetAsync(new ObservableCollection<DirectoryNode>() { selectedDirectoryNode }, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
                 }
             }
-        }, (xamlRoot) => (ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled) && (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode));
+        }
+        private bool IsDirectoryScanningAvailable() => (ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled) && (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode);
 
-        private RelayCommand<XamlRoot>? _cancelScanningCommand;
-        public RelayCommand<XamlRoot> CancelScanningCommand => _cancelScanningCommand ??= new RelayCommand<XamlRoot>(async (xamlRoot) =>
+        [RelayCommand(CanExecute = nameof(IsCancelScanningAvailable))]
+        public async Task CancelScanning(XamlRoot xamlRoot)
         {
             var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Cancel scanning confirmation", "Yes",
                 ContentDialogButton.Primary, $"Are you sure you want to cancel the scanning process?", "No", null);
@@ -257,27 +239,30 @@ namespace FileSystemViewer.ViewModels
                 CurrentScanningCancellationTokenSource!.Cancel();
                 ApplicationState.CurrentScanningState = AppState.ScanningStates.Canceled;
             }
+        }
+        private bool IsCancelScanningAvailable() => ApplicationState.CurrentScanningState == AppState.ScanningStates.InProgress || ApplicationState.CurrentScanningState == AppState.ScanningStates.Paused;
 
-        }, (xamlRoot) => ApplicationState.CurrentScanningState == AppState.ScanningStates.InProgress || ApplicationState.CurrentScanningState == AppState.ScanningStates.Paused);
 
-        private RelayCommand? _resumeScanningCommand;
-        public RelayCommand ResumeScanningCommand => _resumeScanningCommand ??= new RelayCommand(async () =>
+        [RelayCommand(CanExecute = nameof(IsResumeScanningAvailable))]
+        public void ResumeScanning()
         {
             PauseResetTokenSource!.Reset();
             ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
 
-        }, () => ApplicationState.CurrentScanningState == AppState.ScanningStates.Paused);
+        }
+        private bool IsResumeScanningAvailable() => ApplicationState.CurrentScanningState == AppState.ScanningStates.Paused;
 
-        private RelayCommand? _pauseScanningCommand;
-        public RelayCommand PauseScanningCommand => _pauseScanningCommand ??= new RelayCommand(async () =>
+        [RelayCommand(CanExecute = nameof(IsPauseScanningAvailable))]
+        public async Task PauseScanning()
         {
             PauseResetTokenSource!.Pause();
             ApplicationState.CurrentScanningState = AppState.ScanningStates.Paused;
 
-        }, () => ApplicationState.CurrentScanningState == AppState.ScanningStates.InProgress);
+        }
+        private bool IsPauseScanningAvailable() => ApplicationState.CurrentScanningState == AppState.ScanningStates.InProgress;
 
-        private RelayCommand? _openTreeViewNewWindowCommand;
-        public RelayCommand OpenTreeViewNewWindowCommand => _openTreeViewNewWindowCommand ??= new RelayCommand(async () =>
+        [RelayCommand]
+        public void OpenTreeViewNewWindow()
         {
             string windowKey = nameof(TreeViewWindow);
 
@@ -288,10 +273,10 @@ namespace FileSystemViewer.ViewModels
                 ApplicationState.ActiveSubWindows.Add(windowKey, treeViewWindow);
                 treeViewWindow.Activate();
             }
-        });
+        }
 
-        private RelayCommand? _openTreeMapNewWindowCommand;
-        public RelayCommand OpenTreeMapNewWindowCommand => _openTreeMapNewWindowCommand ??= new RelayCommand(async () =>
+        [RelayCommand]
+        public void OpenTreeMapNewWindow()
         {
             string windowKey = nameof(TreemapWindow);
 
@@ -302,13 +287,13 @@ namespace FileSystemViewer.ViewModels
                 ApplicationState.ActiveSubWindows.Add(windowKey, treemapWindow);
                 treemapWindow.Activate();
             }
-        });
+        }
 
-        private RelayCommand? _openSettingsMenuCommand;
-        public RelayCommand OpenSettingsMenuCommand => _openSettingsMenuCommand ??= new RelayCommand(async () =>
+        [RelayCommand]
+        public void OpenSettingsMenu()
         {
             ApplicationState.SettingsMenuVisibility = Visibility.Visible;
-        });
+        }
 
         private async Task ProceedScanForSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode
         {
