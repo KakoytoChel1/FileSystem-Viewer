@@ -25,7 +25,9 @@ namespace FileSystemViewer.ViewModels
 {
     public class MainPageViewModel : ViewModelBase
     {
-        public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState, TimeProvider timeProvider) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState)
+        public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, AppState appState, 
+            TimeProvider timeProvider) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, appState)
         {
             DriveNodes = new ObservableCollection<DriveNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
@@ -324,7 +326,7 @@ namespace FileSystemViewer.ViewModels
             foreach (DirectoryNode directoryNode in target)
             {
                 directoryNode.IsInProgress = true;
-                ProccedScanForSelectedDirectoryLevel(directoryNode);
+                ProceedScanForSelectedDirectoryLevel(directoryNode);
             }
             // Scanning.
             await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, cts.Token, prts.Token);
@@ -363,7 +365,7 @@ namespace FileSystemViewer.ViewModels
                 string cancelImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
                 NotificationManager.BuildAndShowToastNotification(
                     "Scanning canceled!",
-                    new string[] { $"The operation of scanning has been canceled." },
+                    "The operation of scanning has been canceled.",
                     cancelImagePath
                 );
                 return;
@@ -374,7 +376,7 @@ namespace FileSystemViewer.ViewModels
             string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
             NotificationManager.BuildAndShowToastNotification(
                 "Scanning successfully completed!",
-                new string[] { $"Scanned: directories {ApplicationState.TotalDirectoriesScanned}; files: {ApplicationState.TotalFilesScanned};", $"Elapsed time: {elapsedTime.Humanize()}" },
+                $"Scanned: directories {ApplicationState.TotalDirectoriesScanned}; files: {ApplicationState.TotalFilesScanned};\nElapsed time: {elapsedTime.Humanize()}.",
                 successImagePath
             );
         }
@@ -465,7 +467,7 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.TotalDirectoriesScanned = 0;
         }
 
-        private void ProccedScanForSelectedDirectoryLevel(DirectoryNode directoryNode)
+        private void ProceedScanForSelectedDirectoryLevel(DirectoryNode directoryNode)
         {
             TotalScanValues values = DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
             ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath);

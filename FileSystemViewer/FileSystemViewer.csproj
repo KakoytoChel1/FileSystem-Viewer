@@ -24,6 +24,7 @@
     <None Remove="Assets\file.png" />
     <None Remove="Assets\refresh directory.png" />
     <None Remove="Assets\refresh disk.png" />
+    <None Remove="Assets\warning.png" />
     <None Remove="Views\DialogPages\TargetSelectDialog.xaml" />
     <None Remove="Views\Pages\ChartPage.xaml" />
     <None Remove="Views\Pages\MainPage.xaml" />
@@ -70,6 +71,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
+    <PackageReference Include="TaskScheduler" Version="2.12.2" />
     <PackageReference Include="WinUIEx" Version="2.9.0" />
   </ItemGroup>
   <ItemGroup>

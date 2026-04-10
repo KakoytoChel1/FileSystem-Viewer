@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.Views.Windows;
 
@@ -6,7 +7,9 @@ namespace FileSystemViewer.ViewModels
 {
     public class ChartPageViewModel : ViewModelBase
     {
-        public ChartPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState) { }
+        public ChartPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
+            AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, appState) { }
 
         private RelayCommand? _openChartTabsWindowCommand;
         public RelayCommand OpenChartTabsNewWindowCommand => _openChartTabsWindowCommand ??= new RelayCommand(async () =>
