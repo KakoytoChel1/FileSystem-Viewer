@@ -1,12 +1,15 @@
-﻿using FileSystemViewer.ViewModels;
+﻿using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using WinUIEx;
 
 namespace FileSystemViewer
@@ -53,39 +56,64 @@ namespace FileSystemViewer
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        protected async override void OnLaunched(LaunchActivatedEventArgs args)
         {
             InitializeServices();
 
-            AppState appState = ServiceProvider.GetRequiredService<AppState>();
+            string[] cmdArgs = Environment.GetCommandLineArgs();
+            IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
+            IBackgroundSchedulerService backgroundSchedulerService = ServiceProvider.GetRequiredService<IBackgroundSchedulerService>();
 
-            Window window = GetMainWindow();
-            window.Activate();
+            //backgroundSchedulerService.RegisterDailyTask(new TimeSpan(18, 53, 0));
+            //backgroundSchedulerService.DeleteDailyTask("FileSystemViewer");
+            //backgroundSchedulerService.UpdateDailyTaskTime("FileSystemViewer", new TimeSpan(19, 6, 0));
 
-            icon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
-            icon.IsVisible = true;
-            icon.Selected += (s, e) => window.Activate();
-            icon.ContextMenu += (w, e) =>
+            if (cmdArgs.Contains(BackgroundSchedulerService.ArgumentName))
             {
-                var flyout = new MenuFlyout();
+                await RunBackgroundTaskAndExit(backgroundScannerService);
+            }
+            else
+            {
+                AppState appState = ServiceProvider.GetRequiredService<AppState>();
 
-                flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
-                ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+                Window window = GetMainWindow();
+                window.Activate();
 
-                flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
-                ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
+                icon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
+                icon.IsVisible = true;
+                icon.Selected += (s, e) => window.Activate();
+                icon.ContextMenu += (w, e) =>
                 {
-                    var windows = appState.ActiveSubWindows.Values.ToList();
+                    var flyout = new MenuFlyout();
 
-                    foreach (Window subWindow in windows)
+                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
+                    ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+
+                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
+                    ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                     {
-                        subWindow.Close();
-                    }
-                    window?.Close();
-                    icon.Dispose();
+                        foreach (Window subWindow in appState.ActiveSubWindows.Values)
+                        {
+                            subWindow.Close();
+                        }
+                        window?.Close();
+                        icon.Dispose();
+                    };
+                    e.Flyout = flyout;
                 };
-                e.Flyout = flyout;
-            };
+            }
+        }
+        private async Task RunBackgroundTaskAndExit(IBackgroundScannerService backgroundScannerService)
+        {
+            await backgroundScannerService.ProceedScan().ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    string errorImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
+                    NotificationManager.BuildAndShowToastNotification("Scanning was canceled", "Error occured.", errorImagePath);
+                }
+                Environment.Exit(0);
+            });
         }
 
         private void InitializeServices()
@@ -99,6 +127,9 @@ namespace FileSystemViewer
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
+            services.AddSingleton<IConfigurationService<AppSettings>, ConfigurationService<AppSettings>>();
+            services.AddSingleton<IBackgroundScannerService, BackgroundScannerService>();
+            services.AddSingleton<IBackgroundSchedulerService, BackgroundSchedulerService>();
 
             services.AddSingleton(TimeProvider.System);
 
