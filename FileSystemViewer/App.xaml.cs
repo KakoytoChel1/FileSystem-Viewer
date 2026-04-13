@@ -74,44 +74,52 @@ namespace FileSystemViewer
         /// <param name="args">Details about the launch request and process.</param>
         protected async override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            InitializeServices();
-
-            string[] cmdArgs = Environment.GetCommandLineArgs();
-            _backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
-            _appState = ServiceProvider.GetRequiredService<AppState>();
-            _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
-
-            if (cmdArgs.Contains(BackgroundSchedulerService.ArgumentName))
+            try
             {
-                await RunBackgroundTaskAndExit(_backgroundScannerService);
-            }
-            else
-            {
-                trayIcon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
-                Window window = GetMainWindow();
-                _appState.SetMainWindowHandle(window.GetWindowHandle());
-                window.Activate();
+                InitializeServices();
 
-                trayIcon.IsVisible = true;
-                trayIcon.Selected += (s, e) => window.Activate();
-                trayIcon.ContextMenu += (w, e) =>
+                string[] cmdArgs = Environment.GetCommandLineArgs();
+                _backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
+                _appState = ServiceProvider.GetRequiredService<AppState>();
+                _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
+
+                if (cmdArgs.Contains(BackgroundSchedulerService.ArgumentName))
                 {
-                    var flyout = new MenuFlyout();
+                    await RunBackgroundTaskAndExit(_backgroundScannerService);
+                }
+                else
+                {
+                    trayIcon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
+                    Window window = GetMainWindow();
+                    _appState.SetMainWindowHandle(window.GetWindowHandle());
+                    window.Activate();
 
-                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
-                    ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
-
-                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
-                    ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
+                    trayIcon.IsVisible = true;
+                    trayIcon.Selected += (s, e) => window.Activate();
+                    trayIcon.ContextMenu += (w, e) =>
                     {
-                        CloseSubWindows();
-                        window?.Close();
-                        trayIcon.Dispose();
+                        var flyout = new MenuFlyout();
+
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
+                        ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
+                        ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
+                        {
+                            CloseSubWindows();
+                            window?.Close();
+                            trayIcon.Dispose();
+                        };
+                        e.Flyout = flyout;
                     };
-                    e.Flyout = flyout;
-                };
+                }
+            }
+            catch (Exception ex)
+            {
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
             }
         }
+
         private async Task RunBackgroundTaskAndExit(IBackgroundScannerService backgroundScannerService)
         {
             await backgroundScannerService.ProceedScan().ContinueWith(task =>
