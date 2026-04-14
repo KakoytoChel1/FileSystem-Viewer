@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 
 namespace FileSystemViewer.ViewModels
 {
-    public class AppState : ObservableObject
+    public partial class AppState : ObservableObject
     {
         public AppState()
         {
@@ -48,5 +48,18 @@ namespace FileSystemViewer.ViewModels
 
         public long TotalFilesScanned { get; set; }
         public long TotalDirectoriesScanned { get; set; }
+
+        [ObservableProperty]
+        public partial Visibility SettingsMenuVisibility { get; set; }
+
+        public nint MainWindowHandle { get; private set; } = 0;
+
+        public void SetMainWindowHandle(nint handle)
+        {
+            if (MainWindowHandle == 0)
+            {
+                MainWindowHandle = handle;
+            }
+        }
     }
 }

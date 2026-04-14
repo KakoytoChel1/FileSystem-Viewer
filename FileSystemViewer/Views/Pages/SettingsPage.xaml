@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FileSystemViewer.Views.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FileSystemViewer.Views.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    Background="Transparent"
+    x:Name="settingsPage">
+
+    <Border Background="{ThemeResource SmokeFillColorDefaultBrush}">
+        <Grid>
+            <Border
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"
+                CornerRadius="7"
+                Margin="150,50,150,50">
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!--Header grid-->
+                    <Grid
+                        Grid.Row="0">
+                        <Border
+                            Background="{ThemeResource SmokeFillColorDefaultBrush}"
+                            Opacity="0.3"
+                            BorderThickness="0,0,0,1"
+                            BorderBrush="{ThemeResource CircleElevationBorderBrush}"/>
+
+                        <Button
+                            Command="{x:Bind ViewModel.CloseSettingsMenuCommand}"
+                            CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
+                            HorizontalAlignment="Right"
+                            Content="&#xE711;"
+                            Style="{StaticResource SettingsPageHeaderButtons}"/>
+
+                        <StackPanel
+                            Margin="10,0,0,0"
+                            Orientation="Horizontal"
+                            Spacing="10">
+
+                            <FontIcon
+                                FontSize="17"
+                                Glyph="&#xE9F5;"/>
+
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="FileViewer settings"
+                                FontSize="13"
+                                FontWeight="SemiLight"/>
+                            <TextBlock
+                                Margin="-7,0,0,0"
+                                VerticalAlignment="Center"
+                                Text="*">
+                                
+                                <i:Interaction.Behaviors>
+                                    <i:DataTriggerBehavior Binding="{x:Bind ViewModel.IsThereUnsavedChanges, Mode=OneWay}" ComparisonCondition="Equal" Value="True">
+                                        <i:ChangePropertyAction PropertyName="Visibility" Value="Visible"/>
+                                    </i:DataTriggerBehavior>
+                                    <i:DataTriggerBehavior Binding="{x:Bind ViewModel.IsThereUnsavedChanges, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
+                                        <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                                    </i:DataTriggerBehavior>
+                                </i:Interaction.Behaviors>
+                            </TextBlock>
+
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="3">
+
+                                <Button
+                                    Command="{x:Bind ViewModel.ImportSettingsCommand}"
+                                    CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
+                                    Content="&#xE8B5;"
+                                    Style="{StaticResource SettingsPageHeaderButtons}"
+                                    ToolTipService.ToolTip="Import settings"/>
+                                
+                                <Border
+                                    Margin="0,5,0,5"
+                                    Width="1"
+                                    Background="{ThemeResource CircleElevationBorderBrush}"/>
+
+                                <Button
+                                    Command="{x:Bind ViewModel.ExportSettingsCommand}"
+                                    CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
+                                    Content="&#xEDE1;"
+                                    Style="{StaticResource SettingsPageHeaderButtons}"
+                                    ToolTipService.ToolTip="Export settings"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!--Content grid-->
+                    <StackPanel
+                        Margin="0,5,0,0"
+                        Orientation="Vertical"
+                        Grid.Row="1">
+
+                        <!--Tray activity toggle settings-->
+                        <Border
+                            Style="{StaticResource SettingsPanelBorder}">
+                            <StackPanel
+                                Padding="10,0,0,5"
+                                Orientation="Horizontal"
+                                Spacing="10">
+
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"
+                                    Text="System tray"/>
+
+                                <ToggleSwitch
+                                    Margin="0,4,0,0"
+                                    IsOn="{x:Bind ViewModel.IsTrayToggleOn, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!--Scheduled scan settings-->
+                        <Border
+                            Style="{StaticResource SettingsPanelBorder}">
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <!--Header-->
+                                <StackPanel
+                                    Grid.Row="0"
+                                    Padding="10,0,0,5"
+                                    Orientation="Horizontal"
+                                    Spacing="10">
+
+                                    <TextBlock
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        VerticalAlignment="Center"
+                                        Text="Scheduled scanning"/>
+
+                                    <ToggleSwitch
+                                        x:Name="ScheduledScanToggle"
+                                        Margin="0,4,0,0"
+                                        IsOn="{x:Bind ViewModel.IsSchedulerScanToggleOn, Mode=TwoWay}"/>
+                                </StackPanel>
+
+                                <!--Content-->
+                                <Grid
+                                    Grid.Row="1"
+                                    Padding="10,0,0,5">
+
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="20">
+
+                                        <TimePicker
+                                            x:Name="DailyScanTimePicker"
+                                            IsEnabled="{Binding ElementName=ScheduledScanToggle, Path=IsOn, Mode=OneWay}"
+                                            Header="Daily scan time"
+                                            Time="{x:Bind ViewModel.ScheduledScanTimeSpan, Mode=TwoWay}"/>
+
+                                        <NumberBox
+                                            IsEnabled="{Binding ElementName=ScheduledScanToggle, Path=IsOn, Mode=OneWay}"
+                                            Value="{x:Bind ViewModel.MinCriticalFreeSpacePercent, Mode=TwoWay}"
+                                            SmallChange="10"
+                                            Minimum="0"
+                                            Maximum="100"
+                                            Header="Minimum critical space percent"
+                                            SpinButtonPlacementMode="Inline"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!--Right-bottom corner buttons panel-->
+                    <StackPanel
+                        Grid.Row="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,10,10"
+                        Orientation="Horizontal"
+                        Spacing="5">
+
+                        <Button
+                            Command="{x:Bind ViewModel.RestoreSettingsCommand}"
+                            CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot, Mode=TwoWay}">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="10">
+
+                                <FontIcon
+                                    Glyph="&#xE777;"
+                                    FontSize="16"/>
+
+                                <TextBlock
+                                    Text="Restore"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button
+                            Command="{x:Bind ViewModel.SetSettingsByDefaultCommand}"
+                            CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot, Mode=TwoWay}">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="10">
+
+                                <FontIcon
+                                    Glyph="&#xE835;"
+                                    FontSize="16"/>
+
+                                <TextBlock
+                                    Text="Set by default"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button
+                            Command="{x:Bind ViewModel.SaveSettingsCommand}"
+                            Style="{ThemeResource AccentButtonStyle}">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="10">
+
+                                <FontIcon
+                                    Glyph="&#xE74E;"
+                                    FontSize="16"/>
+
+                                <TextBlock
+                                    Text="Save"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Page>

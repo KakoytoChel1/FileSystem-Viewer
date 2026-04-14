@@ -16,8 +16,12 @@ namespace FileSystemViewer
 {
     public partial class App : Application
     {
-        private TrayIcon? icon;
+        private TrayIcon? trayIcon;
         private Window? _window;
+
+        private AppState? _appState;
+        private IConfigurationService<AppSettings>? _configurationService;
+        private IBackgroundScannerService? _backgroundScannerService;
 
         public IServiceProvider ServiceProvider { get; private set; } = null!;
 
@@ -46,8 +50,20 @@ namespace FileSystemViewer
             _window = new MainWindow();
             _window.AppWindow.Closing += (window, args) =>
             {
-                args.Cancel = true;
-                window.Hide();
+                if (_configurationService!.Settings.IsTrayActive)
+                {
+                    args.Cancel = true;
+                    _window.Hide();
+                }
+                else
+                {
+                    args.Cancel = false;
+                    CloseSubWindows();
+
+                    if (trayIcon == null)
+                        return;
+                    trayIcon.Dispose();
+                }
             };
             return _window;
         }
@@ -58,51 +74,52 @@ namespace FileSystemViewer
         /// <param name="args">Details about the launch request and process.</param>
         protected async override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            InitializeServices();
-
-            string[] cmdArgs = Environment.GetCommandLineArgs();
-            IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
-            IBackgroundSchedulerService backgroundSchedulerService = ServiceProvider.GetRequiredService<IBackgroundSchedulerService>();
-
-            //backgroundSchedulerService.RegisterDailyTask(new TimeSpan(18, 53, 0));
-            //backgroundSchedulerService.DeleteDailyTask("FileSystemViewer");
-            //backgroundSchedulerService.UpdateDailyTaskTime("FileSystemViewer", new TimeSpan(19, 6, 0));
-
-            if (cmdArgs.Contains(BackgroundSchedulerService.ArgumentName))
+            try
             {
-                await RunBackgroundTaskAndExit(backgroundScannerService);
-            }
-            else
-            {
-                AppState appState = ServiceProvider.GetRequiredService<AppState>();
+                InitializeServices();
 
-                Window window = GetMainWindow();
-                window.Activate();
+                string[] cmdArgs = Environment.GetCommandLineArgs();
+                _backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
+                _appState = ServiceProvider.GetRequiredService<AppState>();
+                _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
 
-                icon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
-                icon.IsVisible = true;
-                icon.Selected += (s, e) => window.Activate();
-                icon.ContextMenu += (w, e) =>
+                if (cmdArgs.Contains(BackgroundSchedulerService.ArgumentName))
                 {
-                    var flyout = new MenuFlyout();
+                    await RunBackgroundTaskAndExit(_backgroundScannerService);
+                }
+                else
+                {
+                    trayIcon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
+                    Window window = GetMainWindow();
+                    _appState.SetMainWindowHandle(window.GetWindowHandle());
+                    window.Activate();
 
-                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
-                    ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
-
-                    flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
-                    ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
+                    trayIcon.IsVisible = true;
+                    trayIcon.Selected += (s, e) => window.Activate();
+                    trayIcon.ContextMenu += (w, e) =>
                     {
-                        foreach (Window subWindow in appState.ActiveSubWindows.Values)
+                        var flyout = new MenuFlyout();
+
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
+                        ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
+                        ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                         {
-                            subWindow.Close();
-                        }
-                        window?.Close();
-                        icon.Dispose();
+                            CloseSubWindows();
+                            window?.Close();
+                            trayIcon.Dispose();
+                        };
+                        e.Flyout = flyout;
                     };
-                    e.Flyout = flyout;
-                };
+                }
+            }
+            catch (Exception ex)
+            {
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
             }
         }
+
         private async Task RunBackgroundTaskAndExit(IBackgroundScannerService backgroundScannerService)
         {
             await backgroundScannerService.ProceedScan().ContinueWith(task =>
@@ -116,6 +133,14 @@ namespace FileSystemViewer
             });
         }
 
+        private void CloseSubWindows()
+        {
+            foreach (Window subWindow in _appState!.ActiveSubWindows.Values)
+            {
+                subWindow.Close();
+            }
+        }
+
         private void InitializeServices()
         {
             var services = new ServiceCollection();
@@ -123,6 +148,7 @@ namespace FileSystemViewer
             services.AddSingleton<AppState>();
             services.AddSingleton<MainPageViewModel>();
             services.AddSingleton<ChartPageViewModel>();
+            services.AddSingleton<SettingsViewModel>();
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
