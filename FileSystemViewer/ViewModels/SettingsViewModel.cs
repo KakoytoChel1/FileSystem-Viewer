@@ -192,7 +192,7 @@ namespace FileSystemViewer.ViewModels
             // If both is true, we shoud update scheduler details
             if (currentScheduleEnabledValue == true && newScheduleEnabledValue == currentScheduleEnabledValue)
             {
-                _backgroundSchedulerService.UpdateDailyTaskTime(ConfigurationService.Settings.ScheduledScanningTaskPath, ScheduledScanTimeSpan);
+                _backgroundSchedulerService.UpdateDailyTaskTimeAsync(ScheduledScanTimeSpan);
             }
             // If both is false, we do nothing
             else if (currentScheduleEnabledValue == false && newScheduleEnabledValue == currentScheduleEnabledValue)
@@ -202,7 +202,7 @@ namespace FileSystemViewer.ViewModels
             // If new value is true, we should create scheduler
             else if (currentScheduleEnabledValue == false && newScheduleEnabledValue == true)
             {
-                _backgroundSchedulerService.RegisterDailyTask(ScheduledScanTimeSpan);
+                _backgroundSchedulerService.RegisterDailyTaskAsync(ScheduledScanTimeSpan);
             }
             // If new value is false, we should delete existing scheduler
             else if (currentScheduleEnabledValue == true && newScheduleEnabledValue == false)

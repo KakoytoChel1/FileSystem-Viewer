@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "FileSystem-Viewer (Package)": {
+    "FileSystemViewer (Package)": {
       "commandName": "MsixPackage"
     },
-    "FileSystem-Viewer (Unpackaged)": {
+    "FileSystemViewer (Unpackaged)": {
       "commandName": "Project"
     }
   }

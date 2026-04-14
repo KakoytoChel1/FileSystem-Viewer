@@ -100,30 +100,35 @@ namespace FileSystemViewer.Services
 
                         var currentDirectoryInfo = new DirectoryInfo(task.DirectoryPath);
 
-                        foreach (FileInfo fileInfo in currentDirectoryInfo.EnumerateFiles())
+                        foreach (FileSystemInfo fsInfo in currentDirectoryInfo.EnumerateFileSystemInfos())
                         {
                             cancellationToken.ThrowIfCancellationRequested();
-                            FileNode fileNode = CreateFileNode(task.ParentNode, fileInfo);
 
-                            if (!resultsWriter.TryWrite(fileNode))
+                            bool isDirectory = (fsInfo.Attributes & FileAttributes.Directory) != 0;
+
+                            if (isDirectory)
                             {
-                                await resultsWriter.WriteAsync(fileNode, cancellationToken);
+                                var dirInfo = (DirectoryInfo)fsInfo;
+                                DirectoryNode subDirectoryNode = CreateDirectoryNode(task.ParentNode, dirInfo);
+
+                                if (!resultsWriter.TryWrite(subDirectoryNode))
+                                {
+                                    await resultsWriter.WriteAsync(subDirectoryNode, cancellationToken);
+                                }
+
+                                Interlocked.Increment(ref counter.ActiveItems);
+                                workChannel.Writer.TryWrite(new ScanTask(subDirectoryNode, dirInfo.FullName));
                             }
-                        }
-
-                        foreach (DirectoryInfo subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            DirectoryNode subDirectoryNode = CreateDirectoryNode(task.ParentNode, subDirectoryInfo);
-
-                            if (!resultsWriter.TryWrite(subDirectoryNode))
+                            else
                             {
-                                await resultsWriter.WriteAsync(subDirectoryNode, cancellationToken);
-                            }
+                                var fileInfo = (FileInfo)fsInfo;
+                                FileNode fileNode = CreateFileNode(task.ParentNode, fileInfo);
 
-                            // We found a new directory, fix it like a new task for workers and increase counter
-                            Interlocked.Increment(ref counter.ActiveItems);
-                            workChannel.Writer.TryWrite(new ScanTask(subDirectoryNode, subDirectoryInfo.FullName));
+                                if (!resultsWriter.TryWrite(fileNode))
+                                {
+                                    await resultsWriter.WriteAsync(fileNode, cancellationToken);
+                                }
+                            }
                         }
                     }
                     catch (UnauthorizedAccessException) { }

@@ -1,93 +1,94 @@
-﻿using FileSystemViewer.Models.DataModels;
+﻿using FileSystemViewer.Models;
 using FileSystemViewer.Services.Interfaces;
-using Microsoft.Win32.TaskScheduler;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Background;
 
 namespace FileSystemViewer.Services
 {
-    public class BackgroundSchedulerService(IConfigurationService<AppSettings> configurationService) : IBackgroundSchedulerService
+    public class BackgroundSchedulerService : IBackgroundSchedulerService
     {
-        private IConfigurationService<AppSettings> _configurationService = configurationService;
+        public static readonly string TaskName = "FileViewerDailyTask";
+        public static readonly string RecoveryTaskName = "FileViewerRecoveryScanTask";
 
-        public static readonly string ArgumentName = "--run-background";
-
-        public bool RegisterDailyTask(TimeSpan runTime)
+        public async Task<bool> RegisterDailyTaskAsync(TimeSpan runTime)
         {
-            string? exePath = Environment.ProcessPath;
-
-            if (string.IsNullOrWhiteSpace(exePath))
+            try
             {
-                return false;
-            }
+                var accessStatus = await BackgroundExecutionManager.RequestAccessAsync();
 
-            using (TaskService taskService = new TaskService())
-            {
-                TaskDefinition taskDefinition = taskService.NewTask();
-                taskDefinition.RegistrationInfo.Description = "Daily background scanning for FileSystemViewer application.";
-                DailyTrigger dailyTrigger = new DailyTrigger
-                {
-                    StartBoundary = DateTime.Today + runTime,
-                    DaysInterval = 1
-                };
-                taskDefinition.Triggers.Add(dailyTrigger);
-
-                taskDefinition.Actions.Add(new ExecAction(exePath, ArgumentName, null));
-
-                taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
-
-                string taskPath = _configurationService.Settings.ScheduledScanningTaskPath;
-                taskService.RootFolder.RegisterTaskDefinition(taskPath, taskDefinition);
-                return true;
-            }
-        }
-
-        public bool UpdateDailyTaskTime(string taskPath, TimeSpan newTime)
-        {
-            if (string.IsNullOrWhiteSpace(taskPath))
-            {
-                return false;
-            }
-
-            using (TaskService taskService = new TaskService())
-            {
-                Task? task = taskService.GetTask(taskPath);
-
-                if (task == null)
+                if (accessStatus == BackgroundAccessStatus.DeniedByUser ||
+                    accessStatus == BackgroundAccessStatus.DeniedBySystemPolicy)
                 {
                     return false;
                 }
 
-                TaskDefinition taskDefinition = task.Definition;
+                DeleteDailyTask(TaskName);
 
-                if (taskDefinition.Triggers.Count > 0 && taskDefinition.Triggers[0] is DailyTrigger dailyTrigger)
+                // How much time left
+                DateTime now = DateTime.Now;
+                DateTime targetTime = now.Date + runTime;
+
+                if (targetTime <= now)
                 {
-                    dailyTrigger.StartBoundary = DateTime.Today + newTime;
-                    taskService.RootFolder.RegisterTaskDefinition(taskPath, taskDefinition);
-                    return true;
+                    targetTime = targetTime.AddDays(1);
                 }
+
+                uint minutesToWait = (uint)(targetTime - now).TotalMinutes;
+                if (minutesToWait < 15) minutesToWait = 15;
+
+                var builder = new Microsoft.Windows.ApplicationModel.Background.BackgroundTaskBuilder();
+                builder.Name = TaskName;
+                builder.SetTrigger(new TimeTrigger(minutesToWait, true));
+
+                builder.SetTaskEntryPointClsid(typeof(DailyScanTask).GUID);
+
+                builder.Register();
+
+                bool hasRecovery = BackgroundTaskRegistration.AllTasks.Any(t => t.Value.Name == RecoveryTaskName);
+
+                if (!hasRecovery)
+                {
+                    var builderRecovery = new Microsoft.Windows.ApplicationModel.Background.BackgroundTaskBuilder();
+                    builderRecovery.Name = RecoveryTaskName;
+                    builderRecovery.SetTrigger(new SystemTrigger(SystemTriggerType.SessionConnected, false));
+
+                    builderRecovery.SetTaskEntryPointClsid(typeof(DailyScanTask).GUID);
+                    builderRecovery.Register();
+                }
+                return true;
             }
-            return false;
+            catch (Exception)
+            {
+                // TODO: Log
+                return false;
+            }
         }
 
-        public bool DeleteDailyTask(string? taskPath)
+        public async Task<bool> UpdateDailyTaskTimeAsync(TimeSpan newTime)
         {
-            if (string.IsNullOrWhiteSpace(taskPath))
+            return await RegisterDailyTaskAsync(newTime);
+        }
+
+        public bool DeleteDailyTask(string? taskName)
+        {
+            if (string.IsNullOrWhiteSpace(taskName))
             {
                 return false;
             }
+            bool deleted = false;
 
-            using (TaskService taskService = new TaskService())
+            foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
-                Task? task = taskService.GetTask(taskPath);
-
-                if (task == null)
+                if (task.Value.Name == taskName)
                 {
-                    return false;
+                    task.Value.Unregister(true);
+                    deleted = true;
                 }
-
-                taskService.RootFolder.DeleteTask(taskPath);
-                return true;
             }
-        }  
+
+            return deleted;
+        }
     }
 }
