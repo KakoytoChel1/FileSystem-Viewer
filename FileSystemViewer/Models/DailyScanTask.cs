@@ -22,25 +22,12 @@ namespace FileSystemViewer.Models
         public async void Run(IBackgroundTaskInstance taskInstance)
         {
             var deferral = taskInstance.GetDeferral();
-            taskInstance.Canceled += this.OnCanceled;
             try
             {
                 InitializeServices();
-                // Services 
                 IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
-                IBackgroundSchedulerService backgroundSchedulerService = ServiceProvider.GetRequiredService<IBackgroundSchedulerService>();
-                IConfigurationService<AppSettings> configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
-
-                // Check if background task exists in case we missed it
-                bool isTaskScheduled = BackgroundTaskRegistration.AllTasks.Any(t => t.Value.Name == BackgroundSchedulerService.TaskName);
-                if (!isTaskScheduled && configurationService.Settings.IsScheduledScanningEnabled)
-                {
-                    await backgroundSchedulerService.RegisterDailyTaskAsync(configurationService.Settings.ScheduledScanningTime);
-                }
 
                 await backgroundScannerService.ProceedScan();
-                // Reset time for next day
-                await backgroundSchedulerService.UpdateDailyTaskTimeAsync(configurationService.Settings.ScheduledScanningTime);
             }
             catch (Exception ex)
             {
@@ -49,14 +36,8 @@ namespace FileSystemViewer.Models
             finally
             {
                 deferral.Complete();
-                //Program.SignalExit();
+                Program.SignalExit();
             }
-        }
-
-        [MTAThread]
-        public void OnCanceled(IBackgroundTaskInstance taskInstance, BackgroundTaskCancellationReason cancellationReason)
-        {
-            
         }
 
         private void InitializeServices()

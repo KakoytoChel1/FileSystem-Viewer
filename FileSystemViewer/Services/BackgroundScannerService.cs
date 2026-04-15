@@ -53,7 +53,8 @@ namespace FileSystemViewer.Services
                 ProceedScanForSelectedDirectoryLevel(driveNode);
             }
 
-            var progress = new Progress<List<FileSystemNode>>(ProcessReceivedScannedNodes);
+            //var progress = new Progress<List<FileSystemNode>>(ProcessReceivedScannedNodes);
+            var progress = new Action<List<FileSystemNode>>(ProcessReceivedScannedNodes);
 
             await _driveUtilsService.ScanProvidedNodesAsync(driveNodes, progress, new CancellationTokenSource().Token, new PauseResetTokenSource().Token);
 

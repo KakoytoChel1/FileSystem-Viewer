@@ -42,7 +42,7 @@ namespace FileSystemViewer
 
         private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
         {
-            
+            HandleNotificationClick(args.Arguments);
         }
 
         private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -91,13 +91,9 @@ namespace FileSystemViewer
             try
             {
                 InitializeServices();
-
-                string[] cmdArgs = Environment.GetCommandLineArgs();
                 _appState = ServiceProvider.GetRequiredService<AppState>();
                 _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
                 IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
-
-                //await backgroundScannerService.ProceedScan();
 
                 var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
                 if (activatedArgs.Kind == ExtendedActivationKind.AppNotification)
@@ -137,7 +133,10 @@ namespace FileSystemViewer
 
                 foreach (var task in BackgroundTaskRegistration.AllTasks)
                 {
-
+                    if (task.Value.Name == "FileViewerRecoveryScanTask")
+                    {
+                        task.Value.Unregister(true);
+                    }
                 }
             }
             catch (Exception ex)

@@ -9,10 +9,9 @@ namespace FileSystemViewer.Services
 {
     public class BackgroundSchedulerService : IBackgroundSchedulerService
     {
-        public static readonly string TaskName = "FileViewerDailyTask";
-        public static readonly string RecoveryTaskName = "FileViewerRecoveryScanTask";
+        public static readonly string TaskName = "FileViewerIntervalTask";
 
-        public async Task<bool> RegisterDailyTaskAsync(TimeSpan runTime)
+        public async Task<bool> RegisterIntervalTaskAsync(TimeSpan runTime)
         {
             try
             {
@@ -24,39 +23,18 @@ namespace FileSystemViewer.Services
                     return false;
                 }
 
-                DeleteDailyTask(TaskName);
+                DeleteIntervalTask(TaskName);
 
-                // How much time left
-                DateTime now = DateTime.Now;
-                DateTime targetTime = now.Date + runTime;
+                uint minutesToWait = (uint)(runTime.TotalMinutes);
 
-                if (targetTime <= now)
-                {
-                    targetTime = targetTime.AddDays(1);
-                }
-
-                uint minutesToWait = (uint)(targetTime - now).TotalMinutes;
                 if (minutesToWait < 15) minutesToWait = 15;
 
                 var builder = new Microsoft.Windows.ApplicationModel.Background.BackgroundTaskBuilder();
                 builder.Name = TaskName;
-                builder.SetTrigger(new TimeTrigger(minutesToWait, true));
-
+                builder.SetTrigger(new TimeTrigger(minutesToWait, false));
                 builder.SetTaskEntryPointClsid(typeof(DailyScanTask).GUID);
-
                 builder.Register();
 
-                bool hasRecovery = BackgroundTaskRegistration.AllTasks.Any(t => t.Value.Name == RecoveryTaskName);
-
-                if (!hasRecovery)
-                {
-                    var builderRecovery = new Microsoft.Windows.ApplicationModel.Background.BackgroundTaskBuilder();
-                    builderRecovery.Name = RecoveryTaskName;
-                    builderRecovery.SetTrigger(new SystemTrigger(SystemTriggerType.SessionConnected, false));
-
-                    builderRecovery.SetTaskEntryPointClsid(typeof(DailyScanTask).GUID);
-                    builderRecovery.Register();
-                }
                 return true;
             }
             catch (Exception)
@@ -66,12 +44,12 @@ namespace FileSystemViewer.Services
             }
         }
 
-        public async Task<bool> UpdateDailyTaskTimeAsync(TimeSpan newTime)
+        public async Task<bool> UpdateIntervalTaskTimeAsync(TimeSpan newTime)
         {
-            return await RegisterDailyTaskAsync(newTime);
+            return await RegisterIntervalTaskAsync(newTime);
         }
 
-        public bool DeleteDailyTask(string? taskName)
+        public bool DeleteIntervalTask(string? taskName)
         {
             if (string.IsNullOrWhiteSpace(taskName))
             {

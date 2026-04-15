@@ -301,7 +301,7 @@ namespace FileSystemViewer.ViewModels
             long startTime;
             TimeSpan elapsedTime;
 
-            var progress = new Progress<List<FileSystemNode>>(ProcessReceivedScannedNodes);
+            var progress = new Action<List<FileSystemNode>>(ProcessReceivedScannedNodes);
             ResetValuesAndCollections();
 
             ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
@@ -392,53 +392,56 @@ namespace FileSystemViewer.ViewModels
 
         private void ProcessReceivedScannedNodes(List<FileSystemNode> data)
         {
-            Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
-
-            foreach (FileSystemNode node in data)
+            DispatcherQueueProvider.DispatcherQueue.TryEnqueue(() =>
             {
-                DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
+                Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
 
-                parentNode.FileSystemNodes!.Add(node);
-
-                if (node is DirectoryNode)
+                foreach (FileSystemNode node in data)
                 {
-                    ApplicationState.TotalDirectoriesScanned++;
-                }
+                    DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
 
-                if (node is FileNode fileNode)
-                {
-                    ApplicationState.TotalFilesScanned++;
+                    parentNode.FileSystemNodes!.Add(node);
 
-                    var values = new TotalScanValues();
-
-                    if (totalScanValues.TryGetValue(parentNode, out values))
+                    if (node is DirectoryNode)
                     {
-                        values.TotalSizeInBytes += fileNode.Size;
-                        values.TotalFileCount++;
-                    }
-                    else
-                    {
-                        values = new TotalScanValues();
-                        values.TotalSizeInBytes = fileNode.Size;
-                        values.TotalFileCount++;
-                        totalScanValues.Add(parentNode, values);
+                        ApplicationState.TotalDirectoriesScanned++;
                     }
 
-                    FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
+                    if (node is FileNode fileNode)
+                    {
+                        ApplicationState.TotalFilesScanned++;
+
+                        var values = new TotalScanValues();
+
+                        if (totalScanValues.TryGetValue(parentNode, out values))
+                        {
+                            values.TotalSizeInBytes += fileNode.Size;
+                            values.TotalFileCount++;
+                        }
+                        else
+                        {
+                            values = new TotalScanValues();
+                            values.TotalSizeInBytes = fileNode.Size;
+                            values.TotalFileCount++;
+                            totalScanValues.Add(parentNode, values);
+                        }
+
+                        FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
+                    }
                 }
-            }
 
-            foreach (KeyValuePair<DirectoryNode, TotalScanValues> pair in totalScanValues)
-            {
-                var current = pair.Key;
-
-                while (current != null)
+                foreach (KeyValuePair<DirectoryNode, TotalScanValues> pair in totalScanValues)
                 {
-                    current.Size += pair.Value.TotalSizeInBytes;
-                    current.FileCount += pair.Value.TotalFileCount;
-                    current = current.ParentNode as DirectoryNode;
+                    var current = pair.Key;
+
+                    while (current != null)
+                    {
+                        current.Size += pair.Value.TotalSizeInBytes;
+                        current.FileCount += pair.Value.TotalFileCount;
+                        current = current.ParentNode as DirectoryNode;
+                    }
                 }
-            }
+            });   
         }
 
         private void ResetValuesAndCollections()

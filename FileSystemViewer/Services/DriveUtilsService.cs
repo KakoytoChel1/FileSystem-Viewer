@@ -33,7 +33,7 @@ namespace FileSystemViewer.Services
             }
         }
 
-        public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode
+        public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, Action<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode
         {
             if (nodes == null || !nodes.Any()) { return; }
 
@@ -189,7 +189,7 @@ namespace FileSystemViewer.Services
             return new TotalScanValues() { TotalDirectoryCount = totalDirectoriesForThisLevel, TotalFileCount = totalFilesForThisLevel, TotalSizeInBytes = totalSizeForThisLevel };
         }
 
-        private async Task ProccessAndSendNodesAsync(ChannelReader<FileSystemNode> reader, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken)
+        private async Task ProccessAndSendNodesAsync(ChannelReader<FileSystemNode> reader, Action<List<FileSystemNode>> progress, CancellationToken cancellationToken)
         {
             var buffer = new List<FileSystemNode>(200);
 
@@ -201,14 +201,14 @@ namespace FileSystemViewer.Services
 
                     if (buffer.Count >= 200)
                     {
-                        progress?.Report(new List<FileSystemNode>(buffer));
+                        progress?.Invoke(new List<FileSystemNode>(buffer));
                         buffer.Clear();
                     }
                 }
 
                 if (buffer.Count > 0)
                 {
-                    progress?.Report(new List<FileSystemNode>(buffer));
+                    progress?.Invoke(new List<FileSystemNode>(buffer));
                 }
             }
             catch (OperationCanceledException) { }
