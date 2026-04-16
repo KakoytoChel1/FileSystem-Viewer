@@ -1,4 +1,5 @@
-﻿using FileSystemViewer.Services.Interfaces;
+﻿using FileSystemViewer.Models;
+using FileSystemViewer.Services.Interfaces;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -19,7 +20,8 @@ namespace FileSystemViewer.Services
             _jsonOptions = new JsonSerializerOptions
             {
                 WriteIndented = true,
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                TypeInfoResolver = AppJsonContext.Default
             };
 
             Load();

@@ -34,6 +34,23 @@
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="/Assets/drive.ico"/>
             </TitleBar.IconSource>
+
+            <TitleBar.LeftHeader>
+                <Button
+                    Command="{x:Bind MainPageViewModel.OpenSettingsMenuCommand}"
+                    Margin="5,0,-5,0"
+                    Background="Transparent"
+                    BorderThickness="0.5"
+                    Width="35"
+                    Height="35">
+
+                    <Viewbox
+                        Margin="-1.2">
+                        <FontIcon
+                            Glyph="&#xE713;"/>
+                    </Viewbox>
+                </Button>
+            </TitleBar.LeftHeader>
         </TitleBar>
 
         <Frame

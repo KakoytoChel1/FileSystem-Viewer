@@ -22,6 +22,20 @@
         <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
     </Style>
 
+    <Style x:Key="SettingsPageHeaderButtons" TargetType="Button">
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="3"/>
+    </Style>
+
+    <Style x:Key="SettingsPanelBorder" TargetType="Border">
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"/>
+    </Style>
+
     <Style x:Key="DirectoryNodeInfoTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="SemiBold"/>

@@ -15,6 +15,8 @@ namespace FileSystemViewer
             InitializeComponent();
 
             ExtendsContentIntoTitleBar = true;
+            var coreTitleBar = AppWindow.TitleBar;
+            coreTitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
 
             (Application.Current as App)?.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>().Initialize(this.DispatcherQueue);
             MainPageViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<MainPageViewModel>();
