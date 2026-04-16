@@ -10,7 +10,7 @@
     </Style>
 
     <DataTemplate x:Key="FullScreenStateTemplate">
-        <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+        <Grid Background="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="0.4*"/>
@@ -26,16 +26,16 @@
                 <!--MainPage-->
                 <Border
                     Grid.Column="0"
-                    Style="{StaticResource CardBorderStyle}"
-                    Margin="10,5,5,5">
+                    Style="{ThemeResource CardBorderStyle}"
+                    Margin="5,5,2.5,2.5">
                     
                 </Border>
 
                 <!--ChartPage-->
                 <Border
                     Grid.Column="1"
-                    Style="{StaticResource CardBorderStyle}"
-                    Margin="5,5,10,5">
+                    Style="{ThemeResource CardBorderStyle}"
+                    Margin="2.5,5,5,2.5">
 
                 </Border>
             </Grid>
@@ -43,8 +43,8 @@
             <!--TreemapPage-->
             <Border
                 Grid.Row="1"
-                Style="{StaticResource CardBorderStyle}"
-                Margin="10,5,10,10">
+                Style="{ThemeResource CardBorderStyle}"
+                Margin="5,2.5,5,5">
                 
             </Border>
         </Grid>
