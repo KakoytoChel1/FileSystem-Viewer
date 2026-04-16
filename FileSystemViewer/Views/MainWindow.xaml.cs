@@ -1,8 +1,10 @@
-using FileSystemViewer.Views.Pages;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
+using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 
 namespace FileSystemViewer
 {

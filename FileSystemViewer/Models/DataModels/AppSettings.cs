@@ -6,8 +6,7 @@ namespace FileSystemViewer.Models.DataModels
     {
         public bool IsTrayActive { get; set; } = true;
         public bool IsScheduledScanningEnabled { get; set; } = false;
-        public TimeSpan ScheduledScanningTime { get; set; } = TimeSpan.FromHours(0);
-        public string ScheduledScanningTaskPath { get; set; } = @"FileSystemViewer";
+        public TimeSpan ScheduledScanningTime { get; set; } = TimeSpan.FromHours(12);
         public double MinFreeSpacePercent { get; set; } = 10.0;
     }
 }

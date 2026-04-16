@@ -1,4 +1,6 @@
-﻿using FileSystemViewer.Models.DataModels;
+﻿using FileSystemViewer.Models;
+using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
@@ -6,10 +8,15 @@ using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.AppLifecycle;
+using Microsoft.Windows.AppNotifications;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Background;
 using WinUIEx;
 
 namespace FileSystemViewer
@@ -21,7 +28,6 @@ namespace FileSystemViewer
 
         private AppState? _appState;
         private IConfigurationService<AppSettings>? _configurationService;
-        private IBackgroundScannerService? _backgroundScannerService;
 
         public IServiceProvider ServiceProvider { get; private set; } = null!;
 
@@ -29,6 +35,14 @@ namespace FileSystemViewer
         {
             InitializeComponent();
             UnhandledException += App_UnhandledException;
+
+            AppNotificationManager.Default.NotificationInvoked += OnNotificationInvoked;
+            AppNotificationManager.Default.Register();
+        }
+
+        private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
+        {
+            HandleNotificationClick(args.Arguments);
         }
 
         private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -77,19 +91,22 @@ namespace FileSystemViewer
             try
             {
                 InitializeServices();
-
-                string[] cmdArgs = Environment.GetCommandLineArgs();
-                _backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
                 _appState = ServiceProvider.GetRequiredService<AppState>();
                 _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
+                IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
 
-                if (cmdArgs.Contains(BackgroundSchedulerService.ArgumentName))
+                var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+                if (activatedArgs.Kind == ExtendedActivationKind.AppNotification)
                 {
-                    await RunBackgroundTaskAndExit(_backgroundScannerService);
+                    var notificationArgs = activatedArgs.Data as AppNotificationActivatedEventArgs;
+                    if (notificationArgs != null)
+                    {
+                        HandleNotificationClick(notificationArgs.Arguments);
+                    }
                 }
                 else
                 {
-                    trayIcon = new TrayIcon(1, "Assets/drive.ico", "File viewer");
+                    trayIcon = new TrayIcon(1, "Assets/appIcon.ico", "File viewer");
                     Window window = GetMainWindow();
                     _appState.SetMainWindowHandle(window.GetWindowHandle());
                     window.Activate();
@@ -113,24 +130,19 @@ namespace FileSystemViewer
                         e.Flyout = flyout;
                     };
                 }
+
+                foreach (var task in BackgroundTaskRegistration.AllTasks)
+                {
+                    if (task.Value.Name == "FileViewerRecoveryScanTask")
+                    {
+                        task.Value.Unregister(true);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
             }
-        }
-
-        private async Task RunBackgroundTaskAndExit(IBackgroundScannerService backgroundScannerService)
-        {
-            await backgroundScannerService.ProceedScan().ContinueWith(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    string errorImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
-                    NotificationManager.BuildAndShowToastNotification("Scanning was canceled", "Error occured.", errorImagePath);
-                }
-                Environment.Exit(0);
-            });
         }
 
         private void CloseSubWindows()
@@ -160,6 +172,21 @@ namespace FileSystemViewer
             services.AddSingleton(TimeProvider.System);
 
             ServiceProvider = services.BuildServiceProvider();
+        }
+
+        private void HandleNotificationClick(IDictionary<string, string> arguments)
+        {
+            if (arguments.TryGetValue("reportPath", out string? reportPath))
+            {
+                if (File.Exists(reportPath))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = reportPath,
+                        UseShellExecute = true
+                    });
+                }
+            }
         }
     }
 }

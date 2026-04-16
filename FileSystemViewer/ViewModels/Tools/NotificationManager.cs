@@ -1,5 +1,7 @@
-﻿using Microsoft.Toolkit.Uwp.Notifications;
+﻿using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using System;
+using System.IO;
 
 namespace FileSystemViewer.ViewModels.Tools
 {
@@ -7,22 +9,28 @@ namespace FileSystemViewer.ViewModels.Tools
     {
         public static void BuildAndShowToastNotification(string title, string content, string? iconFilePath = null, string? reportDocumentPath = null)
         {
-            ToastContentBuilder builder = new ToastContentBuilder()
+            var builder = new AppNotificationBuilder()
                 .AddText(title)
                 .AddText(content);
 
-            if (!string.IsNullOrWhiteSpace(iconFilePath))
+            if (!string.IsNullOrWhiteSpace(iconFilePath) && File.Exists(iconFilePath))
             {
-                builder.AddAppLogoOverride(new Uri($"file:///{iconFilePath}"), ToastGenericAppLogoCrop.Circle);
+                string fileUri = iconFilePath.StartsWith("file://")
+                    ? iconFilePath
+                    : $"file:///{iconFilePath.Replace('\\', '/')}";
+
+                builder.SetAppLogoOverride(new Uri(fileUri), AppNotificationImageCrop.Circle);
             }
 
             if (!string.IsNullOrWhiteSpace(reportDocumentPath))
             {
-                builder.SetProtocolActivation(new Uri($"file:///{reportDocumentPath}"));
-                builder.AddAttributionText("Click for more details...");
+                builder.AddArgument("action", "openReport")
+                       .AddArgument("reportPath", reportDocumentPath);
+
+                builder.AddText("Click for more details...");
             }
 
-            builder.Show();
+            AppNotificationManager.Default.Show(builder.BuildNotification());
         }
     }
 }
