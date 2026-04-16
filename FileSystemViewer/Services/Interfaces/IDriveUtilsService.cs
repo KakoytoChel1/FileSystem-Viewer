@@ -12,7 +12,7 @@ namespace FileSystemViewer.Services.Interfaces
     public interface IDriveUtilsService
     {
         public List<DriveInfo> GetAvailableDrives();
-        public Task ScanProvidedNodesAsync<T>(ObservableCollection<T> fileSystemNodes, IProgress<List<FileSystemNode>> progress, CancellationToken token, PauseResetToken pauseResetToken) where T : DirectoryNode;
+        public Task ScanProvidedNodesAsync<T>(ObservableCollection<T> fileSystemNodes, Action<List<FileSystemNode>> progress, CancellationToken token, PauseResetToken pauseResetToken) where T : DirectoryNode;
 
         public TotalScanValues ScanDirectoryLevel(DirectoryNode directoryNode, string directoryPath);
     }

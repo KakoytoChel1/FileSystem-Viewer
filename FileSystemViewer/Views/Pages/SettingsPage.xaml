@@ -164,8 +164,10 @@
                                         <TimePicker
                                             x:Name="DailyScanTimePicker"
                                             IsEnabled="{Binding ElementName=ScheduledScanToggle, Path=IsOn, Mode=OneWay}"
-                                            Header="Daily scan time"
-                                            Time="{x:Bind ViewModel.ScheduledScanTimeSpan, Mode=TwoWay}"/>
+                                            Header="Scan interval"
+                                            MinuteIncrement="15"
+                                            ClockIdentifier="24HourClock"
+                                            SelectedTime="{x:Bind ViewModel.ScheduledScanTimeSpan, Mode=TwoWay}"/>
 
                                         <NumberBox
                                             IsEnabled="{Binding ElementName=ScheduledScanToggle, Path=IsOn, Mode=OneWay}"

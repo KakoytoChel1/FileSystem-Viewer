@@ -33,7 +33,7 @@ namespace FileSystemViewer.Services
             }
         }
 
-        public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode
+        public async Task ScanProvidedNodesAsync<T>(ObservableCollection<T> nodes, Action<List<FileSystemNode>> progress, CancellationToken cancellationToken, PauseResetToken pauseResetToken) where T : DirectoryNode
         {
             if (nodes == null || !nodes.Any()) { return; }
 
@@ -100,30 +100,35 @@ namespace FileSystemViewer.Services
 
                         var currentDirectoryInfo = new DirectoryInfo(task.DirectoryPath);
 
-                        foreach (FileInfo fileInfo in currentDirectoryInfo.EnumerateFiles())
+                        foreach (FileSystemInfo fsInfo in currentDirectoryInfo.EnumerateFileSystemInfos())
                         {
                             cancellationToken.ThrowIfCancellationRequested();
-                            FileNode fileNode = CreateFileNode(task.ParentNode, fileInfo);
 
-                            if (!resultsWriter.TryWrite(fileNode))
+                            bool isDirectory = (fsInfo.Attributes & FileAttributes.Directory) != 0;
+
+                            if (isDirectory)
                             {
-                                await resultsWriter.WriteAsync(fileNode, cancellationToken);
+                                var dirInfo = (DirectoryInfo)fsInfo;
+                                DirectoryNode subDirectoryNode = CreateDirectoryNode(task.ParentNode, dirInfo);
+
+                                if (!resultsWriter.TryWrite(subDirectoryNode))
+                                {
+                                    await resultsWriter.WriteAsync(subDirectoryNode, cancellationToken);
+                                }
+
+                                Interlocked.Increment(ref counter.ActiveItems);
+                                workChannel.Writer.TryWrite(new ScanTask(subDirectoryNode, dirInfo.FullName));
                             }
-                        }
-
-                        foreach (DirectoryInfo subDirectoryInfo in currentDirectoryInfo.EnumerateDirectories())
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            DirectoryNode subDirectoryNode = CreateDirectoryNode(task.ParentNode, subDirectoryInfo);
-
-                            if (!resultsWriter.TryWrite(subDirectoryNode))
+                            else
                             {
-                                await resultsWriter.WriteAsync(subDirectoryNode, cancellationToken);
-                            }
+                                var fileInfo = (FileInfo)fsInfo;
+                                FileNode fileNode = CreateFileNode(task.ParentNode, fileInfo);
 
-                            // We found a new directory, fix it like a new task for workers and increase counter
-                            Interlocked.Increment(ref counter.ActiveItems);
-                            workChannel.Writer.TryWrite(new ScanTask(subDirectoryNode, subDirectoryInfo.FullName));
+                                if (!resultsWriter.TryWrite(fileNode))
+                                {
+                                    await resultsWriter.WriteAsync(fileNode, cancellationToken);
+                                }
+                            }
                         }
                     }
                     catch (UnauthorizedAccessException) { }
@@ -184,7 +189,7 @@ namespace FileSystemViewer.Services
             return new TotalScanValues() { TotalDirectoryCount = totalDirectoriesForThisLevel, TotalFileCount = totalFilesForThisLevel, TotalSizeInBytes = totalSizeForThisLevel };
         }
 
-        private async Task ProccessAndSendNodesAsync(ChannelReader<FileSystemNode> reader, IProgress<List<FileSystemNode>> progress, CancellationToken cancellationToken)
+        private async Task ProccessAndSendNodesAsync(ChannelReader<FileSystemNode> reader, Action<List<FileSystemNode>> progress, CancellationToken cancellationToken)
         {
             var buffer = new List<FileSystemNode>(200);
 
@@ -196,14 +201,14 @@ namespace FileSystemViewer.Services
 
                     if (buffer.Count >= 200)
                     {
-                        progress?.Report(new List<FileSystemNode>(buffer));
+                        progress?.Invoke(new List<FileSystemNode>(buffer));
                         buffer.Clear();
                     }
                 }
 
                 if (buffer.Count > 0)
                 {
-                    progress?.Report(new List<FileSystemNode>(buffer));
+                    progress?.Invoke(new List<FileSystemNode>(buffer));
                 }
             }
             catch (OperationCanceledException) { }

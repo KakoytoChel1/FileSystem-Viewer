@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace FileSystemViewer.Services.Interfaces
 {
     public interface IBackgroundSchedulerService
     {
-        public bool RegisterDailyTask(TimeSpan runTime);
-        public bool UpdateDailyTaskTime(string taskName, TimeSpan newTime);
-        public bool DeleteDailyTask(string taskName);
+        public Task<bool> RegisterIntervalTaskAsync(TimeSpan runTime);
+        public Task<bool> UpdateIntervalTaskTimeAsync(TimeSpan newTime);
+        public bool DeleteIntervalTask(string taskName);
     }
 }
