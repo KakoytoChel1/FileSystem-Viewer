@@ -17,7 +17,7 @@
         <TreeViewItem ItemsSource="{Binding FileSystemNodes, Mode=OneWay}" IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="Name" Width="500"/>
+                    <ColumnDefinition x:Name="Name" Width="*" MinWidth="350"/>
                     <ColumnDefinition x:Name="ProgressBar" Width="100"/>
                     <ColumnDefinition x:Name="Percentage" Width="auto" MinWidth="50"/>
                     <ColumnDefinition x:Name="Size" Width="100"/>
@@ -28,9 +28,8 @@
 
                 <!--General information-->
                 <Grid
-                    HorizontalAlignment="Left"
+                    HorizontalAlignment="Stretch"
                     Grid.Column="0"
-                    Width="450"
                     ToolTipService.ToolTip="{Binding Name}">
 
                     <Grid.ColumnDefinitions>
@@ -53,7 +52,7 @@
                         Grid.Column="1"
                         Margin="10,0,0,0"
                         Text="{Binding Name}"
-                        MaxWidth="400"
+                        MaxWidth="300"
                         TextTrimming="CharacterEllipsis"/>
 
                     <TextBlock
@@ -67,7 +66,7 @@
                 <Border Background="Transparent" Grid.Column="1" Margin="2,0,2,0">
                     <Grid>
                         <ProgressBar 
-                            Margin="0,0,5,0"
+                            Margin="5,0,5,0"
                             Value="{Binding PercentProperty, Mode=OneWay}"/>
                     </Grid>
 
@@ -205,7 +204,18 @@
                             Style="{StaticResource DirectoryNodeInfoTextIconStyle}"/>
                     </StackPanel>
                 </Border>
+               
             </Grid>
+
+            <TreeViewItem.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Open" Command="{Binding OpenCommand}">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xEC50;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                </MenuFlyout>
+            </TreeViewItem.ContextFlyout>
         </TreeViewItem>
     </DataTemplate>
 </ResourceDictionary>

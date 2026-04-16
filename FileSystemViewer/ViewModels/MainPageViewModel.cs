@@ -1,6 +1,7 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using FileSystemViewer.Models.DataModels;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FileSystemViewer.Models;
+using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
 using FileSystemViewer.Views.DialogPages;
@@ -16,11 +17,12 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace FileSystemViewer.ViewModels
 {
@@ -535,7 +537,8 @@ namespace FileSystemViewer.ViewModels
                 Size = directoryNode.Size,
                 BackgroundColor = ColorManager.DirectoryTreemapNodeColor,
                 Percent = 0,
-                Children = new ObservableCollection<TreemapNode>()
+                Children = new ObservableCollection<TreemapNode>(),
+                FullPath = directoryNode.FullPath
             };
 
             var subDirectories = directoryNode.FileSystemNodes!
@@ -667,6 +670,24 @@ namespace FileSystemViewer.ViewModels
             pieSeries.Fill = new SolidColorPaint(new SKColor(otherColor.R, otherColor.G, otherColor.B, otherColor.A));
 
             return pieSeries;
+        }
+
+        [RelayCommand]
+        public void OpenTreemapDirectory(object parameter)
+        {
+            if (parameter is TreemapNode treemapNode)
+            {
+                if (Directory.Exists(treemapNode.FullPath))
+                {
+
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = treemapNode.FullPath,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
+            }
         }
     }
 }

@@ -39,8 +39,8 @@
     <None Remove="Views\Pages\ChartPage.xaml" />
     <None Remove="Views\Pages\MainPage.xaml" />
     <None Remove="Views\Pages\SettingsPage.xaml" />
+    <None Remove="Views\Pages\ShellPage.xaml" />
     <None Remove="Views\Pages\TreemapPage.xaml" />
-    <None Remove="Views\Resources\States\Templates.xaml" />
     <None Remove="Views\Resources\Styles.xaml" />
     <None Remove="Views\Resources\Templates.xaml" />
     <None Remove="Views\Windows\ChartTabsWindow.xaml" />
@@ -93,6 +93,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\Pages\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Views\Pages\SettingsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -139,11 +144,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Windows\TreeViewWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\Resources\States\Templates.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

@@ -10,8 +10,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:mControls="using:ModernControls.Controls"
     Title="FileSystem-Viewer"
-    x:Name="mainWindow"
-    SizeChanged="mainWindow_SizeChanged">
+    x:Name="mainWindow">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -26,7 +25,7 @@
         <TitleBar
             x:Name="TitleBar"
             Grid.Row="0" 
-            Background="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
             Title="File Viewer"
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False">
@@ -56,5 +55,10 @@
         <Frame
             Grid.Row="1"
             x:Name="RootFrame"/>
+
+        <Frame
+            Grid.Row="1"
+            x:Name="SettingsFrame"
+            Visibility="{x:Bind MainPageViewModel.ApplicationState.SettingsMenuVisibility, Mode=OneWay}"/>
     </Grid>
 </Window>

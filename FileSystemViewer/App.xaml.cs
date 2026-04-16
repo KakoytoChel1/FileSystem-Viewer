@@ -143,6 +143,7 @@ namespace FileSystemViewer
             catch (Exception ex)
             {
                 File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
+                Environment.Exit(0);
             }
         }
 

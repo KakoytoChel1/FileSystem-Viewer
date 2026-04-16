@@ -104,7 +104,7 @@
 
                             <Border
                                 x:Name="titleBorder"
-                                Background="{ThemeResource ControlAltFillColorTertiaryBrush}"
+                                Background="{TemplateBinding Background}"
                                 Grid.Row="0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -156,7 +156,7 @@
                             <Canvas
                                 x:Name="PART_Canvas"
                                 Grid.Row="1"
-                                Background="{ThemeResource ControlAltFillColorTertiaryBrush}"
+                                Background="{TemplateBinding Background}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"/>
                         </Grid>
@@ -228,6 +228,16 @@
                                     IsHitTestVisible="False"/>
                             </Grid>
                         </Border>
+
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem x:Name="PART_OpenMenuItem" Text="Open">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xEC50;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

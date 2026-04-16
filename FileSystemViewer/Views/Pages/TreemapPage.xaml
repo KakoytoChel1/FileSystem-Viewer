@@ -12,10 +12,12 @@
     <Grid>
 
         <mControls:HierarchicalTreemap
+            Background="Transparent"
             x:Name="hierarchicalTreemap"
             GlyphIcon="&#xE838;"
             Separator="\"
-            ItemsSource="{x:Bind MainPageViewModel.TreemapNodes, Mode=OneWay}"/>
+            ItemsSource="{x:Bind MainPageViewModel.TreemapNodes, Mode=OneWay}"
+            MenuActionCommand="{x:Bind MainPageViewModel.OpenTreemapDirectoryCommand}"/>
 
         <Button
             Style="{StaticResource CommandBarButtonStyle}"

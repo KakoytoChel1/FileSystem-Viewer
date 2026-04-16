@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 using Windows.Foundation;
 
 namespace ModernControls.Controls
@@ -192,6 +193,19 @@ namespace ModernControls.Controls
             set => SetValue(ItemsSourceProperty, value);
         }
 
+        public static readonly DependencyProperty MenuActionCommandProperty =
+            DependencyProperty.Register(
+                nameof(MenuActionCommand),
+                typeof(ICommand),
+                typeof(HierarchicalTreemap),
+                new PropertyMetadata(null));
+
+        public ICommand MenuActionCommand
+        {
+            get => (ICommand)GetValue(MenuActionCommandProperty);
+            set => SetValue(MenuActionCommandProperty, value);
+        }
+
         private void RenderTreemap()
         {
             if (_canvas == null || _internalItemsSource == null || !_internalItemsSource.Any() || _canvas.ActualWidth <= 0 || _canvas.ActualHeight <= 0)
@@ -245,7 +259,8 @@ namespace ModernControls.Controls
                 {
                     NodeData = wrappedNode.TreemapNode,
                     Width = wrappedNode.Bounds.Width,
-                    Height = wrappedNode.Bounds.Height
+                    Height = wrappedNode.Bounds.Height,
+                    MenuActionCommand = this.MenuActionCommand
                 };
 
                 itemControl.ItemClicked += OnTreemapItemClicked;

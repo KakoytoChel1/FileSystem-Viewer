@@ -109,13 +109,19 @@
             </Border>
         </StackPanel>
 
-        <TreeView 
-            Grid.Row="1" 
-            x:Name="FileSystemTreeView"
-            ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
-            SelectedItem="{x:Bind ViewModel.SelectedFileSystemNode, Mode=TwoWay}"
-            ItemTemplate="{StaticResource FileSystemNodeTemplate}"
-            ScrollViewer.VerticalScrollBarVisibility="Visible"/>
+        <ScrollViewer
+            Grid.Row="1"
+            HorizontalScrollMode="Enabled"
+            HorizontalScrollBarVisibility="Visible">
+
+            <TreeView 
+                x:Name="FileSystemTreeView"
+                Margin="0,3,0,0"
+                ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedFileSystemNode, Mode=TwoWay}"
+                ItemTemplate="{StaticResource FileSystemNodeTemplate}"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"/>
+        </ScrollViewer>
 
         <ProgressBar 
             Grid.Row="2" 
