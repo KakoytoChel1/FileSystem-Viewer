@@ -19,6 +19,7 @@ namespace FileSystemViewer.ViewModels
     public partial class SettingsViewModel : ViewModelBase
     {
         private IBackgroundSchedulerService _backgroundSchedulerService;
+        private readonly TimeSpan _minimumTime = TimeSpan.FromMinutes(15);
 
         public SettingsViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IBackgroundSchedulerService backgroundSchedulerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, 
@@ -51,6 +52,13 @@ namespace FileSystemViewer.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
         public partial TimeSpan ScheduledScanTimeSpan { get; set; }
+        partial void OnScheduledScanTimeSpanChanged(TimeSpan value)
+        {
+            if (value < _minimumTime)
+            {
+                ScheduledScanTimeSpan = _minimumTime;
+            }
+        }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
