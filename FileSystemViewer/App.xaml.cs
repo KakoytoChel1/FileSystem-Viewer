@@ -3,6 +3,7 @@ using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
+using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -123,6 +124,10 @@ namespace FileSystemViewer
             services.AddSingleton<AppState>();
             services.AddSingleton<MainPageViewModel>();
             services.AddSingleton<ChartPageViewModel>();
+
+            services.AddSingleton<MainPage>();
+            services.AddSingleton<ChartPage>();
+            services.AddSingleton<TreemapPage>();
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();

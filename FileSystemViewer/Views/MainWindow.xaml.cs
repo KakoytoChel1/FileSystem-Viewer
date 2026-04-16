@@ -17,11 +17,16 @@ namespace FileSystemViewer
             ExtendsContentIntoTitleBar = true;
 
             (Application.Current as App)?.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>().Initialize(this.DispatcherQueue);
-
-            RootFrame.Navigate(typeof(MainPage));
-            ChartFrame.Navigate(typeof(ChartPage));
-
             MainPageViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<MainPageViewModel>();
+
+            var template = (DataTemplate)Application.Current.Resources["FullScreenStateTemplate"];
+            var content = template.LoadContent() as FrameworkElement;
+            RootFrame.Content = content;
+        }
+
+        private void mainWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+        {
+
         }
     }
 }
