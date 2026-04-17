@@ -16,9 +16,7 @@
             <Border
                 Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"
-                CornerRadius="7"
-                Margin="150,50,150,50">
+                CornerRadius="7">
                 
                 <Grid>
                     <Grid.RowDefinitions>

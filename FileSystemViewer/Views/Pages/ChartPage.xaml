@@ -9,8 +9,7 @@
     mc:Ignorable="d"
     xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
-    xmlns:i="using:Microsoft.Xaml.Interactivity"
-    Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
+    xmlns:i="using:Microsoft.Xaml.Interactivity">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -152,7 +151,7 @@
             <Expander
                 Grid.Row="0"
                 VerticalAlignment="Top"
-                Margin="10,10,0,0"
+                Margin="10,10,5,0"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch">
@@ -171,7 +170,7 @@
                 </Expander.Header>
 
                 <ListView 
-                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                    Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
                     Margin="-15"
                     SelectionMode="None"
                     ItemsSource="{x:Bind ViewModel.ApplicationState.ScannedRootNodeNames}">
@@ -181,7 +180,7 @@
             <Button
                 Grid.Column="1"
                 VerticalAlignment="Top"
-                Margin="0,12,0,0"
+                Margin="0,12,10,0"
                 HorizontalAlignment="Center"
                 Height="45"
                 Style="{StaticResource CommandBarButtonStyle}"

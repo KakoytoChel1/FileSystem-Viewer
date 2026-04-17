@@ -12,5 +12,6 @@ namespace ModernControls.Models
         public TreemapNode Parent { get; set; }
         public bool IsContainer { get; set; }
         public ObservableCollection<TreemapNode> Children { get; set; } = new ObservableCollection<TreemapNode>();
+        public string FullPath { get; set; }
     }
 }

@@ -21,12 +21,9 @@ namespace FileSystemViewer
             coreTitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
 
             (Application.Current as App)?.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>().Initialize(this.DispatcherQueue);
-
-            RootFrame.Navigate(typeof(MainPage));
-            ChartFrame.Navigate(typeof(ChartPage));
-
             MainPageViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<MainPageViewModel>();
 
+            RootFrame.Navigate(typeof(ShellPage));
             SettingsFrame.Navigate(typeof(SettingsPage));
         }
     }
