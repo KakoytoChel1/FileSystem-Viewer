@@ -22,8 +22,8 @@ namespace FileSystemViewer.ViewModels
         private readonly TimeSpan _minimumTime = TimeSpan.FromMinutes(15);
 
         public SettingsViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
-            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IBackgroundSchedulerService backgroundSchedulerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, 
-                fileExtentionItemService, configurationService, appState)
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, 
+                fileExtentionItemService, configurationService, visualManagerService, appState)
         {
             ApplicationState.SettingsMenuVisibility = Visibility.Collapsed;
             _backgroundSchedulerService = backgroundSchedulerService;
@@ -33,6 +33,8 @@ namespace FileSystemViewer.ViewModels
                 ConfigurationService.Load();
             }
             RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
+
+            SelectedApplicationThemeIndex = 2;
         }
 
         public bool IsThereUnsavedChanges =>
@@ -63,6 +65,13 @@ namespace FileSystemViewer.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
         public partial double MinCriticalFreeSpacePercent { get; set; }
+
+        [ObservableProperty]
+        public partial int SelectedApplicationThemeIndex { get; set; }
+        partial void OnSelectedApplicationThemeIndexChanged(int value)
+        {
+            
+        }
 
         [RelayCommand]
         public async Task ImportSettings(XamlRoot xamlRoot)
@@ -152,6 +161,7 @@ namespace FileSystemViewer.ViewModels
         {
             if (IsThereUnsavedChanges)
             {
+                RefreshThemeSettings();
                 RescheduleBackgroundTask();
                 SaveSettingsToConfig();
             }
@@ -218,6 +228,11 @@ namespace FileSystemViewer.ViewModels
             {
                 _backgroundSchedulerService.DeleteIntervalTask(BackgroundSchedulerService.TaskName);
             }
+        }
+
+        private void RefreshThemeSettings()
+        {
+
         }
     }
 }

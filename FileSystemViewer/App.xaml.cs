@@ -1,11 +1,8 @@
-﻿using FileSystemViewer.Models;
-using FileSystemViewer.Models.DataModels;
-using FileSystemViewer.Models.Tools;
+﻿using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
-using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -15,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Background;
+using Windows.UI;
+using Windows.UI.ViewManagement;
 using WinUIEx;
 
 namespace FileSystemViewer
@@ -26,6 +23,7 @@ namespace FileSystemViewer
     {
         private TrayIcon? trayIcon;
         private Window? _window;
+        public Window? MainWindow => _window;
 
         private AppState? _appState;
         private IConfigurationService<AppSettings>? _configurationService;
@@ -108,8 +106,10 @@ namespace FileSystemViewer
                 else
                 {
                     trayIcon = new TrayIcon(1, "Assets/appIcon.ico", "File viewer");
+
                     Window window = GetMainWindow();
                     _appState.SetMainWindowHandle(window.GetWindowHandle());
+                    CheckVisualPreferences(window);
                     window.Activate();
 
                     trayIcon.IsVisible = true;
@@ -164,16 +164,13 @@ namespace FileSystemViewer
             services.AddSingleton<ChartPageViewModel>();
             services.AddSingleton<SettingsViewModel>();
 
-            services.AddSingleton<MainPage>();
-            services.AddSingleton<ChartPage>();
-            services.AddSingleton<TreemapPage>();
-
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
             services.AddSingleton<IConfigurationService<AppSettings>, ConfigurationService<AppSettings>>();
             services.AddSingleton<IBackgroundScannerService, BackgroundScannerService>();
             services.AddSingleton<IBackgroundSchedulerService, BackgroundSchedulerService>();
+            services.AddSingleton<IVisualManagerService, VisualManagerService>();
 
             services.AddSingleton(TimeProvider.System);
 
@@ -193,6 +190,28 @@ namespace FileSystemViewer
                     });
                 }
             }
+        }
+
+        private void CheckVisualPreferences(Window window)
+        {
+            IVisualManagerService visualManager = ServiceProvider.GetRequiredService<IVisualManagerService>();
+            visualManager.Initialize(window);
+
+            List<int> accentColor = _configurationService!.Settings.AccentColor;
+            AppSettings.ThemeMode themeMode = _configurationService.Settings.AppTheme;
+
+            if (accentColor != null && accentColor.Count == 3)
+            {
+                var color = Color.FromArgb(255, (byte)accentColor[0], (byte)accentColor[1], (byte)accentColor[2]);
+                visualManager.SetAccentColor(color);
+            }
+            else
+            {
+                UISettings uISettings = new();
+                visualManager.SetAccentColor(uISettings.GetColorValue(UIColorType.Accent));
+            }
+
+            visualManager.SetApplicationTheme(themeMode);
         }
     }
 }

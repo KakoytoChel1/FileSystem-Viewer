@@ -29,8 +29,8 @@ namespace FileSystemViewer.ViewModels
     public partial class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
-            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, AppState appState, 
-            TimeProvider timeProvider) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, appState)
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState, 
+            TimeProvider timeProvider) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, appState)
         {
             DriveNodes = new ObservableCollection<DriveNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();

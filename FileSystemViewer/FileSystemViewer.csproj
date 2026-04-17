@@ -34,6 +34,8 @@
     <None Remove="Assets\file.png" />
     <None Remove="Assets\refresh directory.png" />
     <None Remove="Assets\refresh disk.png" />
+    <None Remove="Assets\ua.png" />
+    <None Remove="Assets\uk.png" />
     <None Remove="Assets\warning.png" />
     <None Remove="Views\DialogPages\TargetSelectDialog.xaml" />
     <None Remove="Views\Pages\ChartPage.xaml" />
