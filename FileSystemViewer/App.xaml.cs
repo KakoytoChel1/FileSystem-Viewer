@@ -6,8 +6,10 @@ using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.Globalization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -94,6 +96,8 @@ namespace FileSystemViewer
                 _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
                 IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
 
+                ApplicationLanguages.PrimaryLanguageOverride = "uk-UA";
+
                 var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
                 if (activatedArgs.Kind == ExtendedActivationKind.AppNotification)
                 {
@@ -117,11 +121,12 @@ namespace FileSystemViewer
                     trayIcon.ContextMenu += (w, e) =>
                     {
                         var flyout = new MenuFlyout();
+                        var resourceLoader = new ResourceLoader();
 
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = resourceLoader.GetString("TrayContextMenuOpen") });
                         ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
 
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = resourceLoader.GetString("TrayContextMenuQuite") });
                         ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                         {
                             CloseSubWindows();
@@ -197,12 +202,13 @@ namespace FileSystemViewer
             IVisualManagerService visualManager = ServiceProvider.GetRequiredService<IVisualManagerService>();
             visualManager.Initialize(window);
 
-            List<int> accentColor = _configurationService!.Settings.AccentColor;
+            Color accentColor = _configurationService!.Settings.CustomAccentColor;
+            bool isSystemAccentColorUsed = _configurationService.Settings.IsSystemAccentColorUsed;
             AppSettings.ThemeMode themeMode = _configurationService.Settings.AppTheme;
 
-            if (accentColor != null && accentColor.Count == 3)
+            if (!isSystemAccentColorUsed)
             {
-                var color = Color.FromArgb(255, (byte)accentColor[0], (byte)accentColor[1], (byte)accentColor[2]);
+                var color = Color.FromArgb(255, accentColor.R, accentColor.G, accentColor.B);
                 visualManager.SetAccentColor(color);
             }
             else

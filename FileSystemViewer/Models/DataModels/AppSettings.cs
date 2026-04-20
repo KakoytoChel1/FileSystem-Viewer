@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.UI;
+using System;
+using Windows.UI;
 
 namespace FileSystemViewer.Models.DataModels
 {
@@ -22,7 +23,8 @@ namespace FileSystemViewer.Models.DataModels
         public bool IsScheduledScanningEnabled { get; set; } = false;
         public TimeSpan ScheduledScanningTime { get; set; } = TimeSpan.FromHours(12);
         public double MinFreeSpacePercent { get; set; } = 10.0;
-        public List<int> AccentColor { get; set; } = new List<int>(3);
+        public bool IsSystemAccentColorUsed { get; set; } = true;
+        public Color CustomAccentColor { get; set; } = Colors.DarkCyan;
         public ThemeMode AppTheme { get; set; } = ThemeMode.System;
         public Language AppLanguage { get; set; } = Language.English;
     }

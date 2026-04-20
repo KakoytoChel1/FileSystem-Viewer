@@ -35,11 +35,14 @@
 
             <Button
                 Style="{StaticResource CommandBarButtonStyle}"
-                ToolTipService.ToolTip="Select target..."
                 Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}"
                 CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"
                 Content="&#xE958;"
                 Foreground="{ThemeResource AccentAAFillColorDefaultBrush}">
+
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="SelectTargetButton"/>
+                </ToolTipService.ToolTip>
             </Button>
 
             <!--Scanning managing command bar-->
@@ -51,27 +54,39 @@
                 <StackPanel Orientation="Horizontal" Spacing="3">
                     <Button
                         Style="{StaticResource MiniCommandBarButtonStyle}"
-                        ToolTipService.ToolTip="Stop"
                         Command="{x:Bind ViewModel.CancelScanningCommand}"
                         CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"
                         Content="&#xEE95;"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}">
+
+                        <ToolTipService.ToolTip>
+                            <TextBlock
+                                x:Uid="CancelScanningButton"/>
+                        </ToolTipService.ToolTip>
                     </Button>
 
                     <Button
                         Style="{StaticResource MiniCommandBarButtonStyle}"
-                        ToolTipService.ToolTip="Resume"
                         Command="{x:Bind ViewModel.ResumeScanningCommand}"
                         Content="&#xF5B0;"
                         Foreground="{ThemeResource SystemFillColorSuccessBrush}">
+
+                        <ToolTipService.ToolTip>
+                            <TextBlock
+                                x:Uid="ResumeScanningButton"/>
+                        </ToolTipService.ToolTip>
                     </Button>
 
                     <Button
                         Style="{StaticResource MiniCommandBarButtonStyle}"
-                        ToolTipService.ToolTip="Pause"
                         Command="{x:Bind ViewModel.PauseScanningCommand}"
                         Content="&#xF8AE;"
                         Foreground="{ThemeResource SystemFillColorCautionBrush}">
+
+                        <ToolTipService.ToolTip>
+                            <TextBlock
+                                x:Uid="PauseScanningButton"/>
+                        </ToolTipService.ToolTip>
                     </Button>
 
                 </StackPanel>
@@ -81,18 +96,26 @@
                 Style="{StaticResource CommandBarButtonStyle}"
                 Content="&#xE895;"
                 FontSize="16"
-                ToolTipService.ToolTip="Refresh scanning"
                 Command="{x:Bind ViewModel.RefreshScanningCommand}"
                 CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+
+                <ToolTipService.ToolTip>
+                    <TextBlock
+                        x:Uid="RefreshScanningButton"/>
+                </ToolTipService.ToolTip>
             </Button>
 
             <Button
                 Style="{StaticResource CommandBarButtonStyle}"
                 Content="&#xE8F7;"
                 FontSize="16"
-                ToolTipService.ToolTip="Refresh selected"
                 Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}"
                 CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+
+                <ToolTipService.ToolTip>
+                    <TextBlock
+                        x:Uid="RefreshSelectedButton"/>
+                </ToolTipService.ToolTip>
             </Button>
 
             <Border
@@ -102,9 +125,13 @@
                 <Button
                     Margin="5,0,0,0"
                     Style="{StaticResource CommandBarButtonStyle}"
-                    ToolTipService.ToolTip="Open in new window"
                     Content="&#xE8A7;"
                     Command="{x:Bind ViewModel.OpenTreeViewNewWindowCommand}">
+
+                    <ToolTipService.ToolTip>
+                        <TextBlock
+                            x:Uid="OpenInNewWindowButton"/>
+                    </ToolTipService.ToolTip>
                 </Button>
             </Border>
         </StackPanel>

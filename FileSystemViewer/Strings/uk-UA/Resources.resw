@@ -1,0 +1,297 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CancelScanningButton.Text" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="PauseScanningButton.Text" xml:space="preserve">
+    <value>Пауза</value>
+  </data>
+  <data name="RefreshScanningButton.Text" xml:space="preserve">
+    <value>Повторне сканування</value>
+  </data>
+  <data name="RefreshSelectedButton.Text" xml:space="preserve">
+    <value>Повторно сканувати обране</value>
+  </data>
+  <data name="ResumeScanningButton.Text" xml:space="preserve">
+    <value>Продовжити</value>
+  </data>
+  <data name="SelectTargetButton.Text" xml:space="preserve">
+    <value>Обрати ціль...</value>
+  </data>
+  <data name="OpenInNewWindowButton.Text" xml:space="preserve">
+    <value>Відкрити у новому вікні</value>
+  </data>
+  <data name="AccentColorSection.Text" xml:space="preserve">
+    <value>Колір акценту</value>
+  </data>
+  <data name="UseDefaultAccent.Text" xml:space="preserve">
+    <value>Системний колір акценту</value>
+  </data>
+  <data name="ByDefaultButtonText.Text" xml:space="preserve">
+    <value>Встановити за замовчуванням</value>
+  </data>
+  <data name="ExportButton.Text" xml:space="preserve">
+    <value>Експортувати налаштування</value>
+  </data>
+  <data name="SettingsPageHeader.Text" xml:space="preserve">
+    <value>FileViewer налаштування</value>
+  </data>
+  <data name="ImportButton.Text" xml:space="preserve">
+    <value>Імпортувати налаштування</value>
+  </data>
+  <data name="LanguageSection.Text" xml:space="preserve">
+    <value>Мова</value>
+  </data>
+  <data name="RestoreButtonText.Text" xml:space="preserve">
+    <value>Відновити</value>
+  </data>
+  <data name="SaveButtonText.Text" xml:space="preserve">
+    <value>Зберегти</value>
+  </data>
+  <data name="ScheduledScanningSection.Text" xml:space="preserve">
+    <value>Заплановане сканування</value>
+  </data>
+  <data name="IntervalHeader.Text" xml:space="preserve">
+    <value>Інтервал сканування</value>
+  </data>
+  <data name="MinCritSpaceHeader.Text" xml:space="preserve">
+    <value>Мінімальний процент критичного місця</value>
+  </data>
+  <data name="SystemTab.Text" xml:space="preserve">
+    <value>Системні</value>
+  </data>
+  <data name="SystemTraySection.Text" xml:space="preserve">
+    <value>Системний трей</value>
+  </data>
+  <data name="SwitchStateOff.Text" xml:space="preserve">
+    <value>Вимкнено</value>
+  </data>
+  <data name="SwitchStateOn.Text" xml:space="preserve">
+    <value>Увімкнено</value>
+  </data>
+  <data name="ThemeSectionDark.Text" xml:space="preserve">
+    <value>Темна</value>
+  </data>
+  <data name="ThemeSection.Text" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="ThemeSectionLight.Text" xml:space="preserve">
+    <value>Світла</value>
+  </data>
+  <data name="ThemeSectionSystem.Text" xml:space="preserve">
+    <value>Системна</value>
+  </data>
+  <data name="VisualTab.Text" xml:space="preserve">
+    <value>Візуальні</value>
+  </data>
+  <data name="DriveNodeTagText" xml:space="preserve">
+    <value>вільно з</value>
+  </data>
+  <data name="ChartPageExpander.Text" xml:space="preserve">
+    <value>Директорії</value>
+  </data>
+  <data name="ListTab.Text" xml:space="preserve">
+    <value>Перелік</value>
+  </data>
+  <data name="ChartTab.Text" xml:space="preserve">
+    <value>Діаграма</value>
+  </data>
+  <data name="ContextMenuOpen.Text" xml:space="preserve">
+    <value>Відкрити</value>
+  </data>
+  <data name="TrayContextMenuOpen" xml:space="preserve">
+    <value>Відкрити</value>
+  </data>
+  <data name="TrayContextMenuQuite" xml:space="preserve">
+    <value>Закрити</value>
+  </data>
+  <data name="DialogConfirmText" xml:space="preserve">
+    <value>Підтвердити</value>
+  </data>
+  <data name="DialogCancelText" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="DialogApplyText" xml:space="preserve">
+    <value>Застосувати</value>
+  </data>
+  <data name="DialogTargetSelectionTitle" xml:space="preserve">
+    <value>Вибір цілі...</value>
+  </data>
+  <data name="AllDrives.Content" xml:space="preserve">
+    <value>Всі диски</value>
+  </data>
+  <data name="Selected.Content" xml:space="preserve">
+    <value>Обрані</value>
+  </data>
+  <data name="DialogUnsavedChangesTitle" xml:space="preserve">
+    <value>Незбережені зміни</value>
+  </data>
+  <data name="DialogUnsavedChangesText" xml:space="preserve">
+    <value>У вас є незбережені зміни. Ви впевнені, що хочете закрити меню налаштувань?</value>
+  </data>
+  <data name="DialogRestoreSettingsTitle" xml:space="preserve">
+    <value>Відновити налаштування</value>
+  </data>
+  <data name="DialogRestoreSettingsText" xml:space="preserve">
+    <value>Ви впевнені, що хочете відновити налаштування?</value>
+  </data>
+  <data name="DialogSetSettingsByDefaultTitle" xml:space="preserve">
+    <value>Встановити налаштування за замовчуванням</value>
+  </data>
+  <data name="DialogSetSettingsByDefaultText" xml:space="preserve">
+    <value>Ви впевнені, що хочете встановити всі налаштування за замовчуванням?</value>
+  </data>
+  <data name="DialogRefreshScanningTitle" xml:space="preserve">
+    <value>Підтвердження повторного сканування цілей</value>
+  </data>
+  <data name="DialogRefreshScanningText" xml:space="preserve">
+    <value>Ви впевнені, що хочете повторно просканувати наступну кількість дисків: </value>
+  </data>
+  <data name="DialogRefreshSelectedTitle" xml:space="preserve">
+    <value>Повторно сканувати обрану ціль</value>
+  </data>
+  <data name="DialogRefreshSelectedText" xml:space="preserve">
+    <value>Ви впевнені, що хочете повторно просканувати цей каталог?</value>
+  </data>
+  <data name="DialogCancelScanningTitle" xml:space="preserve">
+    <value>Підтвердження скасування сканування</value>
+  </data>
+  <data name="DialogCancelScanningText" xml:space="preserve">
+    <value>Ви впевнені, що хочете скасувати процес сканування?</value>
+  </data>
+  <data name="DialogExportSettingsWarningTitle" xml:space="preserve">
+    <value>Незбережені зміни</value>
+  </data>
+  <data name="DialogExportSettingsWarningText" xml:space="preserve">
+    <value>Будь ласка, збережіть або скасуйте зміни перед експортом.</value>
+  </data>
+  <data name="DialogErrorTitle" xml:space="preserve">
+    <value>Помилка</value>
+  </data>
+  <data name="DialogFailedImportSettingsText" xml:space="preserve">
+    <value>Не вдалось імпортувати налаштування:</value>
+  </data>
+  <data name="DialogOkay" xml:space="preserve">
+    <value>Добре</value>
+  </data>
+  <data name="InProgress.Text" xml:space="preserve">
+    <value>В процесі...</value>
+  </data>
+</root>

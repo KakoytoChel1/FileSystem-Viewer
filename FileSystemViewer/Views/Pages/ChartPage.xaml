@@ -30,7 +30,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            Text="List"/>
+                            x:Uid="ListTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -129,7 +129,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            Text="Chart"/>
+                            x:Uid="ChartTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -165,7 +165,7 @@
                         Glyph="&#xED25;"/>
 
                         <TextBlock
-                        Text="Directories"/>
+                            x:Uid="ChartPageExpander"/>
                     </StackPanel>
                 </Expander.Header>
 
@@ -184,9 +184,12 @@
                 HorizontalAlignment="Center"
                 Height="45"
                 Style="{StaticResource CommandBarButtonStyle}"
-                ToolTipService.ToolTip="Open in new window"
                 Content="&#xE8A7;"
                 Command="{x:Bind ViewModel.OpenChartTabsNewWindowCommand}">
+
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="OpenInNewWindowButton"/>
+                </ToolTipService.ToolTip>
             </Button>
         </Grid>
 

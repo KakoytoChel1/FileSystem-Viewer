@@ -45,7 +45,7 @@
 
                 <TextBlock
                     VerticalAlignment="Center"
-                    Text="FileViewer settings"
+                    x:Uid="SettingsPageHeader"
                     FontSize="13"
                     FontWeight="SemiLight"/>
                 <TextBlock
@@ -71,8 +71,12 @@
                         Command="{x:Bind ViewModel.ImportSettingsCommand}"
                         CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
                         Content="&#xE8B5;"
-                        Style="{StaticResource SettingsPageHeaderButtons}"
-                        ToolTipService.ToolTip="Import settings"/>
+                        Style="{StaticResource SettingsPageHeaderButtons}">
+
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="ImportButton"/>
+                        </ToolTipService.ToolTip>
+                    </Button>
 
                     <Border
                         Margin="0,5,0,5"
@@ -83,8 +87,12 @@
                         Command="{x:Bind ViewModel.ExportSettingsCommand}"
                         CommandParameter="{Binding ElementName=settingsPage, Path=XamlRoot}"
                         Content="&#xEDE1;"
-                        Style="{StaticResource SettingsPageHeaderButtons}"
-                        ToolTipService.ToolTip="Export settings"/>
+                        Style="{StaticResource SettingsPageHeaderButtons}">
+                        
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="ExportButton"/>
+                        </ToolTipService.ToolTip>
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </Grid>
@@ -104,7 +112,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            Text="System"/>
+                            x:Uid="SystemTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -124,11 +132,22 @@
 
                             <TextBlock
                                 Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                Text="System tray"/>
+                                x:Uid="SystemTraySection"/>
 
                             <ToggleSwitch
                                 Margin="0,4,0,0"
-                                IsOn="{x:Bind ViewModel.IsTrayToggleOn, Mode=TwoWay}"/>
+                                IsOn="{x:Bind ViewModel.IsTrayToggleOn, Mode=TwoWay}">
+
+                                <ToggleSwitch.OnContent>
+                                    <TextBlock
+                                        x:Uid="SwitchStateOn"/>
+                                </ToggleSwitch.OnContent>
+
+                                <ToggleSwitch.OffContent>
+                                    <TextBlock
+                                        x:Uid="SwitchStateOff"/>
+                                </ToggleSwitch.OffContent>
+                            </ToggleSwitch>
                         </StackPanel>
                     </Border>
 
@@ -151,12 +170,23 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    Text="Scheduled scanning"/>
+                                    x:Uid="ScheduledScanningSection"/>
 
                                 <ToggleSwitch
                                     x:Name="ScheduledScanToggle"
                                     Margin="0,4,0,0"
-                                    IsOn="{x:Bind ViewModel.IsSchedulerScanToggleOn, Mode=TwoWay}"/>
+                                    IsOn="{x:Bind ViewModel.IsSchedulerScanToggleOn, Mode=TwoWay}">
+
+                                    <ToggleSwitch.OnContent>
+                                        <TextBlock
+                                            x:Uid="SwitchStateOn"/>
+                                    </ToggleSwitch.OnContent>
+
+                                    <ToggleSwitch.OffContent>
+                                        <TextBlock
+                                            x:Uid="SwitchStateOff"/>
+                                    </ToggleSwitch.OffContent>
+                                </ToggleSwitch>
                             </StackPanel>
 
                             <!--Content-->
@@ -171,10 +201,15 @@
                                     <TimePicker
                                         x:Name="DailyScanTimePicker"
                                         IsEnabled="{Binding ElementName=ScheduledScanToggle, Path=IsOn, Mode=OneWay}"
-                                        Header="Scan interval"
                                         MinuteIncrement="15"
                                         ClockIdentifier="24HourClock"
-                                        SelectedTime="{x:Bind ViewModel.ScheduledScanTimeSpan, Mode=TwoWay}"/>
+                                        SelectedTime="{x:Bind ViewModel.ScheduledScanTimeSpan, Mode=TwoWay}">
+
+                                        <TimePicker.Header>
+                                            <TextBlock
+                                                x:Uid="IntervalHeader"/>
+                                        </TimePicker.Header>
+                                    </TimePicker>
 
                                     <NumberBox
                                         IsEnabled="{Binding ElementName=ScheduledScanToggle, Path=IsOn, Mode=OneWay}"
@@ -182,8 +217,13 @@
                                         SmallChange="10"
                                         Minimum="0"
                                         Maximum="100"
-                                        Header="Minimum critical space percent"
-                                        SpinButtonPlacementMode="Inline"/>
+                                        SpinButtonPlacementMode="Inline">
+
+                                        <NumberBox.Header>
+                                            <TextBlock
+                                                x:Uid="MinCritSpaceHeader"/>
+                                        </NumberBox.Header>
+                                    </NumberBox>
                                 </StackPanel>
                             </Grid>
                         </Grid>
@@ -204,7 +244,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            Text="Visual"/>
+                            x:Uid="VisualTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -225,22 +265,20 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    Text="Language"/>
+                                    x:Uid="LanguageSection"/>
 
-                                <!--<SelectorBar>
-                                    <SelectorBarItem Text="UA">
+                                <SelectorBar>
+                                    <SelectorBarItem Text="UA" IsSelected="{x:Bind ViewModel.IsUALanguageSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <ImageIcon Source="../../Assets/ua.png" Width="30" Margin="0,-5,0,0"/>
                                         </SelectorBarItem.Icon>
                                     </SelectorBarItem>
-                                    <SelectorBarItem Text="ENG">
+                                    <SelectorBarItem Text="ENG" IsSelected="{x:Bind ViewModel.IsENGLanguageSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <ImageIcon Source="../../Assets/uk.png" Width="30" Margin="0,-5,0,0"/>
                                         </SelectorBarItem.Icon>
                                     </SelectorBarItem>
-                                </SelectorBar>-->
-
-                                <SplitButton/> <!--!!!!!!!!!!!!!!!!-->
+                                </SelectorBar>
                                
                             </StackPanel>
                         </Border>
@@ -255,29 +293,25 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    Text="Theme"/>
+                                    x:Uid="ThemeSection"/>
 
-                                <!--<SelectorBar
-                                    x:Name="themeSelectorBar"
-                                    SelectionChanged="themeSelectorBar_SelectionChanged">
-                                    <SelectorBarItem Text="Light">
+                                <SelectorBar>
+                                    <SelectorBarItem x:Uid="ThemeSectionLight" IsSelected="{x:Bind ViewModel.IsLightThemeSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <FontIcon Glyph="&#xE706;"/>
                                         </SelectorBarItem.Icon>
                                     </SelectorBarItem>
-                                    <SelectorBarItem Text="Dark">
+                                    <SelectorBarItem x:Uid="ThemeSectionDark" Text="Dark" IsSelected="{x:Bind ViewModel.IsDarkThemeSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <FontIcon Glyph="&#xE708;"/>
                                         </SelectorBarItem.Icon>
                                     </SelectorBarItem>
-                                    <SelectorBarItem Text="System">
+                                    <SelectorBarItem x:Uid="ThemeSectionSystem" Text="System" IsSelected="{x:Bind ViewModel.IsSystemThemeSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <FontIcon Glyph="&#xE770;"/>
                                         </SelectorBarItem.Icon>
                                     </SelectorBarItem>
-                                </SelectorBar>-->
-                                
-                                <SplitButton/> <!--!!!!!!!!!!!!!!!!-->
+                                </SelectorBar>
                             </StackPanel>
                         </Border>
 
@@ -291,7 +325,7 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    Text="Accent color"/>
+                                    x:Uid="AccentColorSection"/>
 
                                 <!--System accent switcher-->
                                 <StackPanel
@@ -299,18 +333,30 @@
                                     Spacing="10">
 
                                     <TextBlock
-                                        Text="Use system accent color"
+                                        x:Uid="UseDefaultAccent"
                                         VerticalAlignment="Center"/>
 
                                     <ToggleSwitch
-                                        x:Name="DefaultAccentToggle">
+                                        x:Name="DefaultAccentToggle"
+                                        IsOn="{x:Bind ViewModel.IsSystemAccentColorUsed, Mode=TwoWay}">
+
+                                        <ToggleSwitch.OnContent>
+                                            <TextBlock
+                                                x:Uid="SwitchStateOn"/>
+                                        </ToggleSwitch.OnContent>
+
+                                        <ToggleSwitch.OffContent>
+                                            <TextBlock
+                                                x:Uid="SwitchStateOff"/>
+                                        </ToggleSwitch.OffContent>
                                     </ToggleSwitch>
                                 </StackPanel>
 
                                 <ColorPicker
+                                    Color="{x:Bind ViewModel.CustomAccentColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     HorizontalAlignment="Left"
                                     IsMoreButtonVisible="False"
-                                    IsColorSliderVisible="False"
+                                    IsColorSliderVisible="True"
                                     IsColorChannelTextInputVisible="False"
                                     IsHexInputVisible="False"
                                     IsAlphaEnabled="False">
@@ -354,7 +400,7 @@
 
                     <TextBlock
                         VerticalAlignment="Center"
-                         Text="Restore"/>
+                        x:Uid="RestoreButtonText"/>
                 </StackPanel>
             </Button>
 
@@ -372,7 +418,7 @@
 
                     <TextBlock
                         VerticalAlignment="Center"
-                        Text="Set by default"/>
+                        x:Uid="ByDefaultButtonText"/>
                 </StackPanel>
             </Button>
 
@@ -390,7 +436,7 @@
 
                     <TextBlock
                         VerticalAlignment="Center"
-                         Text="Save"/>
+                        x:Uid="SaveButtonText"/>
                 </StackPanel>
             </Button>
         </StackPanel>

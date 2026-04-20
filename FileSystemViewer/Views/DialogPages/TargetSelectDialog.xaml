@@ -29,8 +29,8 @@
             Grid.Row="0"
             SelectedIndex="{x:Bind ViewModel.SelectedScanningTargetIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
             
-            <RadioButton Content="All drives"/>
-            <RadioButton Content="Selected"/>
+            <RadioButton x:Uid="AllDrives"/>
+            <RadioButton x:Uid="Selected"/>
         </RadioButtons>
 
         <Button
@@ -41,7 +41,6 @@
             FontFamily="Segoe Fluent Icons"
             Content="&#xE895;"
             FontSize="14"
-            ToolTipService.ToolTip="Refresh"
             Command="{x:Bind ViewModel.RefreshAvailableDrivesCollectionCommand}"/>
 
         <ListView 

@@ -10,7 +10,6 @@
     mc:Ignorable="d">
 
     <Grid>
-
         <mControls:HierarchicalTreemap
             Background="Transparent"
             x:Name="hierarchicalTreemap"
@@ -21,7 +20,6 @@
 
         <Button
             Style="{StaticResource CommandBarButtonStyle}"
-            ToolTipService.ToolTip="Open in new window"
             Content="&#xE8A7;"
             Height="27"
             Width="35"
@@ -29,6 +27,11 @@
             VerticalAlignment="Top"
             Margin="0,5,5,0"
             Command="{x:Bind MainPageViewModel.OpenTreeMapNewWindowCommand}">
+
+            <ToolTipService.ToolTip>
+                <TextBlock
+                    x:Uid="OpenInNewWindowButton"/>
+            </ToolTipService.ToolTip>
         </Button>
     </Grid>
 </Page>

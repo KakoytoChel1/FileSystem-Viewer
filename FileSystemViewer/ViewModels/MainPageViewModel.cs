@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace FileSystemViewer.ViewModels
 {
@@ -86,8 +85,8 @@ namespace FileSystemViewer.ViewModels
             LoadAvailableDrives();
             SelectedTargetDrives.Clear();
 
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Target selection...", "Apply",
-                ContentDialogButton.Primary, new TargetSelectDialog(), "Cancel", null);
+            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogTargetSelectionTitle"), ResourceLoader.GetString("DialogApplyText"),
+                ContentDialogButton.Primary, new TargetSelectDialog(), ResourceLoader.GetString("DialogCancelText"), null);
 
             if (dialogResult == ContentDialogResult.Primary)
             {
@@ -171,9 +170,8 @@ namespace FileSystemViewer.ViewModels
             if (!DriveNodes.Any())
                 return;
 
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Rescan target confirmation", "Confirm",
-               ContentDialogButton.Primary, $"Are you sure you want to rescan the following count of drives: " +
-               $"{DriveNodes.Count}?", "Cancel", null);
+            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogRefreshScanningTitle"), ResourceLoader.GetString("DialogConfirmText"),
+               ContentDialogButton.Primary, $"{ResourceLoader.GetString("DialogRefreshScanningText")} {DriveNodes.Count}?", ResourceLoader.GetString("DialogCancelText"), null);
 
             if(dialogResult == ContentDialogResult.Primary)
             {
@@ -205,8 +203,8 @@ namespace FileSystemViewer.ViewModels
         {
             if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode selectedDirectoryNode)
             {
-                var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Rescan targets confirmation", "Confirm",
-                   ContentDialogButton.Primary, $"Are you sure you want to rescan the selected directories?", "Cancel", null);
+                var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogRefreshSelectedTitle"), ResourceLoader.GetString("DialogConfirmText"),
+                   ContentDialogButton.Primary, $"{ResourceLoader.GetString("DialogRefreshSelectedText")}", ResourceLoader.GetString("DialogCancelText"), null);
 
                 if (dialogResult == ContentDialogResult.Primary)
                 {
@@ -233,8 +231,8 @@ namespace FileSystemViewer.ViewModels
         [RelayCommand(CanExecute = nameof(IsCancelScanningAvailable))]
         public async Task CancelScanning(XamlRoot xamlRoot)
         {
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Cancel scanning confirmation", "Yes",
-                ContentDialogButton.Primary, $"Are you sure you want to cancel the scanning process?", "No", null);
+            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogCancelScanningTitle"), ResourceLoader.GetString("DialogConfirmText"),
+                ContentDialogButton.Primary, ResourceLoader.GetString("DialogCancelScanningText"), ResourceLoader.GetString("DialogCancelText"), null);
 
             if (dialogResult == ContentDialogResult.Primary)
             {

@@ -7,12 +7,15 @@ using FileSystemViewer.ViewModels.Tools;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.Windows.Storage.Pickers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Windows.UI;
+using Windows.UI.ViewManagement;
 
 namespace FileSystemViewer.ViewModels
 {
@@ -21,27 +24,29 @@ namespace FileSystemViewer.ViewModels
         private IBackgroundSchedulerService _backgroundSchedulerService;
         private readonly TimeSpan _minimumTime = TimeSpan.FromMinutes(15);
 
-        public SettingsViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
-            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, 
+        public SettingsViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider,
                 fileExtentionItemService, configurationService, visualManagerService, appState)
         {
             ApplicationState.SettingsMenuVisibility = Visibility.Collapsed;
             _backgroundSchedulerService = backgroundSchedulerService;
-            
+
             if (ConfigurationService.Settings == null)
             {
                 ConfigurationService.Load();
             }
             RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
-
-            SelectedApplicationThemeIndex = 2;
         }
 
         public bool IsThereUnsavedChanges =>
             IsTrayToggleOn != ConfigurationService.Settings!.IsTrayActive ||
             IsSchedulerScanToggleOn != ConfigurationService.Settings.IsScheduledScanningEnabled ||
             ScheduledScanTimeSpan != ConfigurationService.Settings.ScheduledScanningTime ||
-            MinCriticalFreeSpacePercent != ConfigurationService.Settings.MinFreeSpacePercent;
+            MinCriticalFreeSpacePercent != ConfigurationService.Settings.MinFreeSpacePercent ||
+            IsSystemAccentColorUsed != ConfigurationService.Settings.IsSystemAccentColorUsed ||
+            GetSelectedTheme() != ConfigurationService.Settings.AppTheme ||
+            GetSelectedLanguage() != ConfigurationService.Settings.AppLanguage ||
+            CustomAccentColor != ConfigurationService.Settings.CustomAccentColor;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
@@ -67,11 +72,32 @@ namespace FileSystemViewer.ViewModels
         public partial double MinCriticalFreeSpacePercent { get; set; }
 
         [ObservableProperty]
-        public partial int SelectedApplicationThemeIndex { get; set; }
-        partial void OnSelectedApplicationThemeIndexChanged(int value)
-        {
-            
-        }
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial bool IsSystemAccentColorUsed { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial bool IsDarkThemeSelected { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial bool IsLightThemeSelected { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial bool IsSystemThemeSelected { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial bool IsUALanguageSelected { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial bool IsENGLanguageSelected { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial Color CustomAccentColor { get; set; }
 
         [RelayCommand]
         public async Task ImportSettings(XamlRoot xamlRoot)
@@ -100,7 +126,7 @@ namespace FileSystemViewer.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        await DialogManager.ShowContentDialogAsync(xamlRoot!, "Error", "Okay", ContentDialogButton.Primary, $"Failed to import settings: {ex.Message}");
+                        await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogErrorTitle"), ResourceLoader.GetString("DialogOkay"), ContentDialogButton.Primary, $"{ResourceLoader.GetString("DialogFailedImportSettingsText")} {ex.Message}");
                     }
                 }
             }
@@ -111,7 +137,7 @@ namespace FileSystemViewer.ViewModels
         {
             if (IsThereUnsavedChanges)
             {
-                await DialogManager.ShowContentDialogAsync(xamlRoot!, "Unsaved changes", "Okay", ContentDialogButton.Primary, "Please save or reset your changes before exporting.");
+                await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogExportSettingsWarningTitle"), ResourceLoader.GetString("DialogOkay"), ContentDialogButton.Primary, ResourceLoader.GetString("DialogExportSettingsWarningText"));
                 return;
             }
 
@@ -134,7 +160,8 @@ namespace FileSystemViewer.ViewModels
         [RelayCommand]
         public async Task SetSettingsByDefault(XamlRoot xamlRoot)
         {
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Set settings by default", "Confirm", ContentDialogButton.Primary, "Are you sure you want to set all settings by default?", closeBtnText: "Cancel");
+            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogSetSettingsByDefaultTitle"), ResourceLoader.GetString("DialogConfirmText"), 
+                ContentDialogButton.Primary, ResourceLoader.GetString("DialogSetSettingsByDefaultText"), closeBtnText: ResourceLoader.GetString("DialogCancelText"));
             if (result == ContentDialogResult.Primary)
             {
                 RestoreSettingsPropertiesFrom(new AppSettings());
@@ -149,7 +176,8 @@ namespace FileSystemViewer.ViewModels
                 return;
             }
 
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Restore settings", "Confirm", ContentDialogButton.Primary, "Are you sure you want to restore settings?", closeBtnText: "Cancel");
+            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogRestoreSettingsTitle"), ResourceLoader.GetString("DialogConfirmText"), 
+                ContentDialogButton.Primary, ResourceLoader.GetString("DialogRestoreSettingsText"), closeBtnText: ResourceLoader.GetString("DialogCancelText"));
             if (result == ContentDialogResult.Primary)
             {
                 RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
@@ -161,9 +189,12 @@ namespace FileSystemViewer.ViewModels
         {
             if (IsThereUnsavedChanges)
             {
-                RefreshThemeSettings();
+                AppSettings.ThemeMode selectedTheme = GetSelectedTheme();
+                AppSettings.Language selectedLanguage = GetSelectedLanguage();
+
                 RescheduleBackgroundTask();
-                SaveSettingsToConfig();
+                SaveSettingsToConfig(selectedTheme, selectedLanguage);
+                RefreshVisualSettings(selectedTheme, selectedLanguage);
             }
         }
 
@@ -176,7 +207,8 @@ namespace FileSystemViewer.ViewModels
                 return;
             }
 
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, "Unsaved changes", "Confirm", ContentDialogButton.Primary, "You have unsaved changes. Are you sure you want to close the settings menu?", closeBtnText: "Cancel");
+            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogUnsavedChangesTitle"), ResourceLoader.GetString("DialogConfirmText"), 
+                ContentDialogButton.Primary, ResourceLoader.GetString("DialogUnsavedChangesText"), closeBtnText: ResourceLoader.GetString("DialogCancelText"));
 
             if (result == ContentDialogResult.Primary)
             {
@@ -191,14 +223,34 @@ namespace FileSystemViewer.ViewModels
             IsSchedulerScanToggleOn = appSettings.IsScheduledScanningEnabled;
             ScheduledScanTimeSpan = appSettings.ScheduledScanningTime;
             MinCriticalFreeSpacePercent = appSettings.MinFreeSpacePercent;
+
+            IsSystemAccentColorUsed = appSettings.IsSystemAccentColorUsed;
+
+            var selectedTheme = appSettings.AppTheme;
+            var selectedLanguage = appSettings.AppLanguage;
+
+            IsDarkThemeSelected = selectedTheme == AppSettings.ThemeMode.Dark;
+            IsLightThemeSelected = selectedTheme == AppSettings.ThemeMode.Light;
+            IsSystemThemeSelected = selectedTheme == AppSettings.ThemeMode.System;
+            
+            CustomAccentColor = appSettings.CustomAccentColor;
+
+            IsENGLanguageSelected = selectedLanguage == AppSettings.Language.English;
+            IsUALanguageSelected = selectedLanguage == AppSettings.Language.Ukrainian;
         }
 
-        private void SaveSettingsToConfig()
+        private void SaveSettingsToConfig(AppSettings.ThemeMode selectedTheme, AppSettings.Language selectedLanguage)
         {
             ConfigurationService.Settings!.IsTrayActive = IsTrayToggleOn;
             ConfigurationService.Settings.IsScheduledScanningEnabled = IsSchedulerScanToggleOn;
             ConfigurationService.Settings.ScheduledScanningTime = ScheduledScanTimeSpan;
             ConfigurationService.Settings.MinFreeSpacePercent = MinCriticalFreeSpacePercent;
+
+            ConfigurationService.Settings.AppTheme = selectedTheme;
+            ConfigurationService.Settings.AppLanguage = selectedLanguage;
+            ConfigurationService.Settings.IsSystemAccentColorUsed = IsSystemAccentColorUsed;
+            ConfigurationService.Settings.CustomAccentColor = CustomAccentColor;
+
             ConfigurationService.Save();
             OnPropertyChanged(nameof(IsThereUnsavedChanges));
         }
@@ -230,9 +282,49 @@ namespace FileSystemViewer.ViewModels
             }
         }
 
-        private void RefreshThemeSettings()
+        private void RefreshVisualSettings(AppSettings.ThemeMode selectedTheme, AppSettings.Language selectedLanguage)
         {
+            VisualManagerService.SetApplicationTheme(selectedTheme);
+            //..SetApplicationLanguage()
 
+            if (!IsSystemAccentColorUsed)
+            {
+                VisualManagerService.SetAccentColor(CustomAccentColor);
+            }
+            else
+            {
+                UISettings uiSettings = new();
+                Color systemAccentColor = uiSettings.GetColorValue(UIColorType.Accent);
+                VisualManagerService.SetAccentColor(systemAccentColor);
+            }
+        }
+
+        private AppSettings.ThemeMode GetSelectedTheme()
+        {
+            if (IsDarkThemeSelected)
+            {
+                return AppSettings.ThemeMode.Dark;
+            }
+            else if (IsLightThemeSelected)
+            {
+                return AppSettings.ThemeMode.Light;
+            }
+            else
+            {
+                return AppSettings.ThemeMode.System;
+            }
+        }
+
+        private AppSettings.Language GetSelectedLanguage()
+        {
+            if (IsENGLanguageSelected)
+            {
+                return AppSettings.Language.English;
+            }
+            else
+            {
+                return AppSettings.Language.Ukrainian;
+            }
         }
     }
 }

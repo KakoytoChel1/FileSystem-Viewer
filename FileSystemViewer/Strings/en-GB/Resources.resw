@@ -1,0 +1,297 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CancelScanningButton.Text" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PauseScanningButton.Text" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="RefreshScanningButton.Text" xml:space="preserve">
+    <value>Refresh scanning</value>
+  </data>
+  <data name="RefreshSelectedButton.Text" xml:space="preserve">
+    <value>Refresh selected</value>
+  </data>
+  <data name="ResumeScanningButton.Text" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="SelectTargetButton.Text" xml:space="preserve">
+    <value>Select target...</value>
+  </data>
+  <data name="OpenInNewWindowButton.Text" xml:space="preserve">
+    <value>Open in new window</value>
+  </data>
+  <data name="AccentColorSection.Text" xml:space="preserve">
+    <value>Accent color</value>
+  </data>
+  <data name="UseDefaultAccent.Text" xml:space="preserve">
+    <value>Use system accent color</value>
+  </data>
+  <data name="ByDefaultButtonText.Text" xml:space="preserve">
+    <value>Set by default</value>
+  </data>
+  <data name="ExportButton.Text" xml:space="preserve">
+    <value>Export settings</value>
+  </data>
+  <data name="SettingsPageHeader.Text" xml:space="preserve">
+    <value>FileViewer settings</value>
+  </data>
+  <data name="ImportButton.Text" xml:space="preserve">
+    <value>Import settings</value>
+  </data>
+  <data name="LanguageSection.Text" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="RestoreButtonText.Text" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="SaveButtonText.Text" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ScheduledScanningSection.Text" xml:space="preserve">
+    <value>Scheduled scanning</value>
+  </data>
+  <data name="IntervalHeader.Text" xml:space="preserve">
+    <value>Scan interval</value>
+  </data>
+  <data name="MinCritSpaceHeader.Text" xml:space="preserve">
+    <value>Minimum critical space percent</value>
+  </data>
+  <data name="SystemTab.Text" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="SystemTraySection.Text" xml:space="preserve">
+    <value>System tray</value>
+  </data>
+  <data name="SwitchStateOff.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="SwitchStateOn.Text" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="ThemeSectionDark.Text" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="ThemeSection.Text" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="ThemeSectionLight.Text" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="ThemeSectionSystem.Text" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="VisualTab.Text" xml:space="preserve">
+    <value>Visual</value>
+  </data>
+  <data name="DriveNodeTagText" xml:space="preserve">
+    <value>free of</value>
+  </data>
+  <data name="ChartPageExpander.Text" xml:space="preserve">
+    <value>Directories</value>
+  </data>
+  <data name="ListTab.Text" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="ChartTab.Text" xml:space="preserve">
+    <value>Chart</value>
+  </data>
+  <data name="ContextMenuOpen.Text" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="TrayContextMenuOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="TrayContextMenuQuite" xml:space="preserve">
+    <value>Quite app</value>
+  </data>
+  <data name="DialogConfirmText" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="DialogCancelText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DialogApplyText" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="DialogTargetSelectionTitle" xml:space="preserve">
+    <value>Target selection...</value>
+  </data>
+  <data name="AllDrives.Content" xml:space="preserve">
+    <value>All drives</value>
+  </data>
+  <data name="Selected.Content" xml:space="preserve">
+    <value>Selected</value>
+  </data>
+  <data name="DialogUnsavedChangesTitle" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="DialogUnsavedChangesText" xml:space="preserve">
+    <value>You have unsaved changes. Are you sure you want to close the settings menu?</value>
+  </data>
+  <data name="DialogRestoreSettingsTitle" xml:space="preserve">
+    <value>Restore settings</value>
+  </data>
+  <data name="DialogRestoreSettingsText" xml:space="preserve">
+    <value>Are you sure you want to restore settings?</value>
+  </data>
+  <data name="DialogSetSettingsByDefaultTitle" xml:space="preserve">
+    <value>Set settings by default</value>
+  </data>
+  <data name="DialogSetSettingsByDefaultText" xml:space="preserve">
+    <value>Are you sure you want to set all settings by default?</value>
+  </data>
+  <data name="DialogRefreshScanningTitle" xml:space="preserve">
+    <value>Rescan target confirmation</value>
+  </data>
+  <data name="DialogRefreshScanningText" xml:space="preserve">
+    <value>Are you sure you want to rescan the following count of drives: </value>
+  </data>
+  <data name="DialogRefreshSelectedTitle" xml:space="preserve">
+    <value>Rescan selected target</value>
+  </data>
+  <data name="DialogRefreshSelectedText" xml:space="preserve">
+    <value>Are you sure you want to rescan the following directory?</value>
+  </data>
+  <data name="DialogCancelScanningTitle" xml:space="preserve">
+    <value>Cancel scanning confirmation</value>
+  </data>
+  <data name="DialogCancelScanningText" xml:space="preserve">
+    <value>Are you sure you want to cancel the scanning process?</value>
+  </data>
+  <data name="DialogExportSettingsWarningTitle" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="DialogExportSettingsWarningText" xml:space="preserve">
+    <value>Please save or reset your changes before exporting.</value>
+  </data>
+  <data name="DialogErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="DialogFailedImportSettingsText" xml:space="preserve">
+    <value>Failed to import settings:</value>
+  </data>
+  <data name="DialogOkay" xml:space="preserve">
+    <value>Okay</value>
+  </data>
+  <data name="InProgress.Text" xml:space="preserve">
+    <value>In progress...</value>
+  </data>
+</root>

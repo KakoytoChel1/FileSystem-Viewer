@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace FileSystemViewer.ViewModels
 {
@@ -13,5 +14,6 @@ namespace FileSystemViewer.ViewModels
         public IConfigurationService<AppSettings> ConfigurationService { get; } = configurationService;
         public IVisualManagerService VisualManagerService { get; } = visualManagerService;
         public AppState ApplicationState { get; } = appState;
+        public ResourceLoader ResourceLoader { get; } = new ResourceLoader();
     }
 }

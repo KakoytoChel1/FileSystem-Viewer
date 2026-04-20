@@ -49,7 +49,7 @@ namespace FileSystemViewer
             var accent = _uiSettings.GetColorValue(UIColorType.Accent);
             var settings = MainPageViewModel.ConfigurationService.Settings;
 
-            if (settings.AccentColor == null || settings.AccentColor.Count != 3)
+            if (settings.IsSystemAccentColorUsed)
             {
                 MainPageViewModel.VisualManagerService.SetAccentColor(accent);
             }

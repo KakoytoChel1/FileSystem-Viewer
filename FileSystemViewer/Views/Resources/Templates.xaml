@@ -172,7 +172,7 @@
                         <TextBlock
                             FontSize="13"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="In progress..."/>
+                            x:Uid="InProgress"/>
                     </StackPanel>
 
                     <i:Interaction.Behaviors>
@@ -209,7 +209,7 @@
 
             <TreeViewItem.ContextFlyout>
                 <MenuFlyout>
-                    <MenuFlyoutItem Text="Open" Command="{Binding OpenCommand}">
+                    <MenuFlyoutItem x:Uid="ContextMenuOpen" Command="{Binding OpenCommand}">
                         <MenuFlyoutItem.Icon>
                             <FontIcon Glyph="&#xEC50;"/>
                         </MenuFlyoutItem.Icon>
