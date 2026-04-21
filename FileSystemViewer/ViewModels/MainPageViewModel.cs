@@ -85,8 +85,8 @@ namespace FileSystemViewer.ViewModels
             LoadAvailableDrives();
             SelectedTargetDrives.Clear();
 
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogTargetSelectionTitle"), ResourceLoader.GetString("DialogApplyText"),
-                ContentDialogButton.Primary, new TargetSelectDialog(), ResourceLoader.GetString("DialogCancelText"), null);
+            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogTargetSelectionTitle"), Localizer.GetLocalizedString("DialogApplyText"),
+                ContentDialogButton.Primary, new TargetSelectDialog(), Localizer.GetLocalizedString("DialogCancelText"), null);
 
             if (dialogResult == ContentDialogResult.Primary)
             {
@@ -170,8 +170,8 @@ namespace FileSystemViewer.ViewModels
             if (!DriveNodes.Any())
                 return;
 
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogRefreshScanningTitle"), ResourceLoader.GetString("DialogConfirmText"),
-               ContentDialogButton.Primary, $"{ResourceLoader.GetString("DialogRefreshScanningText")} {DriveNodes.Count}?", ResourceLoader.GetString("DialogCancelText"), null);
+            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogRefreshScanningTitle"), Localizer.GetLocalizedString("DialogConfirmText"),
+               ContentDialogButton.Primary, $"{Localizer.GetLocalizedString("DialogRefreshScanningText")} {DriveNodes.Count}?", Localizer.GetLocalizedString("DialogCancelText"), null);
 
             if(dialogResult == ContentDialogResult.Primary)
             {
@@ -203,8 +203,8 @@ namespace FileSystemViewer.ViewModels
         {
             if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode selectedDirectoryNode)
             {
-                var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogRefreshSelectedTitle"), ResourceLoader.GetString("DialogConfirmText"),
-                   ContentDialogButton.Primary, $"{ResourceLoader.GetString("DialogRefreshSelectedText")}", ResourceLoader.GetString("DialogCancelText"), null);
+                var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogRefreshSelectedTitle"), Localizer.GetLocalizedString("DialogConfirmText"),
+                   ContentDialogButton.Primary, $"{Localizer.GetLocalizedString("DialogRefreshSelectedText")}", Localizer.GetLocalizedString("DialogCancelText"), null);
 
                 if (dialogResult == ContentDialogResult.Primary)
                 {
@@ -231,8 +231,8 @@ namespace FileSystemViewer.ViewModels
         [RelayCommand(CanExecute = nameof(IsCancelScanningAvailable))]
         public async Task CancelScanning(XamlRoot xamlRoot)
         {
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogCancelScanningTitle"), ResourceLoader.GetString("DialogConfirmText"),
-                ContentDialogButton.Primary, ResourceLoader.GetString("DialogCancelScanningText"), ResourceLoader.GetString("DialogCancelText"), null);
+            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogCancelScanningTitle"), Localizer.GetLocalizedString("DialogConfirmText"),
+                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogCancelScanningText"), Localizer.GetLocalizedString("DialogCancelText"), null);
 
             if (dialogResult == ContentDialogResult.Primary)
             {
@@ -269,6 +269,7 @@ namespace FileSystemViewer.ViewModels
             if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
             {
                 TreeViewWindow treeViewWindow = new TreeViewWindow();
+                VisualManagerService.SetWindowTheme(treeViewWindow, ConfigurationService.Settings!.AppTheme);
                 treeViewWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
                 ApplicationState.ActiveSubWindows.Add(windowKey, treeViewWindow);
                 treeViewWindow.Activate();
@@ -283,6 +284,7 @@ namespace FileSystemViewer.ViewModels
             if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
             {
                 TreemapWindow treemapWindow = new TreemapWindow();
+                VisualManagerService.SetWindowTheme(treemapWindow, ConfigurationService.Settings!.AppTheme);
                 treemapWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
                 ApplicationState.ActiveSubWindows.Add(windowKey, treemapWindow);
                 treemapWindow.Activate();
@@ -349,8 +351,8 @@ namespace FileSystemViewer.ViewModels
             {
                 string cancelImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
                 NotificationManager.BuildAndShowToastNotification(
-                    "Scanning canceled!",
-                    "The operation of scanning has been canceled.",
+                    Localizer.GetLocalizedString("NotificationCanceledTitle"),
+                    Localizer.GetLocalizedString("NotificationCanceledText"),
                     cancelImagePath
                 );
                 return;
@@ -360,8 +362,9 @@ namespace FileSystemViewer.ViewModels
 
             string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
             NotificationManager.BuildAndShowToastNotification(
-                "Scanning successfully completed!",
-                $"Scanned: directories {ApplicationState.TotalDirectoriesScanned}; files: {ApplicationState.TotalFilesScanned};\nElapsed time: {elapsedTime.Humanize()}.",
+                Localizer.GetLocalizedString("NotificationSuccessTitle"),
+                $"{Localizer.GetLocalizedString("NotificationSuccessText1")} {ApplicationState.TotalDirectoriesScanned}; {Localizer.GetLocalizedString("NotificationSuccessText2")} " +
+                $"{ApplicationState.TotalFilesScanned};\n{Localizer.GetLocalizedString("NotificationSuccessText3")} {elapsedTime.Humanize()}.",
                 successImagePath
             );
         }

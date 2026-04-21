@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mControls="using:ModernControls.Controls"
+    xmlns:l="using:WinUI3Localizer"
     mc:Ignorable="d">
 
     <Grid>
@@ -30,7 +31,7 @@
 
             <ToolTipService.ToolTip>
                 <TextBlock
-                    x:Uid="OpenInNewWindowButton"/>
+                    l:Uids.Uid="OpenInNewWindowButton"/>
             </ToolTipService.ToolTip>
         </Button>
     </Grid>

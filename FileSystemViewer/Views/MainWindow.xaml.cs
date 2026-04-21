@@ -3,7 +3,6 @@ using FileSystemViewer.ViewModels;
 using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
-using System;
 using Windows.UI.ViewManagement;
 
 namespace FileSystemViewer
@@ -39,7 +38,7 @@ namespace FileSystemViewer
 
                 if (this.Content is FrameworkElement root)
                 {
-                    MainPageViewModel.VisualManagerService.UpdateTitleBarColors(root.ActualTheme);
+                    MainPageViewModel.VisualManagerService.UpdateTitleBarColors(root.ActualTheme, this);
                 }
             });
         }

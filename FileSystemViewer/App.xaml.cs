@@ -3,6 +3,7 @@ using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
+using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -14,9 +15,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Background;
+using Windows.Storage;
 using Windows.UI;
 using Windows.UI.ViewManagement;
+using WinUI3Localizer;
 using WinUIEx;
 
 namespace FileSystemViewer
@@ -89,14 +93,15 @@ namespace FileSystemViewer
         /// <param name="args">Details about the launch request and process.</param>
         protected async override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            try
-            {
+            //try
+            //{
                 InitializeServices();
+                await InitializeLocalizer();
                 _appState = ServiceProvider.GetRequiredService<AppState>();
                 _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
                 IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
 
-                ApplicationLanguages.PrimaryLanguageOverride = "uk-UA";
+                await Localizer.Get().SetLanguage(_configurationService.Settings.AppLanguage == AppSettings.Language.English ? "en-GB" : "uk-UA");
 
                 var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
                 if (activatedArgs.Kind == ExtendedActivationKind.AppNotification)
@@ -121,12 +126,12 @@ namespace FileSystemViewer
                     trayIcon.ContextMenu += (w, e) =>
                     {
                         var flyout = new MenuFlyout();
-                        var resourceLoader = new ResourceLoader();
+                        var localizer = Localizer.Get();
 
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = resourceLoader.GetString("TrayContextMenuOpen") });
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuOpen") });
                         ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
 
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = resourceLoader.GetString("TrayContextMenuQuite") });
+                        flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuQuite") });
                         ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                         {
                             CloseSubWindows();
@@ -144,12 +149,12 @@ namespace FileSystemViewer
                         task.Value.Unregister(true);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
-                Environment.Exit(0);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
+            //    Environment.Exit(0);
+            //}
         }
 
         private void CloseSubWindows()
@@ -218,6 +223,48 @@ namespace FileSystemViewer
             }
 
             visualManager.SetApplicationTheme(themeMode);
+        }
+
+        private async Task InitializeLocalizer()
+        {
+
+            // Initialize a "Strings" folder in the "LocalFolder" for the packaged app.
+            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+            StorageFolder stringsFolder = await localFolder.CreateFolderAsync(
+              "Strings",
+               CreationCollisionOption.OpenIfExists);
+
+            // Create string resources file from app resources if doesn't exists.
+            string resourceFileName = "Resources.resw";
+            await CreateStringResourceFileIfNotExists(stringsFolder, "en-GB", resourceFileName);
+            await CreateStringResourceFileIfNotExists(stringsFolder, "uk-UA", resourceFileName);
+
+            ILocalizer localizer = await new LocalizerBuilder()
+                .AddStringResourcesFolderForLanguageDictionaries(stringsFolder.Path)
+                .SetOptions(options =>
+                {
+                    options.DefaultLanguage = "en-GB";
+                })
+                .Build();
+        }
+
+        private static async Task CreateStringResourceFileIfNotExists(StorageFolder stringsFolder, string language, string resourceFileName)
+        {
+            StorageFolder languageFolder = await stringsFolder.CreateFolderAsync(
+                language,
+                CreationCollisionOption.OpenIfExists);
+
+            if (await languageFolder.TryGetItemAsync(resourceFileName) is null)
+            {
+                string resourceFilePath = Path.Combine(stringsFolder.Name, language, resourceFileName);
+                StorageFile resourceFile = await LoadStringResourcesFileFromAppResource(resourceFilePath);
+                _ = await resourceFile.CopyAsync(languageFolder);
+            }
+        }
+        private static async Task<StorageFile> LoadStringResourcesFileFromAppResource(string filePath)
+        {
+            Uri resourcesFileUri = new($"ms-appx:///{filePath}");
+            return await StorageFile.GetFileFromApplicationUriAsync(resourcesFileUri);
         }
     }
 }

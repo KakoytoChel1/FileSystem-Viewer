@@ -1,5 +1,6 @@
 ﻿using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -8,9 +9,10 @@ using WinRT.Interop;
 
 namespace FileSystemViewer.Services
 {
-    public class VisualManagerService : IVisualManagerService
+    public class VisualManagerService(AppState appState) : IVisualManagerService
     {
         private Window? _mainWindow;
+        private AppState _appState = appState;
 
         public void Initialize(Window mainWindow)
         {
@@ -33,7 +35,20 @@ namespace FileSystemViewer.Services
 
         public void SetApplicationTheme(AppSettings.ThemeMode themeMode)
         {
-            if (_mainWindow != null && _mainWindow.Content is FrameworkElement root)
+            SetWindowTheme(_mainWindow, themeMode);
+
+            if (_appState.ActiveSubWindows.Count > 0)
+            {
+                foreach (var pair in _appState.ActiveSubWindows)
+                {
+                    SetWindowTheme(pair.Value, themeMode);
+                }
+            }
+        }
+
+        public void SetWindowTheme(Window? window, AppSettings.ThemeMode themeMode)
+        {
+            if (window != null && window.Content is FrameworkElement root)
             {
                 switch (themeMode)
                 {
@@ -47,7 +62,7 @@ namespace FileSystemViewer.Services
                         root.RequestedTheme = ElementTheme.Default;
                         break;
                 }
-                UpdateTitleBarColors(root.ActualTheme);
+                UpdateTitleBarColors(root.ActualTheme, window);
             }
         }
 
@@ -62,9 +77,9 @@ namespace FileSystemViewer.Services
             }
         }
 
-        public void UpdateTitleBarColors(ElementTheme currentTheme)
+        public void UpdateTitleBarColors(ElementTheme currentTheme, Window window)
         {
-            var hWnd = WindowNative.GetWindowHandle(_mainWindow);
+            var hWnd = WindowNative.GetWindowHandle(window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
 

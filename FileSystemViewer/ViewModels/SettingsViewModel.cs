@@ -25,7 +25,8 @@ namespace FileSystemViewer.ViewModels
         private readonly TimeSpan _minimumTime = TimeSpan.FromMinutes(15);
 
         public SettingsViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
-            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider,
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
+            IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider,
                 fileExtentionItemService, configurationService, visualManagerService, appState)
         {
             ApplicationState.SettingsMenuVisibility = Visibility.Collapsed;
@@ -126,7 +127,7 @@ namespace FileSystemViewer.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogErrorTitle"), ResourceLoader.GetString("DialogOkay"), ContentDialogButton.Primary, $"{ResourceLoader.GetString("DialogFailedImportSettingsText")} {ex.Message}");
+                        await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogErrorTitle"), Localizer.GetLocalizedString("DialogOkay"), ContentDialogButton.Primary, $"{Localizer.GetLocalizedString("DialogFailedImportSettingsText")} {ex.Message}");
                     }
                 }
             }
@@ -137,7 +138,7 @@ namespace FileSystemViewer.ViewModels
         {
             if (IsThereUnsavedChanges)
             {
-                await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogExportSettingsWarningTitle"), ResourceLoader.GetString("DialogOkay"), ContentDialogButton.Primary, ResourceLoader.GetString("DialogExportSettingsWarningText"));
+                await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogExportSettingsWarningTitle"), Localizer.GetLocalizedString("DialogOkay"), ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogExportSettingsWarningText"));
                 return;
             }
 
@@ -160,8 +161,8 @@ namespace FileSystemViewer.ViewModels
         [RelayCommand]
         public async Task SetSettingsByDefault(XamlRoot xamlRoot)
         {
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogSetSettingsByDefaultTitle"), ResourceLoader.GetString("DialogConfirmText"), 
-                ContentDialogButton.Primary, ResourceLoader.GetString("DialogSetSettingsByDefaultText"), closeBtnText: ResourceLoader.GetString("DialogCancelText"));
+            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogSetSettingsByDefaultTitle"), Localizer.GetLocalizedString("DialogConfirmText"), 
+                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogSetSettingsByDefaultText"), closeBtnText: Localizer.GetLocalizedString("DialogCancelText"));
             if (result == ContentDialogResult.Primary)
             {
                 RestoreSettingsPropertiesFrom(new AppSettings());
@@ -176,8 +177,8 @@ namespace FileSystemViewer.ViewModels
                 return;
             }
 
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogRestoreSettingsTitle"), ResourceLoader.GetString("DialogConfirmText"), 
-                ContentDialogButton.Primary, ResourceLoader.GetString("DialogRestoreSettingsText"), closeBtnText: ResourceLoader.GetString("DialogCancelText"));
+            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogRestoreSettingsTitle"), Localizer.GetLocalizedString("DialogConfirmText"), 
+                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogRestoreSettingsText"), closeBtnText: Localizer.GetLocalizedString("DialogCancelText"));
             if (result == ContentDialogResult.Primary)
             {
                 RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
@@ -193,8 +194,8 @@ namespace FileSystemViewer.ViewModels
                 AppSettings.Language selectedLanguage = GetSelectedLanguage();
 
                 RescheduleBackgroundTask();
-                SaveSettingsToConfig(selectedTheme, selectedLanguage);
                 RefreshVisualSettings(selectedTheme, selectedLanguage);
+                SaveSettingsToConfig(selectedTheme, selectedLanguage);
             }
         }
 
@@ -207,8 +208,8 @@ namespace FileSystemViewer.ViewModels
                 return;
             }
 
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, ResourceLoader.GetString("DialogUnsavedChangesTitle"), ResourceLoader.GetString("DialogConfirmText"), 
-                ContentDialogButton.Primary, ResourceLoader.GetString("DialogUnsavedChangesText"), closeBtnText: ResourceLoader.GetString("DialogCancelText"));
+            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogUnsavedChangesTitle"), Localizer.GetLocalizedString("DialogConfirmText"), 
+                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogUnsavedChangesText"), closeBtnText: Localizer.GetLocalizedString("DialogCancelText"));
 
             if (result == ContentDialogResult.Primary)
             {
@@ -285,7 +286,11 @@ namespace FileSystemViewer.ViewModels
         private void RefreshVisualSettings(AppSettings.ThemeMode selectedTheme, AppSettings.Language selectedLanguage)
         {
             VisualManagerService.SetApplicationTheme(selectedTheme);
-            //..SetApplicationLanguage()
+            
+            if (selectedLanguage != ConfigurationService.Settings!.AppLanguage)
+            {
+                WinUI3Localizer.Localizer.Get().SetLanguage(selectedLanguage == AppSettings.Language.English ? "en-GB" : "uk-UA");
+            }
 
             if (!IsSystemAccentColorUsed)
             {

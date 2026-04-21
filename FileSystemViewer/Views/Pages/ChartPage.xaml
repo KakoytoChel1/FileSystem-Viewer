@@ -9,7 +9,8 @@
     mc:Ignorable="d"
     xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
-    xmlns:i="using:Microsoft.Xaml.Interactivity">
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:l="using:WinUI3Localizer">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -30,7 +31,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            x:Uid="ListTab"/>
+                            l:Uids.Uid="ListTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -129,7 +130,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            x:Uid="ChartTab"/>
+                            l:Uids.Uid="ChartTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -165,7 +166,7 @@
                         Glyph="&#xED25;"/>
 
                         <TextBlock
-                            x:Uid="ChartPageExpander"/>
+                            l:Uids.Uid="ChartPageExpander"/>
                     </StackPanel>
                 </Expander.Header>
 
@@ -188,7 +189,7 @@
                 Command="{x:Bind ViewModel.OpenChartTabsNewWindowCommand}">
 
                 <ToolTipService.ToolTip>
-                    <TextBlock x:Uid="OpenInNewWindowButton"/>
+                    <TextBlock l:Uids.Uid="OpenInNewWindowButton"/>
                 </ToolTipService.ToolTip>
             </Button>
         </Grid>

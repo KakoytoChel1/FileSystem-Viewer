@@ -1,12 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
-using Microsoft.Windows.ApplicationModel.Resources;
+using WinUI3Localizer;
 
 namespace FileSystemViewer.ViewModels
 {
     public abstract class ViewModelBase(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
-        IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState) : ObservableObject
+        IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
+        IVisualManagerService visualManagerService, AppState appState) : ObservableObject
     {
         public IDriveUtilsService DriveUtilsService { get; } = driveUtilsService;
         public IDispatcherQueueProvider DispatcherQueueProvider { get; } = dispatcherQueueProvider;
@@ -14,6 +15,6 @@ namespace FileSystemViewer.ViewModels
         public IConfigurationService<AppSettings> ConfigurationService { get; } = configurationService;
         public IVisualManagerService VisualManagerService { get; } = visualManagerService;
         public AppState ApplicationState { get; } = appState;
-        public ResourceLoader ResourceLoader { get; } = new ResourceLoader();
+        public ILocalizer Localizer => WinUI3Localizer.Localizer.Get();
     }
 }

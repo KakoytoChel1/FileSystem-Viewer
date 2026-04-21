@@ -294,4 +294,43 @@
   <data name="InProgress.Text" xml:space="preserve">
     <value>В процесі...</value>
   </data>
+  <data name="NotificationCanceledTitle" xml:space="preserve">
+    <value>Сканування скасовано!</value>
+  </data>
+  <data name="NotificationCanceledText" xml:space="preserve">
+    <value>Операція сканування була скасована.</value>
+  </data>
+  <data name="NotificationSuccessTitle" xml:space="preserve">
+    <value>Сканування успішно завершено!</value>
+  </data>
+  <data name="NotificationSuccessText1" xml:space="preserve">
+    <value>Відскановано: каталогів</value>
+  </data>
+  <data name="NotificationSuccessText2" xml:space="preserve">
+    <value>файлів:</value>
+  </data>
+  <data name="NotificationSuccessText3" xml:space="preserve">
+    <value>Зайняло часу:</value>
+  </data>
+  <data name="NotificationScheduledSuccessTitle" xml:space="preserve">
+    <value>Заплановане сканування завершено, загальний час виконання:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText1" xml:space="preserve">
+    <value>Кількість дисків:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText2" xml:space="preserve">
+    <value>Загальний розмір:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText3" xml:space="preserve">
+    <value>Проскановано файлів:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText4" xml:space="preserve">
+    <value>Проскановано каталогів:</value>
+  </data>
+  <data name="NotificationWarningTitle" xml:space="preserve">
+    <value>Попередження про недостатній вільний простір на наступних дисках:</value>
+  </data>
+  <data name="NotificationClickForMore" xml:space="preserve">
+    <value>Натисніть, щоб дізнатися більше...</value>
+  </data>
 </root>

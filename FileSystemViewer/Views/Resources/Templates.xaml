@@ -5,7 +5,8 @@
     xmlns:models="using:FileSystemViewer.Models"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
-    xmlns:mControls="using:ModernControls">
+    xmlns:mControls="using:ModernControls"
+    xmlns:l="using:WinUI3Localizer">
 
     <converters:BytesIntoSuitableFormatConverter x:Key="BytesIntoSuitableFormatConverter"/>
     <converters:DoubleIntoStringConverter x:Key="DoubleIntoStringConverter"/>
@@ -172,7 +173,7 @@
                         <TextBlock
                             FontSize="13"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            x:Uid="InProgress"/>
+                            l:Uids.Uid="InProgress"/>
                     </StackPanel>
 
                     <i:Interaction.Behaviors>
@@ -209,7 +210,7 @@
 
             <TreeViewItem.ContextFlyout>
                 <MenuFlyout>
-                    <MenuFlyoutItem x:Uid="ContextMenuOpen" Command="{Binding OpenCommand}">
+                    <MenuFlyoutItem l:Uids.Uid="ContextMenuOpen" Command="{Binding OpenCommand}">
                         <MenuFlyoutItem.Icon>
                             <FontIcon Glyph="&#xEC50;"/>
                         </MenuFlyoutItem.Icon>

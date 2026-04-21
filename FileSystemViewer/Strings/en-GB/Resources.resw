@@ -294,4 +294,43 @@
   <data name="InProgress.Text" xml:space="preserve">
     <value>In progress...</value>
   </data>
+  <data name="NotificationCanceledTitle" xml:space="preserve">
+    <value>Scanning canceled!</value>
+  </data>
+  <data name="NotificationCanceledText" xml:space="preserve">
+    <value>The operation of scanning has been canceled.</value>
+  </data>
+  <data name="NotificationSuccessTitle" xml:space="preserve">
+    <value>Scanning successfully completed!</value>
+  </data>
+  <data name="NotificationSuccessText1" xml:space="preserve">
+    <value>Scanned: directories</value>
+  </data>
+  <data name="NotificationSuccessText2" xml:space="preserve">
+    <value>files:</value>
+  </data>
+  <data name="NotificationSuccessText3" xml:space="preserve">
+    <value>Elapsed time:</value>
+  </data>
+  <data name="NotificationScheduledSuccessTitle" xml:space="preserve">
+    <value>Scheduled scan completed, total elapsed time:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText1" xml:space="preserve">
+    <value>Drives count:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText2" xml:space="preserve">
+    <value>Total size:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText3" xml:space="preserve">
+    <value>Total files:</value>
+  </data>
+  <data name="NotificationScheduledSuccessText4" xml:space="preserve">
+    <value>Total directories:</value>
+  </data>
+  <data name="NotificationWarningTitle" xml:space="preserve">
+    <value>Low free space warning for the following drives:</value>
+  </data>
+  <data name="NotificationClickForMore" xml:space="preserve">
+    <value>Click for more details...</value>
+  </data>
 </root>

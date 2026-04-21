@@ -13,6 +13,7 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:mControls="using:ModernControls"
+    xmlns:l="using:WinUI3Localizer"
     x:Name="mainPage">
 
     <Grid>
@@ -41,7 +42,7 @@
                 Foreground="{ThemeResource AccentAAFillColorDefaultBrush}">
 
                 <ToolTipService.ToolTip>
-                    <TextBlock x:Uid="SelectTargetButton"/>
+                    <TextBlock l:Uids.Uid="SelectTargetButton"/>
                 </ToolTipService.ToolTip>
             </Button>
 
@@ -61,7 +62,7 @@
 
                         <ToolTipService.ToolTip>
                             <TextBlock
-                                x:Uid="CancelScanningButton"/>
+                                l:Uids.Uid="CancelScanningButton"/>
                         </ToolTipService.ToolTip>
                     </Button>
 
@@ -73,7 +74,7 @@
 
                         <ToolTipService.ToolTip>
                             <TextBlock
-                                x:Uid="ResumeScanningButton"/>
+                                l:Uids.Uid="ResumeScanningButton"/>
                         </ToolTipService.ToolTip>
                     </Button>
 
@@ -85,7 +86,7 @@
 
                         <ToolTipService.ToolTip>
                             <TextBlock
-                                x:Uid="PauseScanningButton"/>
+                                l:Uids.Uid="PauseScanningButton"/>
                         </ToolTipService.ToolTip>
                     </Button>
 
@@ -101,7 +102,7 @@
 
                 <ToolTipService.ToolTip>
                     <TextBlock
-                        x:Uid="RefreshScanningButton"/>
+                        l:Uids.Uid="RefreshScanningButton"/>
                 </ToolTipService.ToolTip>
             </Button>
 
@@ -114,7 +115,7 @@
 
                 <ToolTipService.ToolTip>
                     <TextBlock
-                        x:Uid="RefreshSelectedButton"/>
+                        l:Uids.Uid="RefreshSelectedButton"/>
                 </ToolTipService.ToolTip>
             </Button>
 
@@ -130,7 +131,7 @@
 
                     <ToolTipService.ToolTip>
                         <TextBlock
-                            x:Uid="OpenInNewWindowButton"/>
+                            l:Uids.Uid="OpenInNewWindowButton"/>
                     </ToolTipService.ToolTip>
                 </Button>
             </Border>

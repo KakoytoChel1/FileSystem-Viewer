@@ -9,6 +9,7 @@
     mc:Ignorable="d"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     Background="Transparent"
+    xmlns:l="using:WinUI3Localizer"
     x:Name="settingsPage">
 
     <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
@@ -45,7 +46,7 @@
 
                 <TextBlock
                     VerticalAlignment="Center"
-                    x:Uid="SettingsPageHeader"
+                    l:Uids.Uid="SettingsPageHeader"
                     FontSize="13"
                     FontWeight="SemiLight"/>
                 <TextBlock
@@ -74,7 +75,7 @@
                         Style="{StaticResource SettingsPageHeaderButtons}">
 
                         <ToolTipService.ToolTip>
-                            <TextBlock x:Uid="ImportButton"/>
+                            <TextBlock l:Uids.Uid="ImportButton"/>
                         </ToolTipService.ToolTip>
                     </Button>
 
@@ -90,7 +91,7 @@
                         Style="{StaticResource SettingsPageHeaderButtons}">
                         
                         <ToolTipService.ToolTip>
-                            <TextBlock x:Uid="ExportButton"/>
+                            <TextBlock l:Uids.Uid="ExportButton"/>
                         </ToolTipService.ToolTip>
                     </Button>
                 </StackPanel>
@@ -112,7 +113,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            x:Uid="SystemTab"/>
+                            l:Uids.Uid="SystemTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -132,7 +133,7 @@
 
                             <TextBlock
                                 Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                x:Uid="SystemTraySection"/>
+                                l:Uids.Uid="SystemTraySection"/>
 
                             <ToggleSwitch
                                 Margin="0,4,0,0"
@@ -140,12 +141,12 @@
 
                                 <ToggleSwitch.OnContent>
                                     <TextBlock
-                                        x:Uid="SwitchStateOn"/>
+                                        l:Uids.Uid="SwitchStateOn"/>
                                 </ToggleSwitch.OnContent>
 
                                 <ToggleSwitch.OffContent>
                                     <TextBlock
-                                        x:Uid="SwitchStateOff"/>
+                                        l:Uids.Uid="SwitchStateOff"/>
                                 </ToggleSwitch.OffContent>
                             </ToggleSwitch>
                         </StackPanel>
@@ -170,7 +171,7 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    x:Uid="ScheduledScanningSection"/>
+                                    l:Uids.Uid="ScheduledScanningSection"/>
 
                                 <ToggleSwitch
                                     x:Name="ScheduledScanToggle"
@@ -179,12 +180,12 @@
 
                                     <ToggleSwitch.OnContent>
                                         <TextBlock
-                                            x:Uid="SwitchStateOn"/>
+                                            l:Uids.Uid="SwitchStateOn"/>
                                     </ToggleSwitch.OnContent>
 
                                     <ToggleSwitch.OffContent>
                                         <TextBlock
-                                            x:Uid="SwitchStateOff"/>
+                                            l:Uids.Uid="SwitchStateOff"/>
                                     </ToggleSwitch.OffContent>
                                 </ToggleSwitch>
                             </StackPanel>
@@ -207,7 +208,7 @@
 
                                         <TimePicker.Header>
                                             <TextBlock
-                                                x:Uid="IntervalHeader"/>
+                                                l:Uids.Uid="IntervalHeader"/>
                                         </TimePicker.Header>
                                     </TimePicker>
 
@@ -221,7 +222,7 @@
 
                                         <NumberBox.Header>
                                             <TextBlock
-                                                x:Uid="MinCritSpaceHeader"/>
+                                                l:Uids.Uid="MinCritSpaceHeader"/>
                                         </NumberBox.Header>
                                     </NumberBox>
                                 </StackPanel>
@@ -244,7 +245,7 @@
 
                         <TextBlock
                             FontSize="15"
-                            x:Uid="VisualTab"/>
+                            l:Uids.Uid="VisualTab"/>
                     </StackPanel>
                 </PivotItem.Header>
 
@@ -265,7 +266,7 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    x:Uid="LanguageSection"/>
+                                    l:Uids.Uid="LanguageSection"/>
 
                                 <SelectorBar>
                                     <SelectorBarItem Text="UA" IsSelected="{x:Bind ViewModel.IsUALanguageSelected, Mode=TwoWay}">
@@ -293,20 +294,20 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    x:Uid="ThemeSection"/>
+                                    l:Uids.Uid="ThemeSection"/>
 
                                 <SelectorBar>
-                                    <SelectorBarItem x:Uid="ThemeSectionLight" IsSelected="{x:Bind ViewModel.IsLightThemeSelected, Mode=TwoWay}">
+                                    <SelectorBarItem l:Uids.Uid="ThemeSectionLight" IsSelected="{x:Bind ViewModel.IsLightThemeSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <FontIcon Glyph="&#xE706;"/>
                                         </SelectorBarItem.Icon>
                                     </SelectorBarItem>
-                                    <SelectorBarItem x:Uid="ThemeSectionDark" Text="Dark" IsSelected="{x:Bind ViewModel.IsDarkThemeSelected, Mode=TwoWay}">
+                                    <SelectorBarItem l:Uids.Uid="ThemeSectionDark" Text="Dark" IsSelected="{x:Bind ViewModel.IsDarkThemeSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <FontIcon Glyph="&#xE708;"/>
                                         </SelectorBarItem.Icon>
                                     </SelectorBarItem>
-                                    <SelectorBarItem x:Uid="ThemeSectionSystem" Text="System" IsSelected="{x:Bind ViewModel.IsSystemThemeSelected, Mode=TwoWay}">
+                                    <SelectorBarItem l:Uids.Uid="ThemeSectionSystem" Text="System" IsSelected="{x:Bind ViewModel.IsSystemThemeSelected, Mode=TwoWay}">
                                         <SelectorBarItem.Icon>
                                             <FontIcon Glyph="&#xE770;"/>
                                         </SelectorBarItem.Icon>
@@ -325,7 +326,7 @@
 
                                 <TextBlock
                                     Style="{StaticResource SettingsPagePanelHeaderStyle}"
-                                    x:Uid="AccentColorSection"/>
+                                    l:Uids.Uid="AccentColorSection"/>
 
                                 <!--System accent switcher-->
                                 <StackPanel
@@ -333,7 +334,7 @@
                                     Spacing="10">
 
                                     <TextBlock
-                                        x:Uid="UseDefaultAccent"
+                                        l:Uids.Uid="UseDefaultAccent"
                                         VerticalAlignment="Center"/>
 
                                     <ToggleSwitch
@@ -342,12 +343,12 @@
 
                                         <ToggleSwitch.OnContent>
                                             <TextBlock
-                                                x:Uid="SwitchStateOn"/>
+                                                l:Uids.Uid="SwitchStateOn"/>
                                         </ToggleSwitch.OnContent>
 
                                         <ToggleSwitch.OffContent>
                                             <TextBlock
-                                                x:Uid="SwitchStateOff"/>
+                                                l:Uids.Uid="SwitchStateOff"/>
                                         </ToggleSwitch.OffContent>
                                     </ToggleSwitch>
                                 </StackPanel>
@@ -400,7 +401,7 @@
 
                     <TextBlock
                         VerticalAlignment="Center"
-                        x:Uid="RestoreButtonText"/>
+                        l:Uids.Uid="RestoreButtonText"/>
                 </StackPanel>
             </Button>
 
@@ -418,7 +419,7 @@
 
                     <TextBlock
                         VerticalAlignment="Center"
-                        x:Uid="ByDefaultButtonText"/>
+                        l:Uids.Uid="ByDefaultButtonText"/>
                 </StackPanel>
             </Button>
 
@@ -436,7 +437,7 @@
 
                     <TextBlock
                         VerticalAlignment="Center"
-                        x:Uid="SaveButtonText"/>
+                        l:Uids.Uid="SaveButtonText"/>
                 </StackPanel>
             </Button>
         </StackPanel>

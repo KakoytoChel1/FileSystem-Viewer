@@ -10,6 +10,7 @@
     xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:l="using:WinUI3Localizer"
     Title="ChartTabsWindow">
 
     <Window.SystemBackdrop>
@@ -55,7 +56,7 @@
 
                             <TextBlock
                             FontSize="15"
-                            Text="List"/>
+                            l:Uids.Uid="ListTab"/>
                         </StackPanel>
                     </PivotItem.Header>
 
@@ -154,7 +155,7 @@
 
                             <TextBlock
                                 FontSize="15"
-                                Text="Chart"/>
+                                l:Uids.Uid="ChartTab"/>
                         </StackPanel>
                     </PivotItem.Header>
 
@@ -185,7 +186,7 @@
                                 Glyph="&#xED25;"/>
 
                             <TextBlock
-                                Text="Directories"/>
+                                l:Uids.Uid="ChartPageExpander"/>
                         </StackPanel>
                     </Expander.Header>
 
