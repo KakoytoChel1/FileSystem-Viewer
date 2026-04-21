@@ -5,6 +5,8 @@ using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
 using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
@@ -15,11 +17,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Background;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.ViewManagement;
+using WinRT.Interop;
 using WinUI3Localizer;
 using WinUIEx;
 
@@ -228,19 +232,10 @@ namespace FileSystemViewer
         private async Task InitializeLocalizer()
         {
 
-            // Initialize a "Strings" folder in the "LocalFolder" for the packaged app.
-            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
-            StorageFolder stringsFolder = await localFolder.CreateFolderAsync(
-              "Strings",
-               CreationCollisionOption.OpenIfExists);
-
-            // Create string resources file from app resources if doesn't exists.
-            string resourceFileName = "Resources.resw";
-            await CreateStringResourceFileIfNotExists(stringsFolder, "en-GB", resourceFileName);
-            await CreateStringResourceFileIfNotExists(stringsFolder, "uk-UA", resourceFileName);
+            string stringsFolder = Path.Combine(AppContext.BaseDirectory, "Strings");
 
             ILocalizer localizer = await new LocalizerBuilder()
-                .AddStringResourcesFolderForLanguageDictionaries(stringsFolder.Path)
+                .AddStringResourcesFolderForLanguageDictionaries(stringsFolder)
                 .SetOptions(options =>
                 {
                     options.DefaultLanguage = "en-GB";
@@ -248,24 +243,23 @@ namespace FileSystemViewer
                 .Build();
         }
 
-        private static async Task CreateStringResourceFileIfNotExists(StorageFolder stringsFolder, string language, string resourceFileName)
+        public void HandleActivation(AppActivationArguments args)
         {
-            StorageFolder languageFolder = await stringsFolder.CreateFolderAsync(
-                language,
-                CreationCollisionOption.OpenIfExists);
-
-            if (await languageFolder.TryGetItemAsync(resourceFileName) is null)
+            MainWindow!.DispatcherQueue.TryEnqueue(() =>
             {
-                string resourceFilePath = Path.Combine(stringsFolder.Name, language, resourceFileName);
-                StorageFile resourceFile = await LoadStringResourcesFileFromAppResource(resourceFilePath);
-                _ = await resourceFile.CopyAsync(languageFolder);
-            }
+                var hwnd = WindowNative.GetWindowHandle(MainWindow);
+                ShowWindow(hwnd, SW_RESTORE);
+                SetForegroundWindow(hwnd);
+            });  
         }
-        private static async Task<StorageFile> LoadStringResourcesFileFromAppResource(string filePath)
-        {
-            Uri resourcesFileUri = new($"ms-appx:///{filePath}");
-            return await StorageFile.GetFileFromApplicationUriAsync(resourcesFileUri);
-        }
+
+        private const int SW_RESTORE = 9;
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }
 

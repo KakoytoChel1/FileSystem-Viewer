@@ -2,9 +2,11 @@
 using FileSystemViewer.Models.Tools;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace FileSystemViewer
 {
@@ -12,8 +14,12 @@ namespace FileSystemViewer
     {
         static private uint _RegistrationToken;
         static private ManualResetEvent _exitEvent = new ManualResetEvent(false);
+
+        [STAThread]
         static void Main(string[] args)
         {
+            WinRT.ComWrappersSupport.InitializeComWrappers();
+
             if (args.Contains("-BackgroundTask"))
             {
                 Guid taskGuid = typeof(DailyScanTask).GUID;
@@ -27,18 +33,52 @@ namespace FileSystemViewer
             }
             else
             {
-                Application.Start((p) =>
+                bool isRedirectNeeded = DecideRedirectionNeed();
+
+                if (!isRedirectNeeded)
                 {
-                    var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
-                    SynchronizationContext.SetSynchronizationContext(context);
-                    new App();
-                });
+                    Application.Start((p) =>
+                    {
+                        var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+                        SynchronizationContext.SetSynchronizationContext(context);
+                        new App();
+                    });
+                }   
             }
         }
 
         public static void SignalExit()
         {
             _exitEvent.Set();
+        }
+
+        private static bool DecideRedirectionNeed()
+        {
+            bool isRedirectNeeded = false;
+
+            AppActivationArguments args = AppInstance.GetCurrent().GetActivatedEventArgs();
+            AppInstance keyInstance = AppInstance.FindOrRegisterForKey("FileSystemViewer");
+
+            // Is our keyInstance was created in current proccess
+            if (keyInstance.IsCurrent)
+            {
+                keyInstance.Activated += OnActivated;
+            }
+            else
+            {
+                isRedirectNeeded = true;
+                keyInstance.RedirectActivationToAsync(args).AsTask().Wait();
+            }
+
+            return isRedirectNeeded;
+        }
+
+        private static void OnActivated(object? sender, AppActivationArguments e)
+        {
+            if (Application.Current is App currentApp)
+            {
+                currentApp.HandleActivation(e);
+            }
         }
     }
 }

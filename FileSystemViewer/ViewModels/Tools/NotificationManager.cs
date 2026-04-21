@@ -1,15 +1,13 @@
-﻿using Microsoft.Windows.AppNotifications;
+﻿using Microsoft.Windows.ApplicationModel.Resources;
+using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using System;
 using System.IO;
-using WinUI3Localizer;
 
 namespace FileSystemViewer.ViewModels.Tools
 {
     public static class NotificationManager
     {
-        private static ILocalizer _localizer = Localizer.Get();
-
         public static void BuildAndShowToastNotification(string title, string content, string? iconFilePath = null, string? reportDocumentPath = null)
         {
             var builder = new AppNotificationBuilder()
@@ -30,9 +28,11 @@ namespace FileSystemViewer.ViewModels.Tools
                 builder.AddArgument("action", "openReport")
                        .AddArgument("reportPath", reportDocumentPath);
 
-                if (_localizer != null)
+                ResourceLoader resourceLoader = new ResourceLoader();
+
+                if (resourceLoader != null)
                 {
-                    builder.AddText(_localizer.GetLocalizedString("NotificationClickForMore"));
+                    builder.AddText(resourceLoader.GetString("NotificationClickForMore"));
                 }
             }
 
