@@ -52,6 +52,9 @@ namespace FileSystemViewer.ViewModels
         [ObservableProperty]
         public partial Visibility SettingsMenuVisibility { get; set; }
 
+        [ObservableProperty]
+        public partial Visibility ReportViewerVisibility { get; set; }
+
         public nint MainWindowHandle { get; private set; } = 0;
 
         public void SetMainWindowHandle(nint handle)

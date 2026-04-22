@@ -61,7 +61,22 @@ namespace FileSystemViewer.Services
 
             elapsedTime = _timeProvider.GetElapsedTime(startTime);
 
-            string reportPath = SaveScanResultsToFile(driveNodes, bytesConverter, elapsedTime);
+            ScanReport scanReport = new ScanReport()
+            {
+                ScanDateTime = DateTime.Now,
+                ElapsedTime = elapsedTime,
+                NodesScanned = driveNodes.Count,
+                TotalSize = driveNodes.Sum(n => n.Size),
+                TotalDirectoriesCount = driveNodes.Sum(n => n.DirectoriesCount),
+                TotalFilesCount = driveNodes.Sum(n => n.FileCount),
+                RootNodes = new ObservableCollection<DirectoryNode>(driveNodes.Select((node) =>
+                {
+                    node.FileSystemNodes = null;
+                    return node;
+                }))
+            };
+
+            string reportPath = ScanningReportHelper.GenerateReportAsJson(scanReport);
             string message = $"{resourceLoader.GetString("NotificationScheduledSuccessText1")} {driveNodes.Count}, {resourceLoader.GetString("NotificationScheduledSuccessText2")} {bytesConverter.Convert(driveNodes.Sum(n => n.Size),
                     typeof(long), null!, null!)}, {resourceLoader.GetString("NotificationScheduledSuccessText3")} {driveNodes.Sum(n => n.FileCount)}, { resourceLoader.GetString("NotificationScheduledSuccessText4")} {driveNodes.Sum(n => n.DirectoriesCount)}.";
 
@@ -160,47 +175,47 @@ namespace FileSystemViewer.Services
             }
         }
 
-        private string SaveScanResultsToFile(ObservableCollection<DriveNode> driveNodes, BytesIntoSuitableFormatConverter bytesConverter, TimeSpan elapsedTime)
-        {
-            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string appFolder = Path.Combine(documentsPath, "FileSystemViewer");
+        //private string SaveScanResultsToFile(ObservableCollection<DriveNode> driveNodes, BytesIntoSuitableFormatConverter bytesConverter, TimeSpan elapsedTime)
+        //{
+        //    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        //    string appFolder = Path.Combine(documentsPath, "FileSystemViewer");
 
-            if (!Directory.Exists(appFolder))
-            {
-                Directory.CreateDirectory(appFolder);
-            }
+        //    if (!Directory.Exists(appFolder))
+        //    {
+        //        Directory.CreateDirectory(appFolder);
+        //    }
 
-            DateTime now = DateTime.Now;
-            string timestamp = now.ToString("yyyy-MM-dd_HH-mm-ss");
-            string fileName = $"ScanResults_{timestamp}.txt";
-            string filePath = Path.Combine(appFolder, fileName);
+        //    DateTime now = DateTime.Now;
+        //    string timestamp = now.ToString("yyyy-MM-dd_HH-mm-ss");
+        //    string fileName = $"ScanResults_{timestamp}.txt";
+        //    string filePath = Path.Combine(appFolder, fileName);
 
-            StringBuilder reportBuilder = new StringBuilder();
+        //    StringBuilder reportBuilder = new StringBuilder();
 
-            reportBuilder.AppendLine("=== File System Viewer - Scan Results ===");
-            reportBuilder.AppendLine($"Scan Date: {now:yyyy-MM-dd HH:mm:ss}");
-            reportBuilder.AppendLine($"Total Elapsed Time: {elapsedTime.Humanize()}");
-            reportBuilder.AppendLine();
+        //    reportBuilder.AppendLine("=== File System Viewer - Scan Results ===");
+        //    reportBuilder.AppendLine($"Scan Date: {now:yyyy-MM-dd HH:mm:ss}");
+        //    reportBuilder.AppendLine($"Total Elapsed Time: {elapsedTime.Humanize()}");
+        //    reportBuilder.AppendLine();
 
-            var totalSize = bytesConverter.Convert(driveNodes.Sum(n => n.Size), typeof(long), null!, null!);
-            long totalFiles = driveNodes.Sum(n => n.FileCount);
-            long totalDirectories = driveNodes.Sum(n => n.DirectoriesCount);
+        //    var totalSize = bytesConverter.Convert(driveNodes.Sum(n => n.Size), typeof(long), null!, null!);
+        //    long totalFiles = driveNodes.Sum(n => n.FileCount);
+        //    long totalDirectories = driveNodes.Sum(n => n.DirectoriesCount);
 
-            reportBuilder.AppendLine("=== Overall Summary ===");
-            reportBuilder.AppendLine($"Drives count: {driveNodes.Count}; Total size: {totalSize}; Total files: {totalFiles}; Total directories: {totalDirectories};");
-            reportBuilder.AppendLine();
+        //    reportBuilder.AppendLine("=== Overall Summary ===");
+        //    reportBuilder.AppendLine($"Drives count: {driveNodes.Count}; Total size: {totalSize}; Total files: {totalFiles}; Total directories: {totalDirectories};");
+        //    reportBuilder.AppendLine();
 
-            reportBuilder.AppendLine("=== Individual Drives ===");
-            foreach (DriveNode drive in driveNodes)
-            {
-                var driveSize = bytesConverter.Convert(drive.Size, typeof(long), null!, null!);
-                reportBuilder.AppendLine($"Drive: {drive.Name}; Size: {driveSize}; Files: {drive.FileCount}; Directories: {drive.DirectoriesCount};");
-            }
+        //    reportBuilder.AppendLine("=== Individual Drives ===");
+        //    foreach (DriveNode drive in driveNodes)
+        //    {
+        //        var driveSize = bytesConverter.Convert(drive.Size, typeof(long), null!, null!);
+        //        reportBuilder.AppendLine($"Drive: {drive.Name}; Size: {driveSize}; Files: {drive.FileCount}; Directories: {drive.DirectoriesCount};");
+        //    }
 
-            File.WriteAllText(filePath, reportBuilder.ToString(), Encoding.UTF8);
+        //    File.WriteAllText(filePath, reportBuilder.ToString(), Encoding.UTF8);
 
-            return filePath;
-        }
+        //    return filePath;
+        //}
         
         /// <summary>
         /// true if free space is less then constant value, otherwise false.

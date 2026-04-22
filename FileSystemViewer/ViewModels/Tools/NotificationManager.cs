@@ -25,9 +25,7 @@ namespace FileSystemViewer.ViewModels.Tools
 
             if (!string.IsNullOrWhiteSpace(reportDocumentPath))
             {
-                builder.AddArgument("action", "openReport")
-                       .AddArgument("reportPath", reportDocumentPath);
-
+                builder.AddArgument("reportPath", reportDocumentPath);
                 ResourceLoader resourceLoader = new ResourceLoader();
 
                 if (resourceLoader != null)

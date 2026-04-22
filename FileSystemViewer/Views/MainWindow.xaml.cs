@@ -28,6 +28,7 @@ namespace FileSystemViewer
 
             RootFrame.Navigate(typeof(ShellPage));
             SettingsFrame.Navigate(typeof(SettingsPage));
+            ReportViewerFrame.Navigate(typeof(ReportViewerPage));
         }
 
         private void _uiSettings_ColorValuesChanged(UISettings sender, object args)

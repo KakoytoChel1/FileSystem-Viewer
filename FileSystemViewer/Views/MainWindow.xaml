@@ -60,5 +60,15 @@
             Grid.Row="1"
             x:Name="SettingsFrame"
             Visibility="{x:Bind MainPageViewModel.ApplicationState.SettingsMenuVisibility, Mode=OneWay}"/>
+        
+        <!--<Frame
+            Grid.Row="1"
+            x:Name="ReportViewerFrame"
+            Visibility="{x:Bind MainPageViewModel.ApplicationState.ReportViewerVisibility, Mode=OneWay}"/>-->
+
+        <Frame
+            Grid.Row="1"
+            x:Name="ReportViewerFrame"
+            Visibility="Visible"/>
     </Grid>
 </Window>

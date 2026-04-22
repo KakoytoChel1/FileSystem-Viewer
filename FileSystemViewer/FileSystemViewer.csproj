@@ -40,6 +40,7 @@
     <None Remove="Views\DialogPages\TargetSelectDialog.xaml" />
     <None Remove="Views\Pages\ChartPage.xaml" />
     <None Remove="Views\Pages\MainPage.xaml" />
+    <None Remove="Views\Pages\ReportViewerPage.xaml" />
     <None Remove="Views\Pages\SettingsPage.xaml" />
     <None Remove="Views\Pages\ShellPage.xaml" />
     <None Remove="Views\Pages\TreemapPage.xaml" />
@@ -100,6 +101,11 @@
     <Content Update="Assets\disk.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Pages\ReportViewerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Pages\ShellPage.xaml">

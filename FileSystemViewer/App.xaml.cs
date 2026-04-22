@@ -3,22 +3,18 @@ using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
-using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
-using Microsoft.Windows.Globalization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Background;
 using Windows.Storage;
 using Windows.UI;
@@ -51,7 +47,7 @@ namespace FileSystemViewer
 
         private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
         {
-            HandleNotificationClick(args.Arguments);
+            HandleAppNotificationActivation(args.Arguments);
         }
 
         private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -95,7 +91,7 @@ namespace FileSystemViewer
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected async override void OnLaunched(LaunchActivatedEventArgs args)
+        protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             //try
             //{
@@ -113,7 +109,7 @@ namespace FileSystemViewer
                     var notificationArgs = activatedArgs.Data as AppNotificationActivatedEventArgs;
                     if (notificationArgs != null)
                     {
-                        HandleNotificationClick(notificationArgs.Arguments);
+                        HandleAppNotificationActivation(notificationArgs.Arguments);
                     }
                 }
                 else
@@ -177,6 +173,7 @@ namespace FileSystemViewer
             services.AddSingleton<MainPageViewModel>();
             services.AddSingleton<ChartPageViewModel>();
             services.AddSingleton<SettingsViewModel>();
+            services.AddSingleton<ReportViewerPageViewModel>();
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
@@ -189,21 +186,6 @@ namespace FileSystemViewer
             services.AddSingleton(TimeProvider.System);
 
             ServiceProvider = services.BuildServiceProvider();
-        }
-
-        private void HandleNotificationClick(IDictionary<string, string> arguments)
-        {
-            if (arguments.TryGetValue("reportPath", out string? reportPath))
-            {
-                if (File.Exists(reportPath))
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = reportPath,
-                        UseShellExecute = true
-                    });
-                }
-            }
         }
 
         private void CheckVisualPreferences(Window window)
@@ -243,7 +225,7 @@ namespace FileSystemViewer
                 .Build();
         }
 
-        public void HandleActivation(AppActivationArguments args)
+        public void HandleRedirectedActivation(AppActivationArguments args)
         {
             MainWindow!.DispatcherQueue.TryEnqueue(() =>
             {
@@ -251,6 +233,61 @@ namespace FileSystemViewer
                 ShowWindow(hwnd, SW_RESTORE);
                 SetForegroundWindow(hwnd);
             });  
+        }
+
+        // Both files and directories
+        public void HandleFileOpenActivation(IReadOnlyList<IStorageItem> items)
+        {
+            MainWindow!.DispatcherQueue.TryEnqueue(() =>
+            {
+                foreach (IStorageItem item in items)
+                {
+                    string path = item.Path;
+
+                    if (item is StorageFolder folder)
+                    {
+                        Debug.WriteLine($"Открыта директория: {path}");
+                    }
+                    else if (item is StorageFile file)
+                    {
+                        Debug.WriteLine($"Открыт файл: {path}");
+                    }
+                }
+            });
+        }
+
+        public void HandleProtocolActivation(IProtocolActivatedEventArgs args)
+        {
+            MainWindow!.DispatcherQueue.TryEnqueue(() =>
+            {
+                
+            });
+        }
+
+        public void HandleStartupActivation(IStartupTaskActivatedEventArgs args)
+        {
+            MainWindow!.DispatcherQueue.TryEnqueue(() =>
+            {
+
+            });
+        }
+
+        public void HandleAppNotificationActivation(IDictionary<string, string> arguments)
+        {
+            MainWindow!.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (arguments.TryGetValue("reportPath", out string? reportPath))
+                {
+                    if (File.Exists(reportPath))
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = reportPath,
+                            UseShellExecute = true
+                        });
+                    }
+                }
+            }); 
         }
 
         private const int SW_RESTORE = 9;

@@ -297,6 +297,24 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.SettingsMenuVisibility = Visibility.Visible;
         }
 
+        [RelayCommand]
+        public void OpenTreemapDirectory(object parameter)
+        {
+            if (parameter is TreemapNode treemapNode)
+            {
+                if (Directory.Exists(treemapNode.FullPath))
+                {
+
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = treemapNode.FullPath,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
+            }
+        }
+
         private async Task ProceedScanForSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode
         {
             long targetSizeSum;
@@ -360,13 +378,41 @@ namespace FileSystemViewer.ViewModels
 
             ApplicationState.CurrentScanningState = AppState.ScanningStates.Completed;
 
+            long totalScannedDirectories = target.Sum(d => d.DirectoriesCount) + target.Count;
+            long totalScannedFiles = target.Sum(d => d.FileCount);
+
+            ScanReport scanReport = new ScanReport()
+            {
+                ScanDateTime = DateTime.Now,
+                ElapsedTime = elapsedTime,
+                NodesScanned = target.Count,
+                TotalSize = targetSizeSum,
+                TotalFilesCount = totalScannedFiles,
+                TotalDirectoriesCount = totalScannedDirectories,
+                RootNodes = new ObservableCollection<DirectoryNode>(target.Select((node) =>
+                {
+                    DirectoryNode directoryNode = new DirectoryNode(null)
+                    {
+                        Name = node.Name,
+                        FullPath = node.FullPath,
+                        Size = node.Size,
+                        LastModified = node.LastModified,
+                        UnicodeIcon = node.UnicodeIcon,
+                        IconColor = node.IconColor,
+                        FileCount = node.FileCount,
+                        DirectoriesCount = node.DirectoriesCount,
+                    };
+                    return directoryNode;
+                }))
+            };
+            string reportFilePath = ScanningReportHelper.GenerateReportAsJson(scanReport);
+
             string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
             NotificationManager.BuildAndShowToastNotification(
                 Localizer.GetLocalizedString("NotificationSuccessTitle"),
-                $"{Localizer.GetLocalizedString("NotificationSuccessText1")} {ApplicationState.TotalDirectoriesScanned}; {Localizer.GetLocalizedString("NotificationSuccessText2")} " +
-                $"{ApplicationState.TotalFilesScanned};\n{Localizer.GetLocalizedString("NotificationSuccessText3")} {elapsedTime.Humanize()}.",
-                successImagePath
-            );
+                $"{Localizer.GetLocalizedString("NotificationSuccessText1")} {totalScannedDirectories}; {Localizer.GetLocalizedString("NotificationSuccessText2")} " +
+                $"{totalScannedFiles};\n{Localizer.GetLocalizedString("NotificationSuccessText3")} {elapsedTime.Humanize()}.",
+                successImagePath, reportFilePath);
         }
 
         private void LoadAvailableDrives()
@@ -402,34 +448,36 @@ namespace FileSystemViewer.ViewModels
                 foreach (FileSystemNode node in data)
                 {
                     DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
+                    long fileSize = 0;
+                    long directoriesCount = 0;
+                    long fileCount = 0;
 
                     parentNode.FileSystemNodes!.Add(node);
 
                     if (node is DirectoryNode)
                     {
-                        ApplicationState.TotalDirectoriesScanned++;
+                        directoriesCount++;
+                    }
+                    else if (node is FileNode fileNode)
+                    {
+                        fileSize = fileNode.Size;
+                        fileCount++;
+                        FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
                     }
 
-                    if (node is FileNode fileNode)
+                    if (totalScanValues.TryGetValue(parentNode, out var values))
                     {
-                        ApplicationState.TotalFilesScanned++;
-
-                        var values = new TotalScanValues();
-
-                        if (totalScanValues.TryGetValue(parentNode, out values))
-                        {
-                            values.TotalSizeInBytes += fileNode.Size;
-                            values.TotalFileCount++;
-                        }
-                        else
-                        {
-                            values = new TotalScanValues();
-                            values.TotalSizeInBytes = fileNode.Size;
-                            values.TotalFileCount++;
-                            totalScanValues.Add(parentNode, values);
-                        }
-
-                        FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
+                        values.TotalSizeInBytes += fileSize;
+                        values.TotalDirectoryCount += directoriesCount;
+                        values.TotalFileCount += fileCount;
+                    }
+                    else
+                    {
+                        values = new TotalScanValues();
+                        values.TotalSizeInBytes = fileSize;
+                        values.TotalDirectoryCount = directoriesCount;
+                        values.TotalFileCount = fileCount;
+                        totalScanValues.Add(parentNode, values);
                     }
                 }
 
@@ -441,6 +489,7 @@ namespace FileSystemViewer.ViewModels
                     {
                         current.Size += pair.Value.TotalSizeInBytes;
                         current.FileCount += pair.Value.TotalFileCount;
+                        current.DirectoriesCount += pair.Value.TotalDirectoryCount;
                         current = current.ParentNode as DirectoryNode;
                     }
                 }
@@ -671,24 +720,6 @@ namespace FileSystemViewer.ViewModels
             pieSeries.Fill = new SolidColorPaint(new SKColor(otherColor.R, otherColor.G, otherColor.B, otherColor.A));
 
             return pieSeries;
-        }
-
-        [RelayCommand]
-        public void OpenTreemapDirectory(object parameter)
-        {
-            if (parameter is TreemapNode treemapNode)
-            {
-                if (Directory.Exists(treemapNode.FullPath))
-                {
-
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = treemapNode.FullPath,
-                        UseShellExecute = true,
-                        Verb = "open"
-                    });
-                }
-            }
         }
     }
 }

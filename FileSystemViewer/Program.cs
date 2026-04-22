@@ -3,10 +3,11 @@ using FileSystemViewer.Models.Tools;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using Microsoft.Windows.AppNotifications;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
+using Windows.ApplicationModel.Activation;
 
 namespace FileSystemViewer
 {
@@ -33,7 +34,8 @@ namespace FileSystemViewer
             }
             else
             {
-                bool isRedirectNeeded = DecideRedirectionNeed();
+                AppActivationArguments appActivationArguments;
+                bool isRedirectNeeded = DecideRedirectionNeed(out appActivationArguments);
 
                 if (!isRedirectNeeded)
                 {
@@ -42,6 +44,11 @@ namespace FileSystemViewer
                         var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                         SynchronizationContext.SetSynchronizationContext(context);
                         new App();
+
+                        if (Application.Current is App currentApp)
+                        {
+                            RecognizeActivationKind(appActivationArguments, currentApp);
+                        }
                     });
                 }   
             }
@@ -52,11 +59,12 @@ namespace FileSystemViewer
             _exitEvent.Set();
         }
 
-        private static bool DecideRedirectionNeed()
+        private static bool DecideRedirectionNeed(out AppActivationArguments appActivationArguments)
         {
             bool isRedirectNeeded = false;
 
             AppActivationArguments args = AppInstance.GetCurrent().GetActivatedEventArgs();
+            appActivationArguments = args;
             AppInstance keyInstance = AppInstance.FindOrRegisterForKey("FileSystemViewer");
 
             // Is our keyInstance was created in current proccess
@@ -73,11 +81,34 @@ namespace FileSystemViewer
             return isRedirectNeeded;
         }
 
-        private static void OnActivated(object? sender, AppActivationArguments e)
+        private static void OnActivated(object? sender, AppActivationArguments args)
         {
             if (Application.Current is App currentApp)
             {
-                currentApp.HandleActivation(e);
+                currentApp.HandleRedirectedActivation(args);
+                RecognizeActivationKind(args, currentApp);
+            }
+        }
+
+        private static void RecognizeActivationKind(AppActivationArguments args, App app)
+        {
+            switch (args.Data)
+            {
+                case IFileActivatedEventArgs fileArgs:
+                    app.HandleFileOpenActivation(fileArgs.Files);
+                    break;
+
+                case IProtocolActivatedEventArgs protocolArgs:
+                    app.HandleProtocolActivation(protocolArgs);
+                    break;
+
+                case IStartupTaskActivatedEventArgs startupArgs:
+                    app.HandleStartupActivation(startupArgs);
+                    break;
+
+                case AppNotificationActivatedEventArgs notificationArgs:
+                    app.HandleAppNotificationActivation(notificationArgs.Arguments);
+                    break;
             }
         }
     }
