@@ -16,7 +16,15 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid 
+        x:Name="rootGrid"
+        Background="Transparent"
+        AllowDrop="True"
+        DragEnter="rootGrid_DragEnter"
+        DragOver="rootGrid_DragOver"
+        Drop="rootGrid_Drop"
+        DragLeave="rootGrid_DragLeave">
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -24,6 +32,7 @@
 
         <TitleBar
             x:Name="TitleBar"
+            SizeChanged="TitleBar_SizeChanged"
             Grid.Row="0" 
             Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
             Title="File Viewer"
@@ -61,14 +70,41 @@
             x:Name="SettingsFrame"
             Visibility="{x:Bind MainPageViewModel.ApplicationState.SettingsMenuVisibility, Mode=OneWay}"/>
         
-        <!--<Frame
-            Grid.Row="1"
-            x:Name="ReportViewerFrame"
-            Visibility="{x:Bind MainPageViewModel.ApplicationState.ReportViewerVisibility, Mode=OneWay}"/>-->
-
         <Frame
             Grid.Row="1"
             x:Name="ReportViewerFrame"
-            Visibility="Visible"/>
+            Visibility="{x:Bind MainPageViewModel.ApplicationState.ReportViewerVisibility, Mode=OneWay}"/>
+
+        <Border
+            x:Name="criticalDrop"
+            Grid.Column="0"
+            Grid.Row="0"
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            Background="{ThemeResource SmokeFillColorDefaultBrush}"
+            Padding="5"
+            Visibility="Collapsed">
+
+            <Border
+                BorderThickness="1"
+                CornerRadius="10"
+                BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"/>
+        </Border>
+
+        <Border
+            x:Name="positiveDrop"
+            Grid.Column="0"
+            Grid.Row="0"
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            Background="{ThemeResource SmokeFillColorDefaultBrush}"
+            Padding="5"
+            Visibility="Collapsed">
+
+            <Border
+                BorderThickness="1"
+                CornerRadius="10"
+                BorderBrush="{ThemeResource SystemFillColorAttentionBrush}"/>
+        </Border>
     </Grid>
 </Window>

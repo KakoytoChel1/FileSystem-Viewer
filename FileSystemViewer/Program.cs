@@ -34,23 +34,31 @@ namespace FileSystemViewer
             }
             else
             {
-                AppActivationArguments appActivationArguments;
-                bool isRedirectNeeded = DecideRedirectionNeed(out appActivationArguments);
-
-                if (!isRedirectNeeded)
+                try
                 {
-                    Application.Start((p) =>
-                    {
-                        var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
-                        SynchronizationContext.SetSynchronizationContext(context);
-                        new App();
+                    AppActivationArguments appActivationArguments;
+                    bool isRedirectNeeded = DecideRedirectionNeed(out appActivationArguments);
 
-                        if (Application.Current is App currentApp)
+                    if (!isRedirectNeeded)
+                    {
+                        Application.Start((p) =>
                         {
-                            RecognizeActivationKind(appActivationArguments, currentApp);
-                        }
-                    });
-                }   
+                            var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+                            SynchronizationContext.SetSynchronizationContext(context);
+
+                            var app = new App();
+
+                            app.WindowCreated += () =>
+                            {
+                                RecognizeActivationKind(appActivationArguments, app);
+                            };
+                        });
+                    }
+                }  
+                catch (Exception ex)
+                {
+                    Logger.Log($"Exception in main method: {ex}");
+                }
             }
         }
 
@@ -92,23 +100,30 @@ namespace FileSystemViewer
 
         private static void RecognizeActivationKind(AppActivationArguments args, App app)
         {
-            switch (args.Data)
+            try
             {
-                case IFileActivatedEventArgs fileArgs:
-                    app.HandleFileOpenActivation(fileArgs.Files);
-                    break;
+                switch (args.Data)
+                {
+                    case IFileActivatedEventArgs fileArgs:
+                        app.HandleFileOpenActivation(fileArgs.Files);
+                        break;
 
-                case IProtocolActivatedEventArgs protocolArgs:
-                    app.HandleProtocolActivation(protocolArgs);
-                    break;
+                    case IProtocolActivatedEventArgs protocolArgs:
+                        app.HandleProtocolActivation(protocolArgs);
+                        break;
 
-                case IStartupTaskActivatedEventArgs startupArgs:
-                    app.HandleStartupActivation(startupArgs);
-                    break;
+                    case IStartupTaskActivatedEventArgs startupArgs:
+                        app.HandleStartupActivation(startupArgs);
+                        break;
 
-                case AppNotificationActivatedEventArgs notificationArgs:
-                    app.HandleAppNotificationActivation(notificationArgs.Arguments);
-                    break;
+                    case AppNotificationActivatedEventArgs notificationArgs:
+                        app.HandleAppNotificationActivation(notificationArgs.Arguments);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Exception in RecognizeActivationKind: {ex}");
             }
         }
     }

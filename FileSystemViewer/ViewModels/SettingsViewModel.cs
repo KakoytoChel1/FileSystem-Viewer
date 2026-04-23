@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
@@ -41,6 +42,7 @@ namespace FileSystemViewer.ViewModels
 
         public bool IsThereUnsavedChanges =>
             IsTrayToggleOn != ConfigurationService.Settings!.IsTrayActive ||
+            IsStartupOn != ConfigurationService.Settings!.IsStartup ||
             IsSchedulerScanToggleOn != ConfigurationService.Settings.IsScheduledScanningEnabled ||
             ScheduledScanTimeSpan != ConfigurationService.Settings.ScheduledScanningTime ||
             MinCriticalFreeSpacePercent != ConfigurationService.Settings.MinFreeSpacePercent ||
@@ -52,6 +54,10 @@ namespace FileSystemViewer.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
         public partial bool IsTrayToggleOn { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
+        public partial bool IsStartupOn { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsThereUnsavedChanges))]
@@ -186,7 +192,7 @@ namespace FileSystemViewer.ViewModels
         }
 
         [RelayCommand]
-        public void SaveSettings()
+        public async Task SaveSettings()
         {
             if (IsThereUnsavedChanges)
             {
@@ -194,6 +200,7 @@ namespace FileSystemViewer.ViewModels
                 AppSettings.Language selectedLanguage = GetSelectedLanguage();
 
                 RescheduleBackgroundTask();
+                await SwitchStartupTask();
                 RefreshVisualSettings(selectedTheme, selectedLanguage);
                 SaveSettingsToConfig(selectedTheme, selectedLanguage);
             }
@@ -280,6 +287,49 @@ namespace FileSystemViewer.ViewModels
             else if (currentScheduleEnabledValue == true && newScheduleEnabledValue == false)
             {
                 _backgroundSchedulerService.DeleteIntervalTask(BackgroundSchedulerService.TaskName);
+            }
+        }
+
+        private async Task SwitchStartupTask()
+        {
+            StartupTask startupTask = await StartupTask.GetAsync("StartupFileSystemViewerId");
+
+            bool newStartupEnabledValue = IsStartupOn;
+            bool currentStartupEnabledValue = ConfigurationService.Settings!.IsStartup;
+
+            if (currentStartupEnabledValue == false && newStartupEnabledValue == true)
+            {
+                switch (startupTask.State)
+                {
+                    case StartupTaskState.Disabled:
+                        StartupTaskState newState = await startupTask.RequestEnableAsync();
+                        if (newState == StartupTaskState.Enabled)
+                        {
+                            ConfigurationService.Settings!.IsStartup = true;
+                        }
+                        else
+                        {
+                            IsStartupOn = false;
+                            ConfigurationService.Settings!.IsStartup = false;
+                        }
+                        break;
+
+                    case StartupTaskState.DisabledByUser:
+
+                        //TODO: Show information dialog
+                        IsStartupOn = false;
+                        ConfigurationService.Settings!.IsStartup = false;
+                        break;
+
+                    case StartupTaskState.Enabled:
+                        ConfigurationService.Settings!.IsStartup = true;
+                        break;
+                }
+            }
+            else if (currentStartupEnabledValue == true && newStartupEnabledValue == false)
+            {
+                startupTask.Disable();
+                ConfigurationService.Settings!.IsStartup = false;
             }
         }
 

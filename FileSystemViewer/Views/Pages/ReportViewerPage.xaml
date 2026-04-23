@@ -6,11 +6,17 @@
     xmlns:local="using:FileSystemViewer.Views.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:l="using:WinUI3Localizer"
     mc:Ignorable="d">
 
     <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
         <TabView
-            TabItemsSource="{x:Bind ViewModel.ScanReports, Mode=OneWay}">
+            x:Name="ReportTabView"
+            TabCloseRequested="ReportTabView_TabCloseRequested"
+            AddTabButtonClick="ReportTabView_AddTabButtonClick"
+            SelectedItem="{x:Bind ViewModel.SelectedTab, Mode=TwoWay}"
+            TabItemsSource="{x:Bind ViewModel.ScanReports, Mode=OneWay}"
+            VerticalAlignment="Stretch">
 
             <TabView.TabItemTemplate>
                 <DataTemplate>
@@ -19,147 +25,172 @@
                             <StackPanel
                                 Orientation="Horizontal">
                                 <TextBlock
-                                    Text="Report"/>
+                                    Text="{Binding Name}"
+                                    Width="200"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTipService.ToolTip="{Binding Name}"/>
                             </StackPanel>
                         </TabViewItem.Header>
 
                         <TabViewItem.Content>
-                            <StackPanel
-                                Padding="0"
-                                Orientation="Vertical"
-                                Spacing="10">
-
-                                <!--Header-->
-                                <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
-                                    <StackPanel
-                                        Margin="10"
-                                        Orientation="Horizontal"
-                                        Spacing="10">
-                                        <FontIcon
-                                            Glyph="&#xE9F9;"/>
-
-                                        <TextBlock
-                                            Text="FileSystemViewer scanning report"
-                                            FontWeight="SemiBold"
-                                            FontSize="15"/>
-                                    </StackPanel>
-                                </Border>
-
+                            <Grid>
                                 <StackPanel
-                                    Margin="10,0,0,0"
-                                    Orientation="Horizontal"
-                                    Spacing="10">
-
-                                    <FontIcon
-                                        Glyph="&#xEC92;"
-                                        FontSize="15"/>
-
-                                    <TextBlock>
-                                        <Run Text="Scan date:"/>
-                                        <Run Text="{Binding ScanDateTime}"/>
-                                    </TextBlock>
-                                </StackPanel>
-
-                                <StackPanel
-                                    Margin="10,0,0,0"
-                                    Orientation="Horizontal"
-                                    Spacing="10">
-
-                                    <FontIcon
-                                        Glyph="&#xE916;"
-                                        FontSize="15"/>
-
-                                    <TextBlock>
-                                        <Run Text="Total elapsed time:"/>
-                                        <Run Text="{Binding ElapsedTime, Converter={StaticResource TimeSpanIntoStringConverter}}"/>
-                                    </TextBlock>
-                                </StackPanel>
-
-                                <TextBlock
-                                    Margin="10,10,0,0"
-                                    FontWeight="SemiBold"
-                                    FontSize="15"
-                                    Text="Overall summary"/>
-
-                                <!--Overall summary-->
-                                <StackPanel
-                                    Margin="20,0,0,0"
+                                    Padding="0"
                                     Orientation="Vertical"
                                     Spacing="10">
 
+                                    <!--Header-->
+                                    <Border Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+                                        <StackPanel
+                                            Margin="10"
+                                            Orientation="Horizontal"
+                                            Spacing="10">
+                                            <FontIcon
+                                                Glyph="&#xE9F9;"/>
+
+                                            <TextBlock
+                                                l:Uids.Uid="ReportHeader"
+                                                FontWeight="SemiBold"
+                                                FontSize="15"/>
+                                        </StackPanel>
+                                    </Border>
+
                                     <StackPanel
-                                        Spacing="5"
-                                        Orientation="Horizontal">
+                                        Margin="10,0,0,0"
+                                        Orientation="Horizontal"
+                                        Spacing="10">
 
                                         <FontIcon
-                                            Glyph="&#xE958;"
-                                            FontSize="14"/>
+                                            Glyph="&#xEC92;"
+                                            FontSize="15"/>
 
                                         <TextBlock>
-                                            <Run Text="Root nodes scanned:"/>
-                                            <Run Text="{Binding NodesScanned}"/>
+                                            <Run l:Uids.Uid="ReportScanDate"/>
+                                            <Run Text="{Binding ScanDateTime}"/>
                                         </TextBlock>
                                     </StackPanel>
 
                                     <StackPanel
-                                        Spacing="5"
-                                        Orientation="Horizontal">
+                                        Margin="10,0,0,0"
+                                        Orientation="Horizontal"
+                                        Spacing="10">
 
                                         <FontIcon
-                                            Glyph="&#xE7F1;"
-                                            FontSize="14"/>
+                                            Glyph="&#xE916;"
+                                            FontSize="15"/>
 
                                         <TextBlock>
-                                            <Run Text="Total size:"/>
-                                            <Run Text="{Binding TotalSize, Converter={StaticResource BytesIntoSuitableFormatConverter}}"/>
+                                            <Run l:Uids.Uid="ReportElapsedTime"/>
+                                            <Run Text="{Binding ElapsedTime, Converter={StaticResource TimeSpanIntoStringConverter}}"/>
                                         </TextBlock>
                                     </StackPanel>
 
+                                    <TextBlock
+                                        Margin="10,10,0,0"
+                                        FontWeight="SemiBold"
+                                        FontSize="15"
+                                        l:Uids.Uid="ReportOverallHeader"/>
+
+                                    <!--Overall summary-->
                                     <StackPanel
-                                        Spacing="5"
-                                        Orientation="Horizontal">
+                                        Margin="20,0,0,0"
+                                        Orientation="Vertical"
+                                        Spacing="10">
 
-                                        <FontIcon
-                                            Glyph="&#xE7C3;"
-                                            FontSize="14"/>
+                                        <StackPanel
+                                            Spacing="5"
+                                            Orientation="Horizontal">
 
-                                        <TextBlock>
-                                            <Run Text="Total files count:"/>
-                                            <Run Text="{Binding TotalFilesCount}"/>
-                                        </TextBlock>
+                                            <FontIcon
+                                                Glyph="&#xE958;"
+                                                FontSize="14"/>
+
+                                            <TextBlock>
+                                                <Run l:Uids.Uid="ReportRootNodes"/>
+                                                <Run Text="{Binding NodesScanned}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <StackPanel
+                                            Spacing="5"
+                                            Orientation="Horizontal">
+
+                                            <FontIcon
+                                                Glyph="&#xE7F1;"
+                                                FontSize="14"/>
+
+                                            <TextBlock>
+                                                <Run l:Uids.Uid="ReportTotalSize"/>
+                                                <Run Text="{Binding TotalSize, Converter={StaticResource BytesIntoSuitableFormatConverter}}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <StackPanel
+                                            Spacing="5"
+                                            Orientation="Horizontal">
+
+                                            <FontIcon
+                                                Glyph="&#xE7C3;"
+                                                FontSize="14"/>
+
+                                            <TextBlock>
+                                                <Run l:Uids.Uid="ReportTotalFileCount"/>
+                                                <Run Text="{Binding TotalFilesCount}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <StackPanel
+                                            Spacing="5"
+                                            Orientation="Horizontal">
+
+                                            <FontIcon
+                                                Glyph="&#xE8B7;"
+                                                FontSize="14"/>
+
+                                            <TextBlock>
+                                                <Run l:Uids.Uid="ReportTotalDirectoriesCount"/>
+                                                <Run Text="{Binding TotalDirectoriesCount}"/>
+                                            </TextBlock>
+                                        </StackPanel>
                                     </StackPanel>
 
-                                    <StackPanel
-                                        Spacing="5"
-                                        Orientation="Horizontal">
+                                    <TextBlock
+                                        Margin="10,10,0,0"
+                                        FontWeight="SemiBold"
+                                        FontSize="15"
+                                        l:Uids.Uid="ReportIndividulDrivesHeader"/>
 
-                                        <FontIcon
-                                            Glyph="&#xE8B7;"
-                                            FontSize="14"/>
-
-                                        <TextBlock>
-                                            <Run Text="Total directories count:"/>
-                                            <Run Text="{Binding TotalDirectoriesCount}"/>
-                                        </TextBlock>
-                                    </StackPanel>
+                                    <ListView
+                                        Margin="10,0,10,0"
+                                        ItemsSource="{Binding RootNodes}"
+                                        ItemTemplate="{StaticResource FileSystemNodeListViewTemplate}">
+                                    </ListView>
                                 </StackPanel>
-
-                                <TextBlock
-                                    Margin="10,10,0,0"
-                                    FontWeight="SemiBold"
-                                    FontSize="15"
-                                    Text="Individual drives"/>
-
-                                <ListView
-                                    Margin="10,0,10,0"
-                                    ItemsSource="{Binding RootNodes}"
-                                    ItemTemplate="{StaticResource FileSystemNodeListViewTemplate}">
-                                </ListView>
-                            </StackPanel>
+                            </Grid>
                         </TabViewItem.Content>
                     </TabViewItem>
                 </DataTemplate>
             </TabView.TabItemTemplate>
+
+            <TabView.TabStripFooter>
+                <Button
+                    Height="30"
+                    BorderThickness="0"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,5,0"
+                    Command="{x:Bind ViewModel.CloseAllReportsCommand}"
+                    Style="{StaticResource AccentButtonStyle}">
+
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="7">
+                        
+                        <FontIcon Glyph="&#xE894;" FontSize="15"
+                                  Margin="0,3,0,0"/>
+                        <TextBlock l:Uids.Uid="ReportCloseAll" FontSize="13"/>
+                    </StackPanel>
+                </Button>
+            </TabView.TabStripFooter>
         </TabView>
     </Border>
 </Page>

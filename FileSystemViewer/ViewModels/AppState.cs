@@ -16,6 +16,8 @@ namespace FileSystemViewer.ViewModels
             FileExtensionSeriesCollection = new ObservableCollection<ISeries>();
             ScannedRootNodeNames = new ObservableCollection<string>();
             ActiveSubWindows = new Dictionary<string, Window>();
+
+            ReportViewerVisibility = Visibility.Collapsed;
         }
         public enum ScanningStates
         {

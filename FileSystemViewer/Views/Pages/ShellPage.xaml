@@ -16,7 +16,8 @@
         </Style>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutStates" CurrentStateChanged="LayoutStates_CurrentStateChanged">
@@ -74,7 +75,7 @@
         </Border>
 
         <controls:GridSplitter x:Name="HorizontalSplitter" Grid.Row="1" Grid.ColumnSpan="3"/>
-        
+
         <Border 
             x:Name="TreemapBorder"
             Grid.Column="0"

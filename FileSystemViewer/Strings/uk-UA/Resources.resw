@@ -333,4 +333,37 @@
   <data name="NotificationClickForMore" xml:space="preserve">
     <value>Натисніть, щоб дізнатися більше...</value>
   </data>
+  <data name="ReportHeader.Text" xml:space="preserve">
+    <value>FileSystemViewer звіт сканування</value>
+  </data>
+  <data name="ReportScanDate.Text" xml:space="preserve">
+    <value>Дата сканування</value>
+  </data>
+  <data name="ReportElapsedTime.Text" xml:space="preserve">
+    <value>Загальний час сканування</value>
+  </data>
+  <data name="ReportOverallHeader.Text" xml:space="preserve">
+    <value>Загальний підсумок</value>
+  </data>
+  <data name="ReportRootNodes.Text" xml:space="preserve">
+    <value>Вузлів проскановано</value>
+  </data>
+  <data name="ReportTotalSize.Text" xml:space="preserve">
+    <value>Загальний розмір</value>
+  </data>
+  <data name="ReportTotalFileCount.Text" xml:space="preserve">
+    <value>Загальна кількість файлів</value>
+  </data>
+  <data name="ReportTotalDirectoriesCount.Text" xml:space="preserve">
+    <value>Загальна кількість директорій</value>
+  </data>
+  <data name="ReportIndividulDrivesHeader.Text" xml:space="preserve">
+    <value>Окремі вузли</value>
+  </data>
+  <data name="ReportCloseAll.Text" xml:space="preserve">
+    <value>Закрити всі</value>
+  </data>
+  <data name="StartupSection.Text" xml:space="preserve">
+    <value>Автозапуск додатку</value>
+  </data>
 </root>

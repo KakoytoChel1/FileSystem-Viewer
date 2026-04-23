@@ -333,4 +333,37 @@
   <data name="NotificationClickForMore" xml:space="preserve">
     <value>Click for more details...</value>
   </data>
+  <data name="ReportHeader.Text" xml:space="preserve">
+    <value>FileSystemViewer scanning report</value>
+  </data>
+  <data name="ReportScanDate.Text" xml:space="preserve">
+    <value>Scan date:</value>
+  </data>
+  <data name="ReportElapsedTime.Text" xml:space="preserve">
+    <value>Total elapsed time:</value>
+  </data>
+  <data name="ReportOverallHeader.Text" xml:space="preserve">
+    <value>Overall summary</value>
+  </data>
+  <data name="ReportRootNodes.Text" xml:space="preserve">
+    <value>Root nodes scanned:</value>
+  </data>
+  <data name="ReportTotalSize.Text" xml:space="preserve">
+    <value>Total size:</value>
+  </data>
+  <data name="ReportTotalFileCount.Text" xml:space="preserve">
+    <value>Total file count:</value>
+  </data>
+  <data name="ReportTotalDirectoriesCount.Text" xml:space="preserve">
+    <value>Total directories count:</value>
+  </data>
+  <data name="ReportIndividulDrivesHeader.Text" xml:space="preserve">
+    <value>Individual  nodes</value>
+  </data>
+  <data name="ReportCloseAll.Text" xml:space="preserve">
+    <value>Close all</value>
+  </data>
+  <data name="StartupSection.Text" xml:space="preserve">
+    <value>Application startup</value>
+  </data>
 </root>

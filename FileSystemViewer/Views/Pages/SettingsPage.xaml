@@ -229,6 +229,35 @@
                             </Grid>
                         </Grid>
                     </Border>
+
+                    <!--Startup toggle settings-->
+                    <Border
+                        Style="{StaticResource SettingsPanelBorder}">
+                        <StackPanel
+                            Padding="10,0,0,5"
+                            Orientation="Horizontal"
+                            Spacing="10">
+
+                            <TextBlock
+                                Style="{StaticResource SettingsPagePanelHeaderStyle}"
+                                l:Uids.Uid="StartupSection"/>
+
+                            <ToggleSwitch
+                                Margin="0,4,0,0"
+                                IsOn="{x:Bind ViewModel.IsStartupOn, Mode=TwoWay}">
+
+                                <ToggleSwitch.OnContent>
+                                    <TextBlock
+                                        l:Uids.Uid="SwitchStateOn"/>
+                                </ToggleSwitch.OnContent>
+
+                                <ToggleSwitch.OffContent>
+                                    <TextBlock
+                                        l:Uids.Uid="SwitchStateOff"/>
+                                </ToggleSwitch.OffContent>
+                            </ToggleSwitch>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </PivotItem>
 

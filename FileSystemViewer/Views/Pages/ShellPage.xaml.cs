@@ -1,6 +1,13 @@
+using FileSystemViewer.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace FileSystemViewer.Views.Pages
 {

@@ -224,7 +224,7 @@
     <DataTemplate x:Key="FileSystemNodeListViewTemplate">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="Name" Width="*" MinWidth="350"/>
+                <ColumnDefinition x:Name="Name" Width="auto"/>
                 <ColumnDefinition x:Name="Size" Width="100"/>
                 <ColumnDefinition x:Name="DirectoriesCount" Width="100"/>
                 <ColumnDefinition x:Name="FileCount" Width="100"/>
@@ -257,9 +257,7 @@
                 <TextBlock 
                     Grid.Column="1"
                     Margin="10,0,0,0"
-                    Text="{Binding Name}"
-                    MaxWidth="300"
-                    TextTrimming="CharacterEllipsis"/>
+                    Text="{Binding Name}"/>
 
                 <TextBlock
                     Grid.Column="2"

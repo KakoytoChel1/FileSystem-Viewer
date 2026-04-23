@@ -1,9 +1,12 @@
 ﻿using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
@@ -12,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
@@ -30,6 +34,7 @@ namespace FileSystemViewer
         private TrayIcon? trayIcon;
         private Window? _window;
         public Window? MainWindow => _window;
+        public event Action WindowCreated = null!;
 
         private AppState? _appState;
         private IConfigurationService<AppSettings>? _configurationService;
@@ -93,68 +98,49 @@ namespace FileSystemViewer
         /// <param name="args">Details about the launch request and process.</param>
         protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            //try
-            //{
-                InitializeServices();
-                await InitializeLocalizer();
-                _appState = ServiceProvider.GetRequiredService<AppState>();
-                _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
-                IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
+            InitializeServices();
+            await InitializeLocalizer();
+            _appState = ServiceProvider.GetRequiredService<AppState>();
+            _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
+            IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
 
-                await Localizer.Get().SetLanguage(_configurationService.Settings.AppLanguage == AppSettings.Language.English ? "en-GB" : "uk-UA");
+            await Localizer.Get().SetLanguage(_configurationService.Settings.AppLanguage == AppSettings.Language.English ? "en-GB" : "uk-UA");
 
-                var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
-                if (activatedArgs.Kind == ExtendedActivationKind.AppNotification)
+            trayIcon = new TrayIcon(1, "Assets/appIcon.ico", "File viewer");
+
+            Window window = GetMainWindow();
+            _appState.SetMainWindowHandle(window.GetWindowHandle());
+            CheckVisualPreferences(window);
+            window.Activate();
+            WindowCreated?.Invoke();
+
+            trayIcon.IsVisible = true;
+            trayIcon.Selected += (s, e) => window.Activate();
+            trayIcon.ContextMenu += (w, e) =>
+            {
+                var flyout = new MenuFlyout();
+                var localizer = Localizer.Get();
+
+                flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuOpen") });
+                ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+
+                flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuQuite") });
+                ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
                 {
-                    var notificationArgs = activatedArgs.Data as AppNotificationActivatedEventArgs;
-                    if (notificationArgs != null)
-                    {
-                        HandleAppNotificationActivation(notificationArgs.Arguments);
-                    }
-                }
-                else
+                    CloseSubWindows();
+                    window?.Close();
+                    trayIcon.Dispose();
+                };
+                e.Flyout = flyout;
+            };
+
+            foreach (var task in BackgroundTaskRegistration.AllTasks)
+            {
+                if (task.Value.Name == "FileViewerRecoveryScanTask")
                 {
-                    trayIcon = new TrayIcon(1, "Assets/appIcon.ico", "File viewer");
-
-                    Window window = GetMainWindow();
-                    _appState.SetMainWindowHandle(window.GetWindowHandle());
-                    CheckVisualPreferences(window);
-                    window.Activate();
-
-                    trayIcon.IsVisible = true;
-                    trayIcon.Selected += (s, e) => window.Activate();
-                    trayIcon.ContextMenu += (w, e) =>
-                    {
-                        var flyout = new MenuFlyout();
-                        var localizer = Localizer.Get();
-
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuOpen") });
-                        ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
-
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuQuite") });
-                        ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
-                        {
-                            CloseSubWindows();
-                            window?.Close();
-                            trayIcon.Dispose();
-                        };
-                        e.Flyout = flyout;
-                    };
+                    task.Value.Unregister(true);
                 }
-
-                foreach (var task in BackgroundTaskRegistration.AllTasks)
-                {
-                    if (task.Value.Name == "FileViewerRecoveryScanTask")
-                    {
-                        task.Value.Unregister(true);
-                    }
-                }
-            //}
-            //catch (Exception ex)
-            //{
-            //    File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
-            //    Environment.Exit(0);
-            //}
+            }
         }
 
         private void CloseSubWindows()
@@ -229,9 +215,9 @@ namespace FileSystemViewer
         {
             MainWindow!.DispatcherQueue.TryEnqueue(() =>
             {
-                var hwnd = WindowNative.GetWindowHandle(MainWindow);
-                ShowWindow(hwnd, SW_RESTORE);
-                SetForegroundWindow(hwnd);
+                var hWnd = WindowNative.GetWindowHandle(MainWindow);
+                SetForegroundWindow(hWnd);
+                MainWindow.Activate();
             });  
         }
 
@@ -240,18 +226,23 @@ namespace FileSystemViewer
         {
             MainWindow!.DispatcherQueue.TryEnqueue(() =>
             {
-                foreach (IStorageItem item in items)
-                {
-                    string path = item.Path;
+                var directories = items.Where(i => i.IsOfType(StorageItemTypes.Folder));
+                var files = items.Where(i => i.IsOfType(StorageItemTypes.File));
 
-                    if (item is StorageFolder folder)
-                    {
-                        Debug.WriteLine($"Открыта директория: {path}");
-                    }
-                    else if (item is StorageFile file)
-                    {
-                        Debug.WriteLine($"Открыт файл: {path}");
-                    }
+                ReportViewerPageViewModel reportViewerPageViewModel = ServiceProvider.GetRequiredService<ReportViewerPageViewModel>();
+                MainPageViewModel mainPageViewModel = ServiceProvider.GetRequiredService<MainPageViewModel>();
+
+                if (directories.Any() && files.Any())
+                {
+                    
+                }
+                else if (directories.Any())
+                {
+
+                }
+                else if (files.Any())
+                {
+                    reportViewerPageViewModel.OpenFileReports(files.ToList());
                 }
             });
         }
@@ -290,13 +281,8 @@ namespace FileSystemViewer
             }); 
         }
 
-        private const int SW_RESTORE = 9;
-
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }
 
