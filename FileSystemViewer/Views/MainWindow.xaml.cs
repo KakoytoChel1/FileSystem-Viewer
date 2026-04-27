@@ -23,9 +23,13 @@ namespace FileSystemViewer
         private bool _hasValidFiles;
         private Border? _currentDragAndDropBorder;
 
+        public IServiceScope WindowScope { get; }
+
         public MainWindow()
         {
             InitializeComponent();
+
+            WindowScope = (Application.Current as App)?.ServiceProvider.CreateScope()!;
 
             _uiSettings = new UISettings();
             _uiSettings.ColorValuesChanged += _uiSettings_ColorValuesChanged;
@@ -34,13 +38,12 @@ namespace FileSystemViewer
             var coreTitleBar = AppWindow.TitleBar;
             coreTitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
 
-            (Application.Current as App)?.ServiceProvider.GetRequiredService<IDispatcherQueueProvider>().Initialize(this.DispatcherQueue);
-            MainPageViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<MainPageViewModel>()!;
-            ReportViewerPageViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<ReportViewerPageViewModel>();
+            MainPageViewModel = WindowScope.ServiceProvider.GetRequiredService<MainPageViewModel>()!;
+            ReportViewerPageViewModel = WindowScope.ServiceProvider.GetRequiredService<ReportViewerPageViewModel>();
 
-            RootFrame.Navigate(typeof(ShellPage));
-            SettingsFrame.Navigate(typeof(SettingsPage));
-            ReportViewerFrame.Navigate(typeof(ReportViewerPage));
+            RootFrame.Navigate(typeof(ShellPage), WindowScope.ServiceProvider);
+            SettingsFrame.Navigate(typeof(SettingsPage), WindowScope.ServiceProvider);
+            ReportViewerFrame.Navigate(typeof(ReportViewerPage), WindowScope.ServiceProvider);
         }
 
         private void _uiSettings_ColorValuesChanged(UISettings sender, object args)

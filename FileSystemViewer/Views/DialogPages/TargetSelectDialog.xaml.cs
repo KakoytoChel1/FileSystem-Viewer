@@ -10,11 +10,11 @@ public sealed partial class TargetSelectDialog : UserControl
 {
     public MainPageViewModel ViewModel { get; private set; }
 
-    public TargetSelectDialog()
+    public TargetSelectDialog(MainPageViewModel mainPageViewModel)
     {
         InitializeComponent();
 
-        ViewModel = (Application.Current as App)!.ServiceProvider.GetRequiredService<MainPageViewModel>();
+        ViewModel = mainPageViewModel;
     }
 
     private void AvailableDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)

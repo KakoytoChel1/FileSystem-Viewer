@@ -7,7 +7,6 @@ using FileSystemViewer.ViewModels.Tools;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.Windows.Storage.Pickers;
 using System;
 using System.Collections.Generic;
@@ -25,9 +24,9 @@ namespace FileSystemViewer.ViewModels
         private IBackgroundSchedulerService _backgroundSchedulerService;
         private readonly TimeSpan _minimumTime = TimeSpan.FromMinutes(15);
 
-        public SettingsViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
+        public SettingsViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
-            IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider,
+            IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider,
                 fileExtentionItemService, configurationService, visualManagerService, appState)
         {
             ApplicationState.SettingsMenuVisibility = Visibility.Collapsed;
@@ -38,6 +37,17 @@ namespace FileSystemViewer.ViewModels
                 ConfigurationService.Load();
             }
             RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
+
+            ConfigurationService.OnConfigurationChanged += ConfigurationService_OnConfigurationChanged; ;
+        }
+
+        private void ConfigurationService_OnConfigurationChanged(AppSettings settings)
+        {
+            if (IsThereUnsavedChanges)
+            {
+                RestoreSettingsPropertiesFrom(settings);
+                OnPropertyChanged(nameof(IsThereUnsavedChanges));
+            }
         }
 
         public bool IsThereUnsavedChanges =>
@@ -231,6 +241,7 @@ namespace FileSystemViewer.ViewModels
             IsSchedulerScanToggleOn = appSettings.IsScheduledScanningEnabled;
             ScheduledScanTimeSpan = appSettings.ScheduledScanningTime;
             MinCriticalFreeSpacePercent = appSettings.MinFreeSpacePercent;
+            IsStartupOn = appSettings.IsStartup;
 
             IsSystemAccentColorUsed = appSettings.IsSystemAccentColorUsed;
 

@@ -1,4 +1,5 @@
 ﻿using FileSystemViewer.Models;
+using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
 using System;
 using System.IO;
@@ -10,6 +11,7 @@ namespace FileSystemViewer.Services
     {
         private readonly string _filePath;
         private readonly JsonSerializerOptions _jsonOptions;
+        public event Action<T>? OnConfigurationChanged;
 
         public T Settings { get; private set; } = null!;
 
@@ -52,6 +54,7 @@ namespace FileSystemViewer.Services
         {
             string json = JsonSerializer.Serialize(Settings, _jsonOptions);
             File.WriteAllText(_filePath, json);
+            OnConfigurationChanged?.Invoke(Settings);
         }
     }
 }

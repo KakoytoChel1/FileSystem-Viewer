@@ -20,7 +20,10 @@ namespace FileSystemViewer.ViewModels
 {
     public partial class ReportViewerPageViewModel : ViewModelBase
     {
-        public ReportViewerPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, appState)
+        public ReportViewerPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
+            IVisualManagerService visualManagerService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, 
+                fileExtentionItemService, configurationService, visualManagerService, appState)
         {
             ScanReports = new ObservableCollection<ScanReport>();
         }

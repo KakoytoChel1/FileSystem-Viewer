@@ -2,12 +2,16 @@
 using FileSystemViewer.Models.Tools;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
+using WinRT;
 
 namespace FileSystemViewer
 {
@@ -48,9 +52,9 @@ namespace FileSystemViewer
 
                             var app = new App();
 
-                            app.WindowCreated += () =>
+                            app.WindowCreated += async () =>
                             {
-                                RecognizeActivationKind(appActivationArguments, app);
+                                await RecognizeActivationKind(appActivationArguments, app, false);
                             };
                         });
                     }
@@ -89,19 +93,34 @@ namespace FileSystemViewer
             return isRedirectNeeded;
         }
 
-        private static void OnActivated(object? sender, AppActivationArguments args)
+        private static async void OnActivated(object? sender, AppActivationArguments args)
         {
             if (Application.Current is App currentApp)
             {
                 currentApp.HandleRedirectedActivation(args);
-                RecognizeActivationKind(args, currentApp);
+                await RecognizeActivationKind(args, currentApp, true);
             }
         }
 
-        private static void RecognizeActivationKind(AppActivationArguments args, App app)
+        private static async Task RecognizeActivationKind(AppActivationArguments args, App app, bool isRedirected)
         {
             try
             {
+                if (args.Kind == ExtendedActivationKind.Launch)
+                {
+                    var launchArgs = args.Data as ILaunchActivatedEventArgs;
+
+                    if (launchArgs != null)
+                    {
+                        string[] arguments = launchArgs.Arguments.Split(' ');
+
+                        if (arguments.Length > 1)
+                        {
+                            await app.HandleCommandLineActivation(arguments, isRedirected);
+                        }
+                    } 
+                }
+
                 switch (args.Data)
                 {
                     case IFileActivatedEventArgs fileArgs:

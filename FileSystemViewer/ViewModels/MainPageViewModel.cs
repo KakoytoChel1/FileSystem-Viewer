@@ -27,11 +27,11 @@ namespace FileSystemViewer.ViewModels
 {
     public partial class MainPageViewModel : ViewModelBase
     {
-        public MainPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
+        public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState, 
-            TimeProvider timeProvider) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, appState)
+            TimeProvider timeProvider) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, appState)
         {
-            DriveNodes = new ObservableCollection<DriveNode>();
+            DriveNodes = new ObservableCollection<DirectoryNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
             TreemapNodes = new ObservableCollection<TreemapNode>();
@@ -61,7 +61,7 @@ namespace FileSystemViewer.ViewModels
         /// <summary>
         /// Main nodes collection, contains all selected drives with their inner collections.
         /// </summary>
-        public ObservableCollection<DriveNode> DriveNodes { get; set; }
+        public ObservableCollection<DirectoryNode> DriveNodes { get; set; }
         public ObservableCollection<DriveInfo> AllAvailableDrives { get; set; }
         public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
 
@@ -86,7 +86,7 @@ namespace FileSystemViewer.ViewModels
             SelectedTargetDrives.Clear();
 
             var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogTargetSelectionTitle"), Localizer.GetLocalizedString("DialogApplyText"),
-                ContentDialogButton.Primary, new TargetSelectDialog(), Localizer.GetLocalizedString("DialogCancelText"), null);
+                ContentDialogButton.Primary, new TargetSelectDialog(this), Localizer.GetLocalizedString("DialogCancelText"), null);
 
             if (dialogResult == ContentDialogResult.Primary)
             {
@@ -180,6 +180,7 @@ namespace FileSystemViewer.ViewModels
                     driveNode.FileSystemNodes!.Clear();
                     driveNode.FileCount = 0;
                     driveNode.Size = 0;
+                    driveNode.IsExpanded = false;
 
                     driveNode.UpdateSizeProperty();
                     driveNode.UpdateFileCountProperty();
@@ -268,7 +269,7 @@ namespace FileSystemViewer.ViewModels
 
             if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
             {
-                TreeViewWindow treeViewWindow = new TreeViewWindow();
+                TreeViewWindow treeViewWindow = new TreeViewWindow(ServiceProvider);
                 VisualManagerService.SetWindowTheme(treeViewWindow, ConfigurationService.Settings!.AppTheme);
                 treeViewWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
                 ApplicationState.ActiveSubWindows.Add(windowKey, treeViewWindow);
@@ -283,7 +284,7 @@ namespace FileSystemViewer.ViewModels
 
             if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
             {
-                TreemapWindow treemapWindow = new TreemapWindow();
+                TreemapWindow treemapWindow = new TreemapWindow(ServiceProvider);
                 VisualManagerService.SetWindowTheme(treemapWindow, ConfigurationService.Settings!.AppTheme);
                 treemapWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
                 ApplicationState.ActiveSubWindows.Add(windowKey, treemapWindow);
@@ -313,6 +314,14 @@ namespace FileSystemViewer.ViewModels
                     });
                 }
             }
+        }
+
+        public async Task RequestScanForSelectedTargetAsync<T>(ObservableCollection<T> target) where T : DirectoryNode
+        {
+            CurrentScanningCancellationTokenSource = new CancellationTokenSource();
+            PauseResetTokenSource = new PauseResetTokenSource();
+
+            await ProceedScanForSelectedTargetAsync(target, CurrentScanningCancellationTokenSource, PauseResetTokenSource);
         }
 
         private async Task ProceedScanForSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode

@@ -9,7 +9,6 @@
     xmlns:vm="using:FileSystemViewer.ViewModels"
     mc:Ignorable="d"
     xmlns:models="using:FileSystemViewer.Models"
-    xmlns:view="using:FileSystemViewer.Views"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"

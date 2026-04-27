@@ -1,23 +1,21 @@
 ﻿using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using System.Collections.Generic;
+using System.Linq;
 using Windows.UI;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace FileSystemViewer.Services
 {
-    public class VisualManagerService(AppState appState) : IVisualManagerService
+    public class VisualManagerService : IVisualManagerService
     {
-        private Window? _mainWindow;
-        private AppState _appState = appState;
-
-        public void Initialize(Window mainWindow)
-        {
-            _mainWindow = mainWindow;
-        }
+        public List<MainWindow> MainWindows { get; set; } = new List<MainWindow>();
 
         public void SetAccentColor(Color newColor)
         {
@@ -35,15 +33,19 @@ namespace FileSystemViewer.Services
 
         public void SetApplicationTheme(AppSettings.ThemeMode themeMode)
         {
-            SetWindowTheme(_mainWindow, themeMode);
-
-            if (_appState.ActiveSubWindows.Count > 0)
+            foreach (MainWindow mainWindow in MainWindows)
             {
-                foreach (var pair in _appState.ActiveSubWindows)
+                SetWindowTheme(mainWindow, themeMode);
+                AppState appState = mainWindow.WindowScope.ServiceProvider.GetRequiredService<AppState>();
+
+                if (appState.ActiveSubWindows.Count > 0)
                 {
-                    SetWindowTheme(pair.Value, themeMode);
+                    foreach (var pair in appState.ActiveSubWindows)
+                    {
+                        SetWindowTheme(pair.Value, themeMode);
+                    }
                 }
-            }
+            }   
         }
 
         public void SetWindowTheme(Window? window, AppSettings.ThemeMode themeMode)
@@ -69,12 +71,18 @@ namespace FileSystemViewer.Services
         private void RefreshUI()
         {
             // Refreshing theme to force the UI to update its resources
-            if (_mainWindow != null && _mainWindow.Content is FrameworkElement root)
+            if (MainWindows != null && MainWindows.Any())
             {
-                var currentTheme = root.RequestedTheme;
-                root.RequestedTheme = currentTheme == ElementTheme.Light ? ElementTheme.Dark : ElementTheme.Light;
-                root.RequestedTheme = currentTheme;
-            }
+                foreach (MainWindow mainWindow in MainWindows)
+                {
+                    if (mainWindow != null && mainWindow.Content is FrameworkElement root)
+                    {
+                        var currentTheme = root.RequestedTheme;
+                        root.RequestedTheme = currentTheme == ElementTheme.Light ? ElementTheme.Dark : ElementTheme.Light;
+                        root.RequestedTheme = currentTheme;
+                    }
+                }
+            }  
         }
 
         public void UpdateTitleBarColors(ElementTheme currentTheme, Window window)

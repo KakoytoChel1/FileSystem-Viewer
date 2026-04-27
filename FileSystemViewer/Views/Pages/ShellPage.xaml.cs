@@ -1,13 +1,9 @@
 using FileSystemViewer.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage;
 
 namespace FileSystemViewer.Views.Pages
 {
@@ -15,14 +11,21 @@ namespace FileSystemViewer.Views.Pages
     {
         public ShellPage()
         {
-            InitializeComponent();
+            InitializeComponent();  
+        }
 
-            MainPageFrame.Navigate(typeof(MainPage));
-            ChartPageFrame.Navigate(typeof(ChartPage));
-            TreemapPageFrame.Navigate(typeof(TreemapPage));
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            var scopeProvider = e.Parameter as IServiceProvider;
+
+            MainPageFrame.Navigate(typeof(MainPage), scopeProvider);
+            ChartPageFrame.Navigate(typeof(ChartPage), scopeProvider);
+            TreemapPageFrame.Navigate(typeof(TreemapPage), scopeProvider);
 
             VerticalSplitter.DoubleTapped += VerticalSplitter_DoubleTapped;
             HorizontalSplitter.DoubleTapped += HorizontalSplitter_DoubleTapped;
+
+            base.OnNavigatedTo(e);
         }
 
         private void LayoutStates_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
