@@ -174,48 +174,6 @@ namespace FileSystemViewer.Services
                 }
             }
         }
-
-        //private string SaveScanResultsToFile(ObservableCollection<DriveNode> driveNodes, BytesIntoSuitableFormatConverter bytesConverter, TimeSpan elapsedTime)
-        //{
-        //    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        //    string appFolder = Path.Combine(documentsPath, "FileSystemViewer");
-
-        //    if (!Directory.Exists(appFolder))
-        //    {
-        //        Directory.CreateDirectory(appFolder);
-        //    }
-
-        //    DateTime now = DateTime.Now;
-        //    string timestamp = now.ToString("yyyy-MM-dd_HH-mm-ss");
-        //    string fileName = $"ScanResults_{timestamp}.txt";
-        //    string filePath = Path.Combine(appFolder, fileName);
-
-        //    StringBuilder reportBuilder = new StringBuilder();
-
-        //    reportBuilder.AppendLine("=== File System Viewer - Scan Results ===");
-        //    reportBuilder.AppendLine($"Scan Date: {now:yyyy-MM-dd HH:mm:ss}");
-        //    reportBuilder.AppendLine($"Total Elapsed Time: {elapsedTime.Humanize()}");
-        //    reportBuilder.AppendLine();
-
-        //    var totalSize = bytesConverter.Convert(driveNodes.Sum(n => n.Size), typeof(long), null!, null!);
-        //    long totalFiles = driveNodes.Sum(n => n.FileCount);
-        //    long totalDirectories = driveNodes.Sum(n => n.DirectoriesCount);
-
-        //    reportBuilder.AppendLine("=== Overall Summary ===");
-        //    reportBuilder.AppendLine($"Drives count: {driveNodes.Count}; Total size: {totalSize}; Total files: {totalFiles}; Total directories: {totalDirectories};");
-        //    reportBuilder.AppendLine();
-
-        //    reportBuilder.AppendLine("=== Individual Drives ===");
-        //    foreach (DriveNode drive in driveNodes)
-        //    {
-        //        var driveSize = bytesConverter.Convert(drive.Size, typeof(long), null!, null!);
-        //        reportBuilder.AppendLine($"Drive: {drive.Name}; Size: {driveSize}; Files: {drive.FileCount}; Directories: {drive.DirectoriesCount};");
-        //    }
-
-        //    File.WriteAllText(filePath, reportBuilder.ToString(), Encoding.UTF8);
-
-        //    return filePath;
-        //}
         
         /// <summary>
         /// true if free space is less then constant value, otherwise false.
