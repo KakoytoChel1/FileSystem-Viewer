@@ -4,6 +4,7 @@ using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels.Tools;
 using FileSystemViewer.Views.Converters;
 using Humanizer;
+using Microsoft.Windows.ApplicationModel.Resources;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WinUI3Localizer;
 
 namespace FileSystemViewer.Services
 {
@@ -21,7 +23,7 @@ namespace FileSystemViewer.Services
         private TimeProvider _timeProvider = timeProvider;
         private IConfigurationService<AppSettings> _configurationService = configurationService;
 
-        public async Task ProceedScan()
+        public async Task ProceedScan(ResourceLoader resourceLoader)
         {
             long startTime;
             TimeSpan elapsedTime;
@@ -53,20 +55,34 @@ namespace FileSystemViewer.Services
                 ProceedScanForSelectedDirectoryLevel(driveNode);
             }
 
-            //var progress = new Progress<List<FileSystemNode>>(ProcessReceivedScannedNodes);
             var progress = new Action<List<FileSystemNode>>(ProcessReceivedScannedNodes);
 
             await _driveUtilsService.ScanProvidedNodesAsync(driveNodes, progress, new CancellationTokenSource().Token, new PauseResetTokenSource().Token);
 
             elapsedTime = _timeProvider.GetElapsedTime(startTime);
 
-            string reportPath = SaveScanResultsToFile(driveNodes, bytesConverter, elapsedTime);
-            string message = $"Drives count: {driveNodes.Count}, Total size: {bytesConverter.Convert(driveNodes.Sum(n => n.Size),
-                    typeof(long), null!, null!)}, Total files: {driveNodes.Sum(n => n.FileCount)}, Total directories: {driveNodes.Sum(n => n.DirectoriesCount)}.";
+            ScanReport scanReport = new ScanReport()
+            {
+                ScanDateTime = DateTime.Now,
+                ElapsedTime = elapsedTime,
+                NodesScanned = driveNodes.Count,
+                TotalSize = driveNodes.Sum(n => n.Size),
+                TotalDirectoriesCount = driveNodes.Sum(n => n.DirectoriesCount),
+                TotalFilesCount = driveNodes.Sum(n => n.FileCount),
+                RootNodes = new ObservableCollection<DirectoryNode>(driveNodes.Select((node) =>
+                {
+                    node.FileSystemNodes = null;
+                    return node;
+                }))
+            };
+
+            string reportPath = ScanningReportHelper.GenerateReportAsJson(scanReport);
+            string message = $"{resourceLoader.GetString("NotificationScheduledSuccessText1")} {driveNodes.Count}, {resourceLoader.GetString("NotificationScheduledSuccessText2")} {bytesConverter.Convert(driveNodes.Sum(n => n.Size),
+                    typeof(long), null!, null!)}, {resourceLoader.GetString("NotificationScheduledSuccessText3")} {driveNodes.Sum(n => n.FileCount)}, { resourceLoader.GetString("NotificationScheduledSuccessText4")} {driveNodes.Sum(n => n.DirectoriesCount)}.";
 
             string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
             // Basic scanning result notification
-            NotificationManager.BuildAndShowToastNotification($"Scheduled scan completed, total elapsed time: {elapsedTime.Humanize()}.", message, successImagePath, reportPath);
+            NotificationManager.BuildAndShowToastNotification($"{resourceLoader.GetString("NotificationScheduledSuccessTitle")} {elapsedTime.Humanize()}.", message, successImagePath, reportPath);
 
             List<string> drivesNames = new List<string>();
             foreach (DriveNode driveNode in driveNodes)
@@ -88,7 +104,7 @@ namespace FileSystemViewer.Services
 
                 string warningImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "warning.png");
                 // Low free space warning notification
-                NotificationManager.BuildAndShowToastNotification($"Low free space warning for the following drives:", messageBuilder.ToString(), warningImagePath);
+                NotificationManager.BuildAndShowToastNotification(resourceLoader.GetString("NotificationWarningTitle"), messageBuilder.ToString(), warningImagePath);
             }
         }
 
@@ -157,48 +173,6 @@ namespace FileSystemViewer.Services
                     current = current.ParentNode as DirectoryNode;
                 }
             }
-        }
-
-        private string SaveScanResultsToFile(ObservableCollection<DriveNode> driveNodes, BytesIntoSuitableFormatConverter bytesConverter, TimeSpan elapsedTime)
-        {
-            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string appFolder = Path.Combine(documentsPath, "FileSystemViewer");
-
-            if (!Directory.Exists(appFolder))
-            {
-                Directory.CreateDirectory(appFolder);
-            }
-
-            DateTime now = DateTime.Now;
-            string timestamp = now.ToString("yyyy-MM-dd_HH-mm-ss");
-            string fileName = $"ScanResults_{timestamp}.txt";
-            string filePath = Path.Combine(appFolder, fileName);
-
-            StringBuilder reportBuilder = new StringBuilder();
-
-            reportBuilder.AppendLine("=== File System Viewer - Scan Results ===");
-            reportBuilder.AppendLine($"Scan Date: {now:yyyy-MM-dd HH:mm:ss}");
-            reportBuilder.AppendLine($"Total Elapsed Time: {elapsedTime.Humanize()}");
-            reportBuilder.AppendLine();
-
-            var totalSize = bytesConverter.Convert(driveNodes.Sum(n => n.Size), typeof(long), null!, null!);
-            long totalFiles = driveNodes.Sum(n => n.FileCount);
-            long totalDirectories = driveNodes.Sum(n => n.DirectoriesCount);
-
-            reportBuilder.AppendLine("=== Overall Summary ===");
-            reportBuilder.AppendLine($"Drives count: {driveNodes.Count}; Total size: {totalSize}; Total files: {totalFiles}; Total directories: {totalDirectories};");
-            reportBuilder.AppendLine();
-
-            reportBuilder.AppendLine("=== Individual Drives ===");
-            foreach (DriveNode drive in driveNodes)
-            {
-                var driveSize = bytesConverter.Convert(drive.Size, typeof(long), null!, null!);
-                reportBuilder.AppendLine($"Drive: {drive.Name}; Size: {driveSize}; Files: {drive.FileCount}; Directories: {drive.DirectoriesCount};");
-            }
-
-            File.WriteAllText(filePath, reportBuilder.ToString(), Encoding.UTF8);
-
-            return filePath;
         }
         
         /// <summary>

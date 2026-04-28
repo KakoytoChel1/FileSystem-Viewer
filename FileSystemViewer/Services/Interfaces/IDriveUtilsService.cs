@@ -15,5 +15,6 @@ namespace FileSystemViewer.Services.Interfaces
         public Task ScanProvidedNodesAsync<T>(ObservableCollection<T> fileSystemNodes, Action<List<FileSystemNode>> progress, CancellationToken token, PauseResetToken pauseResetToken) where T : DirectoryNode;
 
         public TotalScanValues ScanDirectoryLevel(DirectoryNode directoryNode, string directoryPath);
+        public DirectoryNode CreateDirectoryNode(DirectoryNode? parent, DirectoryInfo directoryInfo);
     }
 }

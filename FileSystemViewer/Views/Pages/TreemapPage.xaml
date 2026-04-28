@@ -7,10 +7,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mControls="using:ModernControls.Controls"
+    xmlns:l="using:WinUI3Localizer"
     mc:Ignorable="d">
 
     <Grid>
-
         <mControls:HierarchicalTreemap
             Background="Transparent"
             x:Name="hierarchicalTreemap"
@@ -21,7 +21,6 @@
 
         <Button
             Style="{StaticResource CommandBarButtonStyle}"
-            ToolTipService.ToolTip="Open in new window"
             Content="&#xE8A7;"
             Height="27"
             Width="35"
@@ -29,6 +28,11 @@
             VerticalAlignment="Top"
             Margin="0,5,5,0"
             Command="{x:Bind MainPageViewModel.OpenTreeMapNewWindowCommand}">
+
+            <ToolTipService.ToolTip>
+                <TextBlock
+                    l:Uids.Uid="OpenInNewWindowButton"/>
+            </ToolTipService.ToolTip>
         </Button>
     </Grid>
 </Page>

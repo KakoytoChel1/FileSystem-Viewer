@@ -1,6 +1,7 @@
 using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using System;
 
 namespace FileSystemViewer.Views.Windows
 {
@@ -8,13 +9,13 @@ namespace FileSystemViewer.Views.Windows
     {
         public ChartPageViewModel? ViewModel { get; }
 
-        public ChartTabsWindow()
+        public ChartTabsWindow(IServiceProvider serviceProvider)
         {
             InitializeComponent();
 
             ExtendsContentIntoTitleBar = true;
 
-            ViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<ChartPageViewModel>();
+            ViewModel = serviceProvider.GetRequiredService<ChartPageViewModel>();
         }
     }
 }

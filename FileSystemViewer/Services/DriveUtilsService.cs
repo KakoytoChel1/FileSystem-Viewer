@@ -230,7 +230,7 @@ namespace FileSystemViewer.Services
             return fileNode;
         }
 
-        private DirectoryNode CreateDirectoryNode(DirectoryNode parent, DirectoryInfo directoryInfo)
+        public DirectoryNode CreateDirectoryNode(DirectoryNode? parent, DirectoryInfo directoryInfo)
         {
             DirectoryNode directoryNode = new DirectoryNode(parent)
             {

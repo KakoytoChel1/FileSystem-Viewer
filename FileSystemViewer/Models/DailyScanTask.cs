@@ -3,10 +3,13 @@ using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Windows.ApplicationModel.Resources;
+using Microsoft.Windows.Globalization;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Windows.ApplicationModel.Background;
+using WinUI3Localizer;
 
 namespace FileSystemViewer.Models
 {
@@ -26,8 +29,12 @@ namespace FileSystemViewer.Models
             {
                 InitializeServices();
                 IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
+                IConfigurationService<AppSettings> configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
 
-                await backgroundScannerService.ProceedScan();
+                ApplicationLanguages.PrimaryLanguageOverride = configurationService.Settings.AppLanguage == AppSettings.Language.English ? "en-GB" : "uk-UA";
+                ResourceLoader resourceLoader = new ResourceLoader();
+
+                await backgroundScannerService.ProceedScan(resourceLoader);
             }
             catch (Exception ex)
             {

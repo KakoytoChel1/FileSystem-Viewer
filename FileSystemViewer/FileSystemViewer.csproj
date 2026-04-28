@@ -34,10 +34,13 @@
     <None Remove="Assets\file.png" />
     <None Remove="Assets\refresh directory.png" />
     <None Remove="Assets\refresh disk.png" />
+    <None Remove="Assets\ua.png" />
+    <None Remove="Assets\uk.png" />
     <None Remove="Assets\warning.png" />
     <None Remove="Views\DialogPages\TargetSelectDialog.xaml" />
     <None Remove="Views\Pages\ChartPage.xaml" />
     <None Remove="Views\Pages\MainPage.xaml" />
+    <None Remove="Views\Pages\ReportViewerPage.xaml" />
     <None Remove="Views\Pages\SettingsPage.xaml" />
     <None Remove="Views\Pages\ShellPage.xaml" />
     <None Remove="Views\Pages\TreemapPage.xaml" />
@@ -56,6 +59,12 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Strings\**\*.resw">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
@@ -82,6 +91,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
+    <PackageReference Include="WinUI3Localizer" Version="2.3.0" />
     <PackageReference Include="WinUIEx" Version="2.9.0" />
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +101,11 @@
     <Content Update="Assets\disk.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Pages\ReportViewerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Pages\ShellPage.xaml">

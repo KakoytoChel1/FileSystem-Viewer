@@ -4,11 +4,12 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" 
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  IgnorableNamespaces="uap rescap systemai">
+  IgnorableNamespaces="uap rescap systemai desktop">
 
   <Identity
     Name="1ab05585-c744-4f5b-8580-f20381f14ed7"
@@ -47,6 +48,18 @@
       </uap:VisualElements>
 
 		<Extensions>
+			<uap3:Extension Category="windows.appExecutionAlias" Executable="FileSystemViewer.exe" EntryPoint="Windows.FullTrustApplication">
+				<uap3:AppExecutionAlias>
+					<desktop:ExecutionAlias Alias="fsv.exe" />
+				</uap3:AppExecutionAlias>
+			</uap3:Extension>
+
+			<uap:Extension Category="windows.protocol">
+				<uap:Protocol Name="fsviewer">
+					<uap:DisplayName>FileSystemViewer protocol</uap:DisplayName>
+				</uap:Protocol>
+			</uap:Extension>
+
 			<desktop:Extension Category="windows.toastNotificationActivation">
 				<desktop:ToastNotificationActivation ToastActivatorCLSID="A7A890DF-1B1C-4B9F-9311-209210F58E73" />
 			</desktop:Extension>
@@ -57,6 +70,10 @@
 					<Task Type="systemEvent"/>
 				</BackgroundTasks>
 			</Extension>
+
+			<desktop:Extension Category="windows.startupTask" Executable="FileSystemViewer.exe" EntryPoint="Windows.FullTrustApplication">
+				<desktop:StartupTask TaskId="StartupFileSystemViewerId" Enabled="false" DisplayName="FileSystemViewer" />
+			</desktop:Extension>
 
 			<com:Extension Category="windows.comServer">
 				<com:ComServer>
@@ -69,6 +86,15 @@
 					</com:ExeServer>
 				</com:ComServer>
 			</com:Extension>
+
+			<uap:Extension Category="windows.fileTypeAssociation">
+				<uap3:FileTypeAssociation Name="jsonfile" MultiSelectModel="Player">
+					<uap:SupportedFileTypes>
+						<uap:FileType>.json</uap:FileType>
+					</uap:SupportedFileTypes>
+					<uap:Logo>Assets\appIcon.png</uap:Logo>
+				</uap3:FileTypeAssociation>
+			</uap:Extension>
 		</Extensions>
     </Application>
   </Applications>

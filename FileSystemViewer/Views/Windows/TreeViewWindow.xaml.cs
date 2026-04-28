@@ -1,6 +1,7 @@
 using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using System;
 
 namespace FileSystemViewer.Views.Windows
 {
@@ -8,12 +9,12 @@ namespace FileSystemViewer.Views.Windows
     {
         public MainPageViewModel? ViewModel { get; }
 
-        public TreeViewWindow()
+        public TreeViewWindow(IServiceProvider serviceProvider)
         {
             InitializeComponent();
 
             ExtendsContentIntoTitleBar = true;
-            ViewModel = (Application.Current as App)?.ServiceProvider.GetRequiredService<MainPageViewModel>();
+            ViewModel = serviceProvider.GetRequiredService<MainPageViewModel>();
         }
     }
 }

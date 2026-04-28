@@ -1,4 +1,5 @@
 ﻿using Humanizer;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace FileSystemViewer.Models
 {
@@ -10,7 +11,7 @@ namespace FileSystemViewer.Models
 
         public override string Tag
         {
-            get { return $"{TotalFreeSpace.Bytes().Humanize()} free of {TotalSize.Bytes().Humanize()} {GetPercentString()}"; }
+            get { return $"{TotalFreeSpace.Bytes().Humanize()} / {TotalSize.Bytes().Humanize()} {GetPercentString()}"; }
         }
 
         private string GetPercentString()

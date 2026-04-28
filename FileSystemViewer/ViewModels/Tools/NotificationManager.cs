@@ -1,4 +1,5 @@
-﻿using Microsoft.Windows.AppNotifications;
+﻿using Microsoft.Windows.ApplicationModel.Resources;
+using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using System;
 using System.IO;
@@ -24,10 +25,13 @@ namespace FileSystemViewer.ViewModels.Tools
 
             if (!string.IsNullOrWhiteSpace(reportDocumentPath))
             {
-                builder.AddArgument("action", "openReport")
-                       .AddArgument("reportPath", reportDocumentPath);
+                builder.AddArgument("reportPath", reportDocumentPath);
+                ResourceLoader resourceLoader = new ResourceLoader();
 
-                builder.AddText("Click for more details...");
+                if (resourceLoader != null)
+                {
+                    builder.AddText(resourceLoader.GetString("NotificationClickForMore"));
+                }
             }
 
             AppNotificationManager.Default.Show(builder.BuildNotification());

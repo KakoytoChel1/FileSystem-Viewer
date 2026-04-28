@@ -4,11 +4,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
+    <Color x:Key="SystemAccentColorDark1"></Color>
+    <Color x:Key="SystemAccentColorDark2"></Color>
+    <Color x:Key="SystemAccentColorDark3"></Color>
+    <Color x:Key="SystemAccentColorLight1"></Color>
+    <Color x:Key="SystemAccentColorLight2"></Color>
+    <Color x:Key="SystemAccentColorLight3"></Color>
+
     <Style x:Key="CommandBarButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
         <Setter Property="Height" Value="30"/>
         <Setter Property="Width" Value="40"/>
         <Setter Property="CornerRadius" Value="5"/>
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
     </Style>
@@ -34,6 +41,12 @@
     <Style x:Key="SettingsPanelBorder" TargetType="Border">
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="BorderBrush" Value="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"/>
+    </Style>
+
+    <Style x:Key="SettingsPagePanelHeaderStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontSize" Value="16"/>
     </Style>
 
     <Style x:Key="DirectoryNodeInfoTextBlockStyle" TargetType="TextBlock">

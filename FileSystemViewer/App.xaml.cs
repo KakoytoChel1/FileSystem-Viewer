@@ -1,12 +1,11 @@
 ﻿using FileSystemViewer.Models;
 using FileSystemViewer.Models.DataModels;
-using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
 using FileSystemViewer.ViewModels.Tools;
-using FileSystemViewer.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
@@ -16,19 +15,30 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Background;
+using Windows.ApplicationModel.Activation;
+using Windows.Storage;
+using Windows.UI;
+using Windows.UI.ViewManagement;
+using WinRT.Interop;
+using WinUI3Localizer;
 using WinUIEx;
 
 namespace FileSystemViewer
 {
     public partial class App : Application
     {
-        private TrayIcon? trayIcon;
-        private Window? _window;
+        private MainWindow? _mainWindow;
+        private TrayIcon? _trayIcon;
+        public MainWindow? MainWindow => _mainWindow;
+        public event Action WindowCreated = null!;
+        private List<MainWindow> _mainWindows = new List<MainWindow>();
 
-        private AppState? _appState;
-        private IConfigurationService<AppSettings>? _configurationService;
+        private IConfigurationService<AppSettings> _configurationService = null!;
+        private IVisualManagerService _visualManagerService = null!;
+        private IDispatcherQueueProvider _dispatcherQueueProvider = null!;
+        private IDriveUtilsService _driveUtilsService = null!;
 
         public IServiceProvider ServiceProvider { get; private set; } = null!;
 
@@ -41,9 +51,27 @@ namespace FileSystemViewer
             AppNotificationManager.Default.Register();
         }
 
+        private void RegisterFinishing(MainWindow mainWindow)
+        {
+            if (mainWindow != null)
+            {
+                mainWindow.Closed += (s, a) => 
+                {
+                    mainWindow.WindowScope.Dispose();
+                    _visualManagerService.MainWindows.Remove(mainWindow);
+                    _mainWindows.Remove(mainWindow);
+                    
+                    if (_mainWindows.Any())
+                    {
+                        _mainWindow = _mainWindows[0];
+                    }
+                };
+            }
+        }
+
         private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
         {
-            HandleNotificationClick(args.Arguments);
+            HandleAppNotificationActivation(args.Arguments);
         }
 
         private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -51,105 +79,102 @@ namespace FileSystemViewer
             e.Handled = true;
             var exeption = e.Exception;
 
-            if (_window != null)
+            if (_mainWindow != null)
             {
-                await DialogManager.ShowContentDialogAsync(_window.Content.XamlRoot,
+                await DialogManager.ShowContentDialogAsync(_mainWindow.Content.XamlRoot,
                     "Error", "Okay", ContentDialogButton.Primary, $"{exeption.Message}");
             }
         }
 
-        private Window GetMainWindow()
+        private MainWindow GetMainWindow(out AppState appState)
         {
-            if (_window is not null)
-                return _window;
-            _window = new MainWindow();
-            _window.AppWindow.Closing += (window, args) =>
+            MainWindow mainWindow = new MainWindow();
+            var _appState = mainWindow.WindowScope.ServiceProvider.GetRequiredService<AppState>();
+            appState = _appState;
+
+            mainWindow.AppWindow.Closing += (window, args) =>
             {
                 if (_configurationService!.Settings.IsTrayActive)
                 {
                     args.Cancel = true;
-                    _window.Hide();
+                    mainWindow.Hide();
                 }
                 else
                 {
                     args.Cancel = false;
-                    CloseSubWindows();
+                    CloseSubWindows(_appState);
 
-                    if (trayIcon == null)
+                    if (_trayIcon == null)
                         return;
-                    trayIcon.Dispose();
+                    _trayIcon.Dispose();
                 }
             };
-            return _window;
+            return mainWindow;
         }
 
         /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected async override void OnLaunched(LaunchActivatedEventArgs args)
+        protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            try
-            {
-                InitializeServices();
-                _appState = ServiceProvider.GetRequiredService<AppState>();
-                _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
-                IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
+            InitializeServices();
+            await InitializeLocalizer();
 
-                var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
-                if (activatedArgs.Kind == ExtendedActivationKind.AppNotification)
-                {
-                    var notificationArgs = activatedArgs.Data as AppNotificationActivatedEventArgs;
-                    if (notificationArgs != null)
-                    {
-                        HandleNotificationClick(notificationArgs.Arguments);
-                    }
-                }
-                else
-                {
-                    trayIcon = new TrayIcon(1, "Assets/appIcon.ico", "File viewer");
-                    Window window = GetMainWindow();
-                    _appState.SetMainWindowHandle(window.GetWindowHandle());
-                    window.Activate();
+            _driveUtilsService = ServiceProvider.GetRequiredService<IDriveUtilsService>();
+            _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
+            _visualManagerService = ServiceProvider.GetRequiredService<IVisualManagerService>();
+            _dispatcherQueueProvider = ServiceProvider.GetRequiredService<IDispatcherQueueProvider>();
+            _dispatcherQueueProvider.Initialize(DispatcherQueue.GetForCurrentThread());
+            IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
 
-                    trayIcon.IsVisible = true;
-                    trayIcon.Selected += (s, e) => window.Activate();
-                    trayIcon.ContextMenu += (w, e) =>
-                    {
-                        var flyout = new MenuFlyout();
+            await Localizer.Get().SetLanguage(_configurationService.Settings.AppLanguage == AppSettings.Language.English ? "en-GB" : "uk-UA");
 
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Open" });
-                        ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => window.Activate();
+            _trayIcon = new TrayIcon(1, "Assets/appIcon.ico", "File viewer");
 
-                        flyout.Items.Add(new MenuFlyoutItem() { Text = "Quit App" });
-                        ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
-                        {
-                            CloseSubWindows();
-                            window?.Close();
-                            trayIcon.Dispose();
-                        };
-                        e.Flyout = flyout;
-                    };
-                }
-
-                foreach (var task in BackgroundTaskRegistration.AllTasks)
-                {
-                    if (task.Value.Name == "FileViewerRecoveryScanTask")
-                    {
-                        task.Value.Unregister(true);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "startup_error.log"), ex.ToString());
-                Environment.Exit(0);
-            }
+            _mainWindow = CreateWindow();
+            _mainWindows.Add(_mainWindow);
+            RegisterFinishing(_mainWindow);
         }
 
-        private void CloseSubWindows()
+        public MainWindow CreateWindow()
         {
-            foreach (Window subWindow in _appState!.ActiveSubWindows.Values)
+            if (_trayIcon == null)
+                return null!;
+
+            AppState appState;
+            MainWindow window = GetMainWindow(out appState);
+
+            appState.SetMainWindowHandle(window.GetWindowHandle());
+            CheckVisualPreferences(window);
+            window.Activate();
+            WindowCreated?.Invoke();
+
+            _trayIcon.IsVisible = true;
+            _trayIcon.Selected += (s, e) => window.Activate();
+            _trayIcon.ContextMenu += (w, e) =>
+            {
+                var flyout = new MenuFlyout();
+                var localizer = Localizer.Get();
+
+                flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuOpen") });
+                ((MenuFlyoutItem)flyout.Items[0]).Click += (s, e) => ActivateAllMainWindows();
+
+                flyout.Items.Add(new MenuFlyoutItem() { Text = localizer.GetLocalizedString("TrayContextMenuQuite") });
+                ((MenuFlyoutItem)flyout.Items[1]).Click += (s, e) =>
+                {
+                    CloseAllMainWindows();
+                    _trayIcon.Dispose();
+                };
+                e.Flyout = flyout;
+            };
+
+            return window;
+        }
+
+        private void CloseSubWindows(AppState appState)
+        {
+            foreach (Window subWindow in appState.ActiveSubWindows.Values)
             {
                 subWindow.Close();
             }
@@ -159,14 +184,11 @@ namespace FileSystemViewer
         {
             var services = new ServiceCollection();
 
-            services.AddSingleton<AppState>();
-            services.AddSingleton<MainPageViewModel>();
-            services.AddSingleton<ChartPageViewModel>();
-            services.AddSingleton<SettingsViewModel>();
-
-            services.AddSingleton<MainPage>();
-            services.AddSingleton<ChartPage>();
-            services.AddSingleton<TreemapPage>();
+            services.AddScoped<AppState>();
+            services.AddScoped<MainPageViewModel>();
+            services.AddScoped<ChartPageViewModel>();
+            services.AddScoped<SettingsViewModel>();
+            services.AddScoped<ReportViewerPageViewModel>();
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
@@ -174,26 +196,172 @@ namespace FileSystemViewer
             services.AddSingleton<IConfigurationService<AppSettings>, ConfigurationService<AppSettings>>();
             services.AddSingleton<IBackgroundScannerService, BackgroundScannerService>();
             services.AddSingleton<IBackgroundSchedulerService, BackgroundSchedulerService>();
+            services.AddSingleton<IVisualManagerService, VisualManagerService>();
 
             services.AddSingleton(TimeProvider.System);
 
             ServiceProvider = services.BuildServiceProvider();
         }
 
-        private void HandleNotificationClick(IDictionary<string, string> arguments)
+        private void CheckVisualPreferences(MainWindow window)
         {
-            if (arguments.TryGetValue("reportPath", out string? reportPath))
+            IVisualManagerService visualManager = ServiceProvider.GetRequiredService<IVisualManagerService>();
+            visualManager.MainWindows.Add(window);
+
+            Color accentColor = _configurationService!.Settings.CustomAccentColor;
+            bool isSystemAccentColorUsed = _configurationService.Settings.IsSystemAccentColorUsed;
+            AppSettings.ThemeMode themeMode = _configurationService.Settings.AppTheme;
+
+            if (!isSystemAccentColorUsed)
             {
-                if (File.Exists(reportPath))
+                var color = Color.FromArgb(255, accentColor.R, accentColor.G, accentColor.B);
+                visualManager.SetAccentColor(color);
+            }
+            else
+            {
+                UISettings uISettings = new();
+                visualManager.SetAccentColor(uISettings.GetColorValue(UIColorType.Accent));
+            }
+
+            visualManager.SetApplicationTheme(themeMode);
+        }
+
+        private async Task InitializeLocalizer()
+        {
+
+            string stringsFolder = Path.Combine(AppContext.BaseDirectory, "Strings");
+
+            ILocalizer localizer = await new LocalizerBuilder()
+                .AddStringResourcesFolderForLanguageDictionaries(stringsFolder)
+                .SetOptions(options =>
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = reportPath,
-                        UseShellExecute = true
-                    });
+                    options.DefaultLanguage = "en-GB";
+                })
+                .Build();
+        }
+
+        public void HandleRedirectedActivation(AppActivationArguments args)
+        {
+            _dispatcherQueueProvider!.DispatcherQueue.TryEnqueue(() =>
+            {
+                var hWnd = WindowNative.GetWindowHandle(MainWindow);
+                SetForegroundWindow(hWnd);
+                MainWindow!.Activate();
+            });  
+        }
+
+        // Both files and directories
+        public void HandleFileOpenActivation(IReadOnlyList<IStorageItem> items)
+        {
+            _dispatcherQueueProvider!.DispatcherQueue.TryEnqueue(() =>
+            {
+                var directories = items.Where(i => i.IsOfType(StorageItemTypes.Folder));
+                var files = items.Where(i => i.IsOfType(StorageItemTypes.File));
+
+                ReportViewerPageViewModel reportViewerPageViewModel = MainWindow!.WindowScope.ServiceProvider.GetRequiredService<ReportViewerPageViewModel>();
+                //MainPageViewModel mainPageViewModel = ServiceProvider.GetRequiredService<MainPageViewModel>();
+
+                if (directories.Any() && files.Any())
+                {
+                    
                 }
+                else if (directories.Any())
+                {
+
+                }
+                else if (files.Any())
+                {
+                    reportViewerPageViewModel.OpenFileReports(files.ToList());
+                }
+            });
+        }
+
+        public void HandleProtocolActivation(IProtocolActivatedEventArgs args)
+        {
+            _dispatcherQueueProvider!.DispatcherQueue.TryEnqueue(() =>
+            {
+                Uri activatedUri = args.Uri;
+            });
+        }
+
+        public async Task HandleCommandLineActivation(string[] arguments, bool isRedirected)
+        {
+            _dispatcherQueueProvider!.DispatcherQueue.TryEnqueue(async () =>
+            {
+                var command = arguments[1];
+                var path = arguments[2];
+
+                if (command.Contains("--scan") && !string.IsNullOrWhiteSpace(path))
+                {
+                    DirectoryInfo directoryInfo = new DirectoryInfo(path);
+                    DirectoryNode directoryNode = _driveUtilsService.CreateDirectoryNode(null, directoryInfo);
+                    IServiceScope scope = MainWindow!.WindowScope;
+
+                    if (isRedirected)
+                    {
+                        MainWindow mainWindow = CreateWindow();
+                        _mainWindows.Add(mainWindow);
+                        RegisterFinishing(mainWindow);
+                        scope = mainWindow.WindowScope;
+
+                        mainWindow.Activate();
+                    }
+
+                    MainPageViewModel mainPageViewModel = scope.ServiceProvider?.GetRequiredService<MainPageViewModel>()!;
+                    mainPageViewModel.DriveNodes.Add(directoryNode);
+                    await mainPageViewModel.RequestScanForSelectedTargetAsync(mainPageViewModel.DriveNodes);
+                }
+            });
+        }
+
+        public void HandleStartupActivation(IStartupTaskActivatedEventArgs args)
+        {
+            _dispatcherQueueProvider!.DispatcherQueue.TryEnqueue(() =>
+            {
+                //TODO: Something
+            });
+        }
+
+        public void HandleAppNotificationActivation(IDictionary<string, string> arguments)
+        {
+            _dispatcherQueueProvider!.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (arguments.TryGetValue("reportPath", out string? reportPath))
+                {
+                    if (File.Exists(reportPath))
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = reportPath,
+                            UseShellExecute = true
+                        });
+                    }
+                }
+            }); 
+        }
+
+        private void ActivateAllMainWindows()
+        {
+            foreach (var window in _mainWindows)
+            {
+                window.Activate();
             }
         }
+
+        private void CloseAllMainWindows()
+        {
+            List<MainWindow> windows = new List<MainWindow>(_mainWindows);
+
+            foreach (MainWindow window in windows)
+            {
+                var appState = window.WindowScope.ServiceProvider.GetRequiredService<AppState>();
+                window.Close();
+                CloseSubWindows(appState);
+            }
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }
 
