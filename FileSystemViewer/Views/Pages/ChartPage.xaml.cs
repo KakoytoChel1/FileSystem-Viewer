@@ -14,6 +14,13 @@ namespace FileSystemViewer.Views.Pages
         public ChartPage()
         {
             InitializeComponent();
+            this.Unloaded += ChartPage_Unloaded;
+        }
+
+        private void ChartPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            this.Bindings.StopTracking();
+            ViewModel = null!;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

@@ -13,6 +13,13 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         InitializeComponent();
+        this.Unloaded += MainPage_Unloaded;
+    }
+
+    private void MainPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        this.Bindings.StopTracking();
+        ViewModel = null!;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

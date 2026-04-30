@@ -11,7 +11,7 @@ namespace FileSystemViewer.Views.Pages
     {
         public ShellPage()
         {
-            InitializeComponent();  
+            InitializeComponent();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

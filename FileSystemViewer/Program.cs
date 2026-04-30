@@ -2,7 +2,6 @@
 using FileSystemViewer.Models.Tools;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Documents;
 using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
 using System;
@@ -23,6 +22,7 @@ namespace FileSystemViewer
         [STAThread]
         static void Main(string[] args)
         {
+            Debug.WriteLine($"Desktop App start");
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
             if (args.Contains("-BackgroundTask"))

@@ -14,12 +14,22 @@ namespace FileSystemViewer.Views.Pages
         public TreemapPage()
         {
             InitializeComponent();
+            this.Unloaded += TreemapPage_Unloaded;
         }
+
+        private void TreemapPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            this.Bindings.StopTracking();
+            MainPageViewModel = null!;
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             var scopeProvider = e.Parameter as IServiceProvider;
             MainPageViewModel = scopeProvider!.GetRequiredService<MainPageViewModel>();
             base.OnNavigatedTo(e);
         }
+
+
     }
 }

@@ -28,6 +28,14 @@ namespace FileSystemViewer.ViewModels
             ScanReports = new ObservableCollection<ScanReport>();
         }
 
+        public override void Dispose()
+        {
+            if (!_disposed)
+            {
+                base.Dispose();
+            }
+        }
+
         public ObservableCollection<ScanReport> ScanReports { get; set; }
 
         [ObservableProperty]
@@ -72,12 +80,7 @@ namespace FileSystemViewer.ViewModels
                 {
                     try
                     {
-                        ScanReport? selectedReport = JsonSerializer.Deserialize<ScanReport>(jsonText);
-                        if (selectedReport != null)
-                        {
-                            ScanReports.Add(selectedReport);
-                            SelectedTab = selectedReport;
-                        }
+                        RetrieveAndOpenScanReport(file.Path, true);
                     }
                     catch (Exception ex)
                     {
@@ -85,6 +88,24 @@ namespace FileSystemViewer.ViewModels
                     }
                 }
             }
+        }
+
+        public ScanReport? RetrieveAndOpenScanReport(string path, bool tryOpen)
+        {
+            string jsonText = File.ReadAllText(path);
+            if (!string.IsNullOrWhiteSpace(jsonText))
+            {
+                ScanReport? selectedReport = JsonSerializer.Deserialize<ScanReport>(jsonText);
+
+                if (tryOpen && selectedReport != null)
+                {
+                    ScanReports.Add(selectedReport);
+                    SelectedTab = selectedReport;
+                    ApplicationState.ReportViewerVisibility = Visibility.Visible;
+                }
+                return selectedReport;
+            }
+            return null;
         }
 
         public void OpenFileReports(List<IStorageItem> fileReports)
@@ -97,8 +118,7 @@ namespace FileSystemViewer.ViewModels
                 {
                     if (file.FileType.Equals(".json", StringComparison.OrdinalIgnoreCase))
                     {
-                        string json = File.ReadAllText(file.Path);
-                        ScanReport? report = JsonSerializer.Deserialize<ScanReport>(json);
+                        ScanReport? report = RetrieveAndOpenScanReport(file.Path, false);
 
                         if (report != null)
                         {

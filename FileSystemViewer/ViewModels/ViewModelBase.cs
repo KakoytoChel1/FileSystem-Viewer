@@ -8,9 +8,10 @@ namespace FileSystemViewer.ViewModels
 {
     public abstract class ViewModelBase(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
         IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
-        IVisualManagerService visualManagerService, AppState appState) : ObservableObject
+        IVisualManagerService visualManagerService, AppState appState) : ObservableObject, IDisposable
     {
-        protected IServiceProvider ServiceProvider { get; } = serviceProvider;
+        protected bool _disposed = false;
+        protected IServiceProvider? ServiceProvider { get; private set; } = serviceProvider;
         public IDriveUtilsService DriveUtilsService { get; } = driveUtilsService;
         public IDispatcherQueueProvider DispatcherQueueProvider { get; } = dispatcherQueueProvider;
         public IFileExtentionItemService FileExtentionItemService { get; } = fileExtentionItemService;
@@ -18,5 +19,11 @@ namespace FileSystemViewer.ViewModels
         public IVisualManagerService VisualManagerService { get; } = visualManagerService;
         public AppState ApplicationState { get; } = appState;
         public ILocalizer Localizer => WinUI3Localizer.Localizer.Get();
+
+        public virtual void Dispose()
+        {
+            _disposed = true;
+            ServiceProvider = null;
+        }
     }
 }
