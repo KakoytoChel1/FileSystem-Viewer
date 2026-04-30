@@ -38,7 +38,16 @@ namespace FileSystemViewer.ViewModels
             }
             RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
 
-            ConfigurationService.OnConfigurationChanged += ConfigurationService_OnConfigurationChanged; ;
+            ConfigurationService.OnConfigurationChanged += ConfigurationService_OnConfigurationChanged;
+        }
+
+        public override void Dispose()
+        {
+            if (!_disposed)
+            {
+                ConfigurationService.OnConfigurationChanged -= ConfigurationService_OnConfigurationChanged;
+                base.Dispose();
+            }
         }
 
         private void ConfigurationService_OnConfigurationChanged(AppSettings settings)

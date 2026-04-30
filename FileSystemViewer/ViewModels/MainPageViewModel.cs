@@ -44,6 +44,18 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.ScanningStatePropertyChanged += ApplicationState_ScanningStatePropertyChanged;
         }
 
+        public override void Dispose()
+        {
+            if (!_disposed)
+            {
+                ApplicationState.ScanningStatePropertyChanged -= ApplicationState_ScanningStatePropertyChanged;
+                CurrentScanningCancellationTokenSource?.Dispose();
+                SelectedFileSystemNode = null;
+
+                base.Dispose();
+            }
+        }
+
         private void ApplicationState_ScanningStatePropertyChanged()
         {
             OpenTargetSelectDialogCommand.NotifyCanExecuteChanged();
@@ -66,7 +78,7 @@ namespace FileSystemViewer.ViewModels
         public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
 
         [ObservableProperty]
-        public partial ObservableCollection<TreemapNode>? TreemapNodes { get; set; }
+        public partial ObservableCollection<TreemapNode> TreemapNodes { get; set; }
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(RescanSelectedDirectoriesCommand))]
@@ -94,6 +106,7 @@ namespace FileSystemViewer.ViewModels
                 {
                     if (!SelectedTargetDrives.Any()) { return; }
 
+                    SelectedFileSystemNode = null;
                     DriveNodes.Clear();
 
                     if (CurrentScanningCancellationTokenSource != null)
@@ -127,6 +140,7 @@ namespace FileSystemViewer.ViewModels
                 }
                 else
                 {
+                    SelectedFileSystemNode = null;
                     DriveNodes.Clear();
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();

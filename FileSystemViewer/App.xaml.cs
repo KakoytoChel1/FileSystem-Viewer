@@ -1,5 +1,6 @@
 ﻿using FileSystemViewer.Models;
 using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
@@ -23,6 +24,7 @@ using Windows.UI;
 using Windows.UI.ViewManagement;
 using WinRT.Interop;
 using WinUI3Localizer;
+using WinUICommunity;
 using WinUIEx;
 
 namespace FileSystemViewer
@@ -57,7 +59,7 @@ namespace FileSystemViewer
             {
                 mainWindow.Closed += (s, a) => 
                 {
-                    mainWindow.WindowScope.Dispose();
+                    mainWindow.Content = null;
                     _visualManagerService.MainWindows.Remove(mainWindow);
                     _mainWindows.Remove(mainWindow);
                     
@@ -65,6 +67,15 @@ namespace FileSystemViewer
                     {
                         _mainWindow = _mainWindows[0];
                     }
+                    else
+                    {
+                        _mainWindow = null;
+
+                        if (_trayIcon == null)
+                            return;
+                        _trayIcon.Dispose();
+                    }
+                    mainWindow.WindowScope.Dispose();
                 };
             }
         }
@@ -103,10 +114,6 @@ namespace FileSystemViewer
                 {
                     args.Cancel = false;
                     CloseSubWindows(_appState);
-
-                    if (_trayIcon == null)
-                        return;
-                    _trayIcon.Dispose();
                 }
             };
             return mainWindow;
@@ -135,6 +142,8 @@ namespace FileSystemViewer
             _mainWindow = CreateWindow();
             _mainWindows.Add(_mainWindow);
             RegisterFinishing(_mainWindow);
+
+            await CreateContextMenuItems();
         }
 
         public MainWindow CreateWindow()
@@ -151,7 +160,7 @@ namespace FileSystemViewer
             WindowCreated?.Invoke();
 
             _trayIcon.IsVisible = true;
-            _trayIcon.Selected += (s, e) => window.Activate();
+            _trayIcon.Selected += (s, e) => _mainWindow!.Activate();
             _trayIcon.ContextMenu += (w, e) =>
             {
                 var flyout = new MenuFlyout();
@@ -259,17 +268,8 @@ namespace FileSystemViewer
                 var files = items.Where(i => i.IsOfType(StorageItemTypes.File));
 
                 ReportViewerPageViewModel reportViewerPageViewModel = MainWindow!.WindowScope.ServiceProvider.GetRequiredService<ReportViewerPageViewModel>();
-                //MainPageViewModel mainPageViewModel = ServiceProvider.GetRequiredService<MainPageViewModel>();
 
-                if (directories.Any() && files.Any())
-                {
-                    
-                }
-                else if (directories.Any())
-                {
-
-                }
-                else if (files.Any())
+                if (files.Any())
                 {
                     reportViewerPageViewModel.OpenFileReports(files.ToList());
                 }
@@ -288,28 +288,46 @@ namespace FileSystemViewer
         {
             _dispatcherQueueProvider!.DispatcherQueue.TryEnqueue(async () =>
             {
-                var command = arguments[1];
-                var path = arguments[2];
-
-                if (command.Contains("--scan") && !string.IsNullOrWhiteSpace(path))
+                try
                 {
-                    DirectoryInfo directoryInfo = new DirectoryInfo(path);
-                    DirectoryNode directoryNode = _driveUtilsService.CreateDirectoryNode(null, directoryInfo);
                     IServiceScope scope = MainWindow!.WindowScope;
+                    var command = arguments[1];
+                    var path = arguments[2].Trim('"');
 
-                    if (isRedirected)
+                    if (command.Contains("--scan") && !string.IsNullOrWhiteSpace(path))
                     {
-                        MainWindow mainWindow = CreateWindow();
-                        _mainWindows.Add(mainWindow);
-                        RegisterFinishing(mainWindow);
-                        scope = mainWindow.WindowScope;
+                        if (!Directory.Exists(path))
+                            return;
 
-                        mainWindow.Activate();
+                        DirectoryInfo directoryInfo = new DirectoryInfo(path);
+                        DirectoryNode directoryNode = _driveUtilsService.CreateDirectoryNode(null, directoryInfo);
+
+                        if (isRedirected)
+                        {
+                            MainWindow mainWindow = CreateWindow();
+                            _mainWindows.Add(mainWindow);
+                            RegisterFinishing(mainWindow);
+                            scope = mainWindow.WindowScope;
+
+                            mainWindow.Activate();
+                        }
+
+                        MainPageViewModel mainPageViewModel = scope.ServiceProvider?.GetRequiredService<MainPageViewModel>()!;
+                        mainPageViewModel.DriveNodes.Add(directoryNode);
+                        await mainPageViewModel.RequestScanForSelectedTargetAsync(mainPageViewModel.DriveNodes);
                     }
+                    else if (command.Contains("--open") && !string.IsNullOrWhiteSpace(path))
+                    {
+                        if (!File.Exists(path))
+                            return;
 
-                    MainPageViewModel mainPageViewModel = scope.ServiceProvider?.GetRequiredService<MainPageViewModel>()!;
-                    mainPageViewModel.DriveNodes.Add(directoryNode);
-                    await mainPageViewModel.RequestScanForSelectedTargetAsync(mainPageViewModel.DriveNodes);
+                        ReportViewerPageViewModel reportViewerPageViewModel = scope.ServiceProvider?.GetRequiredService<ReportViewerPageViewModel>()!;
+                        reportViewerPageViewModel.RetrieveAndOpenScanReport(path, true);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Logger.Log(ex.Message);
                 }
             });
         }
@@ -358,6 +376,41 @@ namespace FileSystemViewer
                 window.Close();
                 CloseSubWindows(appState);
             }
+        }
+
+        private async Task CreateContextMenuItems()
+        {
+            ContextMenuService menuService = new ContextMenuService();
+
+            // Context menu for directories
+            ContextMenuItem folderItem = new ContextMenuItem()
+            {
+                Title = "Scan with FileSystemViewer",
+                Param = @"--scan ""{path}""",
+                AcceptDirectoryFlag = (int)(DirectoryMatchFlagEnum.Directory | DirectoryMatchFlagEnum.Background),
+                AcceptFileFlag = (int)FileMatchFlagEnum.None,
+                Index = 0,
+                Enabled = true,
+                Icon = Environment.ProcessPath,
+                Exe = "fsv.exe"
+            };
+
+            // Context menu for report files (.json)
+            ContextMenuItem fileItem = new ContextMenuItem()
+            {
+                Title = "Open in FileSystemViewer",
+                Param = @"--open ""{path}""",
+                AcceptDirectoryFlag = (int)DirectoryMatchFlagEnum.None,
+                AcceptFileFlag = (int)FileMatchFlagEnum.ExtList,
+                AcceptExts = ".json",
+                Index = 1,
+                Enabled = true,
+                Icon = Environment.ProcessPath,
+                Exe = "fsv.exe"
+            };
+
+            await menuService.SaveAsync(folderItem);
+            await menuService.SaveAsync(fileItem);
         }
 
         [DllImport("user32.dll")]

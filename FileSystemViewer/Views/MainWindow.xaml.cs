@@ -44,6 +44,16 @@ namespace FileSystemViewer
             RootFrame.Navigate(typeof(ShellPage), WindowScope.ServiceProvider);
             SettingsFrame.Navigate(typeof(SettingsPage), WindowScope.ServiceProvider);
             ReportViewerFrame.Navigate(typeof(ReportViewerPage), WindowScope.ServiceProvider);
+
+            this.Closed += MainWindow_Closed;
+        }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            if (_uiSettings != null)
+            {
+                _uiSettings.ColorValuesChanged -= _uiSettings_ColorValuesChanged;
+            }
         }
 
         private void _uiSettings_ColorValuesChanged(UISettings sender, object args)

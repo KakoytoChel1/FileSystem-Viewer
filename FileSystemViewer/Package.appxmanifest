@@ -9,7 +9,10 @@
   xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" 
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  IgnorableNamespaces="uap rescap systemai desktop">
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+  xmlns:desktop10="http://schemas.microsoft.com/appx/manifest/desktop/windows10/10"
+  IgnorableNamespaces="uap rescap systemai desktop desktop4 desktop5 com">
 
   <Identity
     Name="1ab05585-c744-4f5b-8580-f20381f14ed7"
@@ -75,6 +78,20 @@
 				<desktop:StartupTask TaskId="StartupFileSystemViewerId" Enabled="false" DisplayName="FileSystemViewer" />
 			</desktop:Extension>
 
+			<desktop4:Extension Category="windows.fileExplorerContextMenus">
+				<desktop4:FileExplorerContextMenus>
+					<desktop5:ItemType Type="Directory">
+						<desktop5:Verb Id="CustomMenu" Clsid="5D5F5B62-FD5D-45CB-9416-695ED42526F3" />
+					</desktop5:ItemType>
+					<desktop5:ItemType Type="*">
+						<desktop5:Verb Id="CustomMenu" Clsid="5D5F5B62-FD5D-45CB-9416-695ED42526F3" />
+					</desktop5:ItemType>
+					<desktop5:ItemType Type="Directory\Background">
+						<desktop5:Verb Id="CustomMenu" Clsid="5D5F5B62-FD5D-45CB-9416-695ED42526F3" />
+					</desktop5:ItemType>
+				</desktop4:FileExplorerContextMenus>
+			</desktop4:Extension>
+
 			<com:Extension Category="windows.comServer">
 				<com:ComServer>
 					<com:ExeServer Executable="FileSystemViewer.exe" Arguments="----AppNotificationActivated:" DisplayName="Toast activator">
@@ -84,6 +101,10 @@
 					<com:ExeServer Executable="FileSystemViewer.exe" Arguments="-BackgroundTask" DisplayName="DailyScan" LaunchAndActivationPermission="O:PSG:BUD:(A;;11;;;IU)(A;;11;;;S-1-15-2-1)S:(ML;;NX;;;LW)">
 						<com:Class Id="56DC28E7-8174-4A08-84CD-F3D4DF5B21F3" DisplayName="DailyScanTask" />
 					</com:ExeServer>
+
+					<com:SurrogateServer  DisplayName="FileSystemViewer Context Menu">
+						<com:Class Id="5D5F5B62-FD5D-45CB-9416-695ED42526F3" Path="ContextMenuCustomHost.dll" ThreadingModel="STA"/>
+					</com:SurrogateServer>
 				</com:ComServer>
 			</com:Extension>
 

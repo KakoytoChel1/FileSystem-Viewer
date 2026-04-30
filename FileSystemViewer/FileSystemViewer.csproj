@@ -92,6 +92,7 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
     <PackageReference Include="WinUI3Localizer" Version="2.3.0" />
+    <PackageReference Include="WinUICommunity.ContextMenuExtensions" Version="7.1.0" />
     <PackageReference Include="WinUIEx" Version="2.9.0" />
   </ItemGroup>
   <ItemGroup>

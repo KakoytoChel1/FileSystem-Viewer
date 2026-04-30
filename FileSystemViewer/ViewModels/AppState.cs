@@ -8,8 +8,10 @@ using System.Collections.ObjectModel;
 
 namespace FileSystemViewer.ViewModels
 {
-    public partial class AppState : ObservableObject
+    public partial class AppState : ObservableObject, IDisposable
     {
+        private bool _disposed = false;
+
         public AppState()
         {
             FileExtensionItems = new ObservableCollection<FileExtensionItem>();
@@ -19,6 +21,16 @@ namespace FileSystemViewer.ViewModels
 
             ReportViewerVisibility = Visibility.Collapsed;
         }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                ScanningStatePropertyChanged = null;
+                _disposed = true;
+            }
+        }
+
         public enum ScanningStates
         {
             None,
