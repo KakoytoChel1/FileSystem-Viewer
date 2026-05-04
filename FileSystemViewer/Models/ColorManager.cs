@@ -45,7 +45,8 @@ namespace FileSystemViewer.Models
             { ".ini", Color.FromArgb(255, 76, 85, 92) },
             { ".dat", Color.FromArgb(255, 20, 38, 140) },
 
-            {".pdf", Color.FromArgb(255, 230, 85, 85) }
+            {".pdf", Color.FromArgb(255, 230, 85, 85) },
+            {".fsvscan", Color.FromArgb(255, 12, 120, 130) }
         };
 
         public static Color DefaultColor

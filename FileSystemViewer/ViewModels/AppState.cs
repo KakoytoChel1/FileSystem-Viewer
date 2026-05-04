@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FileSystemViewer.Models.DataModels;
-using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using LiveChartsCore;
 using Microsoft.UI.Xaml;
@@ -14,6 +13,7 @@ namespace FileSystemViewer.ViewModels
     {
         private bool _disposed = false;
         private IFileExtentionItemService _fileExtentionItemService;
+        public readonly static string ReportFileExtension = ".fsvscan";
 
         public AppState(IFileExtentionItemService fileExtentionItemService)
         {

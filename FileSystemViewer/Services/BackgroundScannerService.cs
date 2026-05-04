@@ -76,7 +76,7 @@ namespace FileSystemViewer.Services
                 }))
             };
 
-            string reportPath = ScanningReportHelper.GenerateReportAsJson(scanReport);
+            string reportPath = ScanningReportHelper.SaveReport(scanReport);
             string message = $"{resourceLoader.GetString("NotificationScheduledSuccessText1")} {driveNodes.Count}, {resourceLoader.GetString("NotificationScheduledSuccessText2")} {bytesConverter.Convert(driveNodes.Sum(n => n.Size),
                     typeof(long), null!, null!)}, {resourceLoader.GetString("NotificationScheduledSuccessText3")} {driveNodes.Sum(n => n.FileCount)}, { resourceLoader.GetString("NotificationScheduledSuccessText4")} {driveNodes.Sum(n => n.DirectoriesCount)}.";
 

@@ -478,7 +478,7 @@ namespace FileSystemViewer.ViewModels
                     return directoryNode;
                 }))
             };
-            string reportFilePath = ScanningReportHelper.GenerateReportAsJson(scanReport);
+            string reportFilePath = ScanningReportHelper.SaveReport(scanReport);
 
             string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
             NotificationManager.BuildAndShowToastNotification(
