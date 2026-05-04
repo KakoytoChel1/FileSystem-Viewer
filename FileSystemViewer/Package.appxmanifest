@@ -111,7 +111,7 @@
 			<uap:Extension Category="windows.fileTypeAssociation">
 				<uap3:FileTypeAssociation Name="jsonfile" MultiSelectModel="Player">
 					<uap:SupportedFileTypes>
-						<uap:FileType>.json</uap:FileType>
+						<uap:FileType>.fsvscan</uap:FileType>
 					</uap:SupportedFileTypes>
 					<uap:Logo>Assets\appIcon.png</uap:Logo>
 				</uap3:FileTypeAssociation>

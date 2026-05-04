@@ -7,7 +7,7 @@ namespace FileSystemViewer.ViewModels.Tools
 {
     public static class ScanningReportHelper
     {
-        public static string GenerateReportAsJson(ScanReport scanReport)
+        public static string SaveReport(ScanReport scanReport)
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string appFolder = Path.Combine(documentsPath, "FileSystemViewer");
@@ -23,7 +23,7 @@ namespace FileSystemViewer.ViewModels.Tools
                 PropertyNameCaseInsensitive = true
             };
 
-            string fileName = $"ScanReport_{scanReport.ScanDateTime.ToString("yyyy-MM-dd_HH-mm-ss")}.json";
+            string fileName = $"ScanReport_{scanReport.ScanDateTime.ToString("yyyy-MM-dd_HH-mm-ss")}{AppState.ReportFileExtension}";
             scanReport.Name = fileName;
 
             string filePath = Path.Combine(appFolder, fileName);

@@ -70,7 +70,7 @@ namespace FileSystemViewer.ViewModels
                 SuggestedStartLocation = PickerLocationId.DocumentsLibrary
             };
 
-            fileOpenPicker.FileTypeFilter.Add(".json");
+            fileOpenPicker.FileTypeFilter.Add(AppState.ReportFileExtension);
             var file = await fileOpenPicker.PickSingleFileAsync();
 
             if (file != null)
@@ -116,7 +116,7 @@ namespace FileSystemViewer.ViewModels
             {
                 try
                 {
-                    if (file.FileType.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                    if (file.FileType.Equals(AppState.ReportFileExtension, StringComparison.OrdinalIgnoreCase))
                     {
                         ScanReport? report = RetrieveAndOpenScanReport(file.Path, false);
 

@@ -114,7 +114,7 @@ namespace FileSystemViewer
                     var items = await e.DataView.GetStorageItemsAsync();
                     _hasValidFiles = items.Any(item =>
                         item is StorageFile file &&
-                        file.FileType.Equals(".json", StringComparison.OrdinalIgnoreCase));
+                        file.FileType.Equals(AppState.ReportFileExtension, StringComparison.OrdinalIgnoreCase));
 
                     _currentDragAndDropBorder = _hasValidFiles ? positiveDrop : criticalDrop;
                     _currentDragAndDropBorder.Visibility = Visibility.Visible;

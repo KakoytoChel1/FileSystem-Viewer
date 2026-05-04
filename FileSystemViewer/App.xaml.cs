@@ -402,7 +402,7 @@ namespace FileSystemViewer
                 Param = @"--open ""{path}""",
                 AcceptDirectoryFlag = (int)DirectoryMatchFlagEnum.None,
                 AcceptFileFlag = (int)FileMatchFlagEnum.ExtList,
-                AcceptExts = ".json",
+                AcceptExts = AppState.ReportFileExtension,
                 Index = 1,
                 Enabled = true,
                 Icon = Environment.ProcessPath,

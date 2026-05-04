@@ -27,8 +27,8 @@ namespace FileSystemViewer.ViewModels
 {
     public partial class MainPageViewModel : ViewModelBase
     {
-        public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
-            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState, 
+        public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState,
             TimeProvider timeProvider) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, appState)
         {
             DriveNodes = new ObservableCollection<DirectoryNode>();
@@ -52,8 +52,58 @@ namespace FileSystemViewer.ViewModels
                 CurrentScanningCancellationTokenSource?.Dispose();
                 SelectedFileSystemNode = null;
 
+                if (DriveNodes != null)
+                {
+                    foreach (var drive in DriveNodes)
+                    {
+                        DestroyFileSystemNodesRecursively(drive);
+                    }
+                    DriveNodes.Clear();
+                    DriveNodes = null!;
+                }
+
+                if (TreemapNodes != null)
+                {
+                    foreach (var treemapNode in TreemapNodes)
+                    {
+                        DestroyTreemapNodeRecursively(treemapNode);
+                    }
+                    TreemapNodes.Clear();
+                    TreemapNodes = null!;
+                }
+
                 base.Dispose();
             }
+        }
+
+        private void DestroyFileSystemNodesRecursively(FileSystemNode node)
+        {
+            if (node == null || node.FileSystemNodes == null)
+                return;
+
+            var children = node.FileSystemNodes;
+            node.FileSystemNodes = null;
+
+            foreach (var child in children)
+            {
+                DestroyFileSystemNodesRecursively(child);
+            }
+            children.Clear();
+        }
+
+        private void DestroyTreemapNodeRecursively(TreemapNode node)
+        {
+            if (node == null || node.Children == null)
+                return;
+
+            var children = node.Children;
+            node.Children = null;
+
+            foreach (var child in children)
+            {
+                DestroyTreemapNodeRecursively(child);
+            }
+            children.Clear();
         }
 
         private void ApplicationState_ScanningStatePropertyChanged()
@@ -283,7 +333,7 @@ namespace FileSystemViewer.ViewModels
 
             if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
             {
-                TreeViewWindow treeViewWindow = new TreeViewWindow(ServiceProvider);
+                TreeViewWindow treeViewWindow = new TreeViewWindow(ServiceProvider!);
                 VisualManagerService.SetWindowTheme(treeViewWindow, ConfigurationService.Settings!.AppTheme);
                 treeViewWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
                 ApplicationState.ActiveSubWindows.Add(windowKey, treeViewWindow);
@@ -298,7 +348,7 @@ namespace FileSystemViewer.ViewModels
 
             if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
             {
-                TreemapWindow treemapWindow = new TreemapWindow(ServiceProvider);
+                TreemapWindow treemapWindow = new TreemapWindow(ServiceProvider!);
                 VisualManagerService.SetWindowTheme(treemapWindow, ConfigurationService.Settings!.AppTheme);
                 treemapWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
                 ApplicationState.ActiveSubWindows.Add(windowKey, treemapWindow);
@@ -428,7 +478,7 @@ namespace FileSystemViewer.ViewModels
                     return directoryNode;
                 }))
             };
-            string reportFilePath = ScanningReportHelper.GenerateReportAsJson(scanReport);
+            string reportFilePath = ScanningReportHelper.SaveReport(scanReport);
 
             string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
             NotificationManager.BuildAndShowToastNotification(

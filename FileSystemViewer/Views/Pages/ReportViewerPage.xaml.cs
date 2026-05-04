@@ -13,13 +13,6 @@ namespace FileSystemViewer.Views.Pages
         public ReportViewerPage()
         {
             InitializeComponent();
-            this.Unloaded += ReportViewerPage_Unloaded;
-        }
-
-        private void ReportViewerPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            this.Bindings.StopTracking();
-            ViewModel = null!;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

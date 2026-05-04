@@ -39,7 +39,8 @@ namespace FileSystemViewer.Models
             { ".sys", "\uE7C3" },
             { ".ini", "\uE7C3" },
             { ".dat", "\uE7C3" },
-            { ".pdf", "\uEA90" }
+            { ".pdf", "\uEA90" },
+            { ".fsvscan", "\uE9F9" }
         };
 
         public static string DirectoryIcon
