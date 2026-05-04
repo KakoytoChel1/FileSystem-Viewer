@@ -14,13 +14,6 @@ namespace FileSystemViewer.Views.Pages
         public TreemapPage()
         {
             InitializeComponent();
-            this.Unloaded += TreemapPage_Unloaded;
-        }
-
-        private void TreemapPage_Unloaded(object sender, RoutedEventArgs e)
-        {
-            this.Bindings.StopTracking();
-            MainPageViewModel = null!;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -29,7 +22,5 @@ namespace FileSystemViewer.Views.Pages
             MainPageViewModel = scopeProvider!.GetRequiredService<MainPageViewModel>();
             base.OnNavigatedTo(e);
         }
-
-
     }
 }

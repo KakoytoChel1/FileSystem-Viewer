@@ -13,13 +13,6 @@ namespace FileSystemViewer.Views.Pages
         public SettingsPage()
         {
             InitializeComponent();
-            this.Unloaded += SettingsPage_Unloaded;
-        }
-
-        private void SettingsPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            this.Bindings.StopTracking();
-            ViewModel = null!;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

@@ -19,7 +19,7 @@ namespace FileSystemViewer.ViewModels
 
             if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
             {
-                ChartTabsWindow chartTabsWindow = new ChartTabsWindow(ServiceProvider);
+                ChartTabsWindow chartTabsWindow = new ChartTabsWindow(ServiceProvider!);
                 VisualManagerService.SetWindowTheme(chartTabsWindow, ConfigurationService.Settings!.AppTheme);
                 chartTabsWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
                 ApplicationState.ActiveSubWindows.Add(windowKey, chartTabsWindow);

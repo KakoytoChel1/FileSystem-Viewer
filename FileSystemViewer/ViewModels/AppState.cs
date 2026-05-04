@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Services;
+using FileSystemViewer.Services.Interfaces;
 using LiveChartsCore;
 using Microsoft.UI.Xaml;
 using System;
@@ -11,13 +13,15 @@ namespace FileSystemViewer.ViewModels
     public partial class AppState : ObservableObject, IDisposable
     {
         private bool _disposed = false;
+        private IFileExtentionItemService _fileExtentionItemService;
 
-        public AppState()
+        public AppState(IFileExtentionItemService fileExtentionItemService)
         {
             FileExtensionItems = new ObservableCollection<FileExtensionItem>();
             FileExtensionSeriesCollection = new ObservableCollection<ISeries>();
             ScannedRootNodeNames = new ObservableCollection<string>();
             ActiveSubWindows = new Dictionary<string, Window>();
+            _fileExtentionItemService = fileExtentionItemService;
 
             ReportViewerVisibility = Visibility.Collapsed;
         }
@@ -26,7 +30,13 @@ namespace FileSystemViewer.ViewModels
         {
             if (!_disposed)
             {
+                FileExtensionItems.Clear();
+                FileExtensionSeriesCollection.Clear();
+                _fileExtentionItemService.ClearFileExtensionCollection();
+
                 ScanningStatePropertyChanged = null;
+                FileExtensionItems = null!;
+                FileExtensionSeriesCollection = null!;
                 _disposed = true;
             }
         }
