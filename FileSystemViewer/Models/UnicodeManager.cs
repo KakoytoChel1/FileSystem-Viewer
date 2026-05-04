@@ -8,7 +8,7 @@ namespace FileSystemViewer.Models
         private const string _fileIcon = "\uE729";
         private const string _driveIcon = "\uE958";
 
-        private static readonly Dictionary<string, string> _extensionColorPairs = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> _extensionIconPairs = new Dictionary<string, string>()
         {
             {string.Empty, "\uE8FF" },
 
@@ -60,12 +60,12 @@ namespace FileSystemViewer.Models
         {
             if (string.IsNullOrEmpty(extension))
             {
-                return _extensionColorPairs[string.Empty];
+                return _extensionIconPairs[string.Empty];
             }
 
-            if (_extensionColorPairs.TryGetValue(extension, out var color))
+            if (_extensionIconPairs.TryGetValue(extension, out var unicodeIcon))
             {
-                return color;
+                return unicodeIcon;
             }
 
             return _fileIcon;

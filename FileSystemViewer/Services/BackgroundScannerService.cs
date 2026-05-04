@@ -180,6 +180,8 @@ namespace FileSystemViewer.Services
         /// </summary>
         private bool CheckDriveFreeSpace(DriveNode driveNode)
         {
+            if (driveNode.TotalSize == 0) return false;
+
             double percent = (double)driveNode.Size / driveNode.TotalSize * 100;
 
             if (percent >= (100 - _configurationService.Settings.MinFreeSpacePercent))
