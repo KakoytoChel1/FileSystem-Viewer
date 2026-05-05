@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FileSystemViewer.Models
 {
@@ -8,7 +9,7 @@ namespace FileSystemViewer.Models
         private const string _fileIcon = "\uE729";
         private const string _driveIcon = "\uE958";
 
-        private static readonly Dictionary<string, string> _extensionIconPairs = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> _extensionIconPairs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {string.Empty, "\uE8FF" },
 

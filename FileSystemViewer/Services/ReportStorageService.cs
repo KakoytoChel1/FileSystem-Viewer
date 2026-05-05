@@ -1,13 +1,15 @@
 ﻿using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.ViewModels;
 using System;
 using System.IO;
 using System.Text.Json;
 
-namespace FileSystemViewer.ViewModels.Tools
+namespace FileSystemViewer.Services
 {
-    public static class ScanningReportHelper
+    public class ReportStorageService : IReportStorageService
     {
-        public static string SaveReport(ScanReport scanReport)
+        public string SaveReport(ScanReport scanReport)
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string appFolder = Path.Combine(documentsPath, "FileSystemViewer");

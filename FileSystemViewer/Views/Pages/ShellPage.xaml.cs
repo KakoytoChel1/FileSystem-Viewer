@@ -1,4 +1,6 @@
+using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -24,6 +26,9 @@ namespace FileSystemViewer.Views.Pages
 
             VerticalSplitter.DoubleTapped += VerticalSplitter_DoubleTapped;
             HorizontalSplitter.DoubleTapped += HorizontalSplitter_DoubleTapped;
+
+            IDialogService dialogService = scopeProvider!.GetRequiredService<IDialogService>();
+            dialogService.Initialize(this.XamlRoot);
 
             base.OnNavigatedTo(e);
         }

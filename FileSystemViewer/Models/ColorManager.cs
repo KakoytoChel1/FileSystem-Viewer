@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Windows.UI;
 
 namespace FileSystemViewer.Models
@@ -13,7 +14,7 @@ namespace FileSystemViewer.Models
         private static readonly Color _fileIconColor = Color.FromArgb(255, 207, 206, 204);
         private static readonly Color _driveIconColor = Color.FromArgb(255, 89, 94, 171);
 
-        private static readonly Dictionary<string, Color> _extensionColorPairs = new Dictionary<string, Color>()
+        private static readonly Dictionary<string, Color> _extensionColorPairs = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase)
         {
             {string.Empty, Color.FromArgb(255, 50, 89, 125) },
 

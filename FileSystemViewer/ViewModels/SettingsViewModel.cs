@@ -26,8 +26,9 @@ namespace FileSystemViewer.ViewModels
 
         public SettingsViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
-            IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider,
-                fileExtentionItemService, configurationService, visualManagerService, appState)
+            IBackgroundSchedulerService backgroundSchedulerService, IVisualManagerService visualManagerService, INotificationService notificationService, 
+            IReportStorageService reportStorageService, IDialogService dialogService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider,
+                fileExtentionItemService, configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
             ApplicationState.SettingsMenuVisibility = Visibility.Collapsed;
             _backgroundSchedulerService = backgroundSchedulerService;

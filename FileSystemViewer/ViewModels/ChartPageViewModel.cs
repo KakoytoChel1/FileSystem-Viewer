@@ -10,7 +10,9 @@ namespace FileSystemViewer.ViewModels
     {
         public ChartPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
-            IVisualManagerService visualManagerService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, appState) { }
+            IVisualManagerService visualManagerService, INotificationService notificationService, IReportStorageService reportStorageService,
+            IDialogService dialogService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, 
+                configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState) { }
 
         [RelayCommand]
         public void OpenChartTabsNewWindow()

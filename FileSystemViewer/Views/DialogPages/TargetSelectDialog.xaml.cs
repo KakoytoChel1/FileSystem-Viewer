@@ -2,6 +2,7 @@ using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.IO;
 
 namespace FileSystemViewer.Views.DialogPages;
@@ -10,11 +11,11 @@ public sealed partial class TargetSelectDialog : UserControl
 {
     public MainPageViewModel ViewModel { get; private set; }
 
-    public TargetSelectDialog(MainPageViewModel mainPageViewModel)
+    public TargetSelectDialog(IServiceProvider serviceProvider)
     {
         InitializeComponent();
 
-        ViewModel = mainPageViewModel;
+        ViewModel = serviceProvider.GetRequiredService<MainPageViewModel>();
     }
 
     private void AvailableDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)

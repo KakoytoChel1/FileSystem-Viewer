@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels.Tools;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,8 +21,9 @@ namespace FileSystemViewer.ViewModels
     {
         public ReportViewerPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
-            IVisualManagerService visualManagerService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, 
-                fileExtentionItemService, configurationService, visualManagerService, appState)
+            IVisualManagerService visualManagerService, INotificationService notificationService, IReportStorageService reportStorageService, 
+            IDialogService dialogService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, 
+                fileExtentionItemService, configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
             ScanReports = new ObservableCollection<ScanReport>();
         }

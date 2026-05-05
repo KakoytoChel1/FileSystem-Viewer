@@ -1,33 +1,29 @@
 ﻿using FileSystemViewer.Models;
 using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels.Tools;
-using FileSystemViewer.Views.Converters;
-using Humanizer;
-using Microsoft.Windows.ApplicationModel.Resources;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using WinUI3Localizer;
 
 namespace FileSystemViewer.Services
 {
-    public class BackgroundScannerService(IDriveUtilsService driveUtilsService, TimeProvider timeProvider, IConfigurationService<AppSettings> configurationService) : IBackgroundScannerService
+    public class BackgroundScannerService(IDriveUtilsService driveUtilsService, TimeProvider timeProvider, IConfigurationService<AppSettings> configurationService, INotificationService notificationService, IReportStorageService reportStorageService) : IBackgroundScannerService
     {
         private IDriveUtilsService _driveUtilsService = driveUtilsService;
         private TimeProvider _timeProvider = timeProvider;
         private IConfigurationService<AppSettings> _configurationService = configurationService;
+        private INotificationService _notificationService = notificationService;
+        private IReportStorageService _reportStorageService = reportStorageService;
 
-        public async Task ProceedScan(ResourceLoader resourceLoader)
+        public async Task ProceedScan()
         {
             long startTime;
             TimeSpan elapsedTime;
-            BytesIntoSuitableFormatConverter bytesConverter = new BytesIntoSuitableFormatConverter();
 
             ObservableCollection<DriveNode> driveNodes = new ObservableCollection<DriveNode>();
             List<DriveInfo> drives = _driveUtilsService.GetAvailableDrives();
@@ -63,7 +59,7 @@ namespace FileSystemViewer.Services
 
             ScanReport scanReport = new ScanReport()
             {
-                ScanDateTime = DateTime.Now,
+                ScanDateTime = _timeProvider.GetLocalNow().DateTime,
                 ElapsedTime = elapsedTime,
                 NodesScanned = driveNodes.Count,
                 TotalSize = driveNodes.Sum(n => n.Size),
@@ -76,13 +72,8 @@ namespace FileSystemViewer.Services
                 }))
             };
 
-            string reportPath = ScanningReportHelper.SaveReport(scanReport);
-            string message = $"{resourceLoader.GetString("NotificationScheduledSuccessText1")} {driveNodes.Count}, {resourceLoader.GetString("NotificationScheduledSuccessText2")} {bytesConverter.Convert(driveNodes.Sum(n => n.Size),
-                    typeof(long), null!, null!)}, {resourceLoader.GetString("NotificationScheduledSuccessText3")} {driveNodes.Sum(n => n.FileCount)}, { resourceLoader.GetString("NotificationScheduledSuccessText4")} {driveNodes.Sum(n => n.DirectoriesCount)}.";
-
-            string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
-            // Basic scanning result notification
-            NotificationManager.BuildAndShowToastNotification($"{resourceLoader.GetString("NotificationScheduledSuccessTitle")} {elapsedTime.Humanize()}.", message, successImagePath, reportPath);
+            string reportPath = _reportStorageService.SaveReport(scanReport);
+            _notificationService.ShowSuccessScanningNotification(elapsedTime, driveNodes.Count, driveNodes.Sum(n => n.DirectoriesCount), driveNodes.Sum(n => n.FileCount), reportPath);
 
             List<string> drivesNames = new List<string>();
             foreach (DriveNode driveNode in driveNodes)
@@ -95,16 +86,7 @@ namespace FileSystemViewer.Services
 
             if (drivesNames.Any())
             {
-                StringBuilder messageBuilder = new StringBuilder();
-
-                foreach (string driveName in drivesNames)
-                {
-                    messageBuilder.Append($"{driveName}; ");
-                }
-
-                string warningImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "warning.png");
-                // Low free space warning notification
-                NotificationManager.BuildAndShowToastNotification(resourceLoader.GetString("NotificationWarningTitle"), messageBuilder.ToString(), warningImagePath);
+                _notificationService.ShowLowSpaceWarningNotification(drivesNames);
             }
         }
 
@@ -124,55 +106,7 @@ namespace FileSystemViewer.Services
 
         private void ProcessReceivedScannedNodes(List<FileSystemNode> data)
         {
-            Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
-
-            foreach (FileSystemNode node in data)
-            {
-                DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
-                long fileSize = 0;
-                long directoriesCount = 0;
-                long fileCount = 0;
-
-                parentNode.FileSystemNodes!.Add(node);
-
-                if (node is DirectoryNode)
-                {
-                    directoriesCount++;
-                }
-                else if (node is FileNode fileNode)
-                {
-                    fileSize = fileNode.Size;
-                    fileCount++;
-                }
-
-                if (totalScanValues.TryGetValue(parentNode, out var values))
-                {
-                    values.TotalSizeInBytes += fileSize;
-                    values.TotalDirectoryCount += directoriesCount;
-                    values.TotalFileCount += fileCount;
-                }
-                else
-                {
-                    values = new TotalScanValues();
-                    values.TotalSizeInBytes = fileSize;
-                    values.TotalDirectoryCount = directoriesCount;
-                    values.TotalFileCount = fileCount;
-                    totalScanValues.Add(parentNode, values);
-                }
-            }
-
-            foreach (KeyValuePair<DirectoryNode, TotalScanValues> pair in totalScanValues)
-            {
-                var current = pair.Key;
-
-                while (current != null)
-                {
-                    current.Size += pair.Value.TotalSizeInBytes;
-                    current.FileCount += pair.Value.TotalFileCount;
-                    current.DirectoriesCount += pair.Value.TotalDirectoryCount;
-                    current = current.ParentNode as DirectoryNode;
-                }
-            }
+            ScanDataAggregator.AggregateNodes(data);
         }
         
         /// <summary>

@@ -2,11 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using FileSystemViewer.Models;
 using FileSystemViewer.Models.DataModels;
+using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels.Tools;
 using FileSystemViewer.Views.DialogPages;
 using FileSystemViewer.Views.Windows;
-using Humanizer;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -29,7 +28,8 @@ namespace FileSystemViewer.ViewModels
     {
         public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState,
-            TimeProvider timeProvider) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, appState)
+            TimeProvider timeProvider, INotificationService notificationService, IReportStorageService reportStorageService, IDialogService dialogService) : base(serviceProvider, driveUtilsService, 
+                dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
             DriveNodes = new ObservableCollection<DirectoryNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
@@ -147,10 +147,7 @@ namespace FileSystemViewer.ViewModels
             LoadAvailableDrives();
             SelectedTargetDrives.Clear();
 
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogTargetSelectionTitle"), Localizer.GetLocalizedString("DialogApplyText"),
-                ContentDialogButton.Primary, new TargetSelectDialog(this), Localizer.GetLocalizedString("DialogCancelText"), null);
-
-            if (dialogResult == ContentDialogResult.Primary)
+            if (await DialogService.ShowTargetSelectionDialogAsync(ServiceProvider!))
             {
                 if (SelectedScanningTargetIndex == 1)
                 {
@@ -234,10 +231,7 @@ namespace FileSystemViewer.ViewModels
             if (!DriveNodes.Any())
                 return;
 
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogRefreshScanningTitle"), Localizer.GetLocalizedString("DialogConfirmText"),
-               ContentDialogButton.Primary, $"{Localizer.GetLocalizedString("DialogRefreshScanningText")} {DriveNodes.Count}?", Localizer.GetLocalizedString("DialogCancelText"), null);
-
-            if(dialogResult == ContentDialogResult.Primary)
+            if(await DialogService.ConfirmRefreshScanningAsync(DriveNodes.Count))
             {
                 foreach (DirectoryNode driveNode in DriveNodes)
                 {
@@ -268,10 +262,7 @@ namespace FileSystemViewer.ViewModels
         {
             if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode selectedDirectoryNode)
             {
-                var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogRefreshSelectedTitle"), Localizer.GetLocalizedString("DialogConfirmText"),
-                   ContentDialogButton.Primary, $"{Localizer.GetLocalizedString("DialogRefreshSelectedText")}", Localizer.GetLocalizedString("DialogCancelText"), null);
-
-                if (dialogResult == ContentDialogResult.Primary)
+                if (await DialogService.ConfirmSelectedDirectoryScanningAsync())
                 {
                     if (CurrentScanningCancellationTokenSource != null)
                     {
@@ -440,12 +431,7 @@ namespace FileSystemViewer.ViewModels
 
             if (ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled)
             {
-                string cancelImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "cancel.png");
-                NotificationManager.BuildAndShowToastNotification(
-                    Localizer.GetLocalizedString("NotificationCanceledTitle"),
-                    Localizer.GetLocalizedString("NotificationCanceledText"),
-                    cancelImagePath
-                );
+                NotificationService.ShowCancelScanningNotification();
                 return;
             }
 
@@ -478,14 +464,8 @@ namespace FileSystemViewer.ViewModels
                     return directoryNode;
                 }))
             };
-            string reportFilePath = ScanningReportHelper.SaveReport(scanReport);
-
-            string successImagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "success.png");
-            NotificationManager.BuildAndShowToastNotification(
-                Localizer.GetLocalizedString("NotificationSuccessTitle"),
-                $"{Localizer.GetLocalizedString("NotificationSuccessText1")} {totalScannedDirectories}; {Localizer.GetLocalizedString("NotificationSuccessText2")} " +
-                $"{totalScannedFiles};\n{Localizer.GetLocalizedString("NotificationSuccessText3")} {elapsedTime.Humanize()}.",
-                successImagePath, reportFilePath);
+            string reportFilePath = ReportStorageService.SaveReport(scanReport);
+            NotificationService.ShowSuccessScanningNotification(elapsedTime, target.Count, target.Sum(n => n.DirectoriesCount), target.Sum(n => n.FileCount), reportFilePath);
         }
 
         private void LoadAvailableDrives()
@@ -516,56 +496,10 @@ namespace FileSystemViewer.ViewModels
         {
             DispatcherQueueProvider.DispatcherQueue.TryEnqueue(() =>
             {
-                Dictionary<DirectoryNode, TotalScanValues> totalScanValues = new Dictionary<DirectoryNode, TotalScanValues>();
-
-                foreach (FileSystemNode node in data)
+                ScanDataAggregator.AggregateNodes(data, fileNode =>
                 {
-                    DirectoryNode parentNode = (node.ParentNode as DirectoryNode)!;
-                    long fileSize = 0;
-                    long directoriesCount = 0;
-                    long fileCount = 0;
-
-                    parentNode.FileSystemNodes!.Add(node);
-
-                    if (node is DirectoryNode)
-                    {
-                        directoriesCount++;
-                    }
-                    else if (node is FileNode fileNode)
-                    {
-                        fileSize = fileNode.Size;
-                        fileCount++;
-                        FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
-                    }
-
-                    if (totalScanValues.TryGetValue(parentNode, out var values))
-                    {
-                        values.TotalSizeInBytes += fileSize;
-                        values.TotalDirectoryCount += directoriesCount;
-                        values.TotalFileCount += fileCount;
-                    }
-                    else
-                    {
-                        values = new TotalScanValues();
-                        values.TotalSizeInBytes = fileSize;
-                        values.TotalDirectoryCount = directoriesCount;
-                        values.TotalFileCount = fileCount;
-                        totalScanValues.Add(parentNode, values);
-                    }
-                }
-
-                foreach (KeyValuePair<DirectoryNode, TotalScanValues> pair in totalScanValues)
-                {
-                    var current = pair.Key;
-
-                    while (current != null)
-                    {
-                        current.Size += pair.Value.TotalSizeInBytes;
-                        current.FileCount += pair.Value.TotalFileCount;
-                        current.DirectoriesCount += pair.Value.TotalDirectoryCount;
-                        current = current.ParentNode as DirectoryNode;
-                    }
-                }
+                    FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
+                });
             });   
         }
 

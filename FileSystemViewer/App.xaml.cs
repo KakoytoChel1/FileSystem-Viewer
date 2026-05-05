@@ -1,10 +1,10 @@
-﻿using FileSystemViewer.Models;
+﻿using FileSystemViewer.Interfaces;
+using FileSystemViewer.Models;
 using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
 using FileSystemViewer.ViewModels;
-using FileSystemViewer.ViewModels.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -29,7 +29,7 @@ using WinUIEx;
 
 namespace FileSystemViewer
 {
-    public partial class App : Application
+    public partial class App : Application, IAppActivationHandler
     {
         private MainWindow? _mainWindow;
         private TrayIcon? _trayIcon;
@@ -41,6 +41,7 @@ namespace FileSystemViewer
         private IVisualManagerService _visualManagerService = null!;
         private IDispatcherQueueProvider _dispatcherQueueProvider = null!;
         private IDriveUtilsService _driveUtilsService = null!;
+        private IDialogService _dialogService = null!;
 
         public IServiceProvider ServiceProvider { get; private set; } = null!;
 
@@ -88,12 +89,11 @@ namespace FileSystemViewer
         private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-            var exeption = e.Exception;
+            var exception = e.Exception;
 
             if (_mainWindow != null)
             {
-                await DialogManager.ShowContentDialogAsync(_mainWindow.Content.XamlRoot,
-                    "Error", "Okay", ContentDialogButton.Primary, $"{exeption.Message}");
+                await _dialogService.ShowUnhandledExceptionAsync(exception);
             }
         }
 
@@ -132,6 +132,7 @@ namespace FileSystemViewer
             _configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
             _visualManagerService = ServiceProvider.GetRequiredService<IVisualManagerService>();
             _dispatcherQueueProvider = ServiceProvider.GetRequiredService<IDispatcherQueueProvider>();
+            _dialogService = ServiceProvider.GetRequiredService<IDialogService>();
             _dispatcherQueueProvider.Initialize(DispatcherQueue.GetForCurrentThread());
             IBackgroundScannerService backgroundScannerService = ServiceProvider.GetRequiredService<IBackgroundScannerService>();
 
@@ -199,6 +200,8 @@ namespace FileSystemViewer
             services.AddScoped<SettingsViewModel>();
             services.AddScoped<ReportViewerPageViewModel>();
 
+            services.AddScoped<IDialogService, DialogService>();
+
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
@@ -206,6 +209,8 @@ namespace FileSystemViewer
             services.AddSingleton<IBackgroundScannerService, BackgroundScannerService>();
             services.AddSingleton<IBackgroundSchedulerService, BackgroundSchedulerService>();
             services.AddSingleton<IVisualManagerService, VisualManagerService>();
+            services.AddSingleton<INotificationService, NotificationService>();
+            services.AddSingleton<IReportStorageService, ReportStorageService>();
 
             services.AddSingleton(TimeProvider.System);
 
@@ -290,40 +295,43 @@ namespace FileSystemViewer
             {
                 try
                 {
-                    IServiceScope scope = MainWindow!.WindowScope;
-                    var command = arguments[1];
-                    var path = arguments[2].Trim('"');
-
-                    if (command.Contains("--scan") && !string.IsNullOrWhiteSpace(path))
+                    if (arguments.Length > 2)
                     {
-                        if (!Directory.Exists(path))
-                            return;
+                        IServiceScope scope = MainWindow!.WindowScope;
+                        var command = arguments[1];
+                        var path = arguments[2].Trim('"');
 
-                        DirectoryInfo directoryInfo = new DirectoryInfo(path);
-                        DirectoryNode directoryNode = _driveUtilsService.CreateDirectoryNode(null, directoryInfo);
-
-                        if (isRedirected)
+                        if (command.Contains("--scan") && !string.IsNullOrWhiteSpace(path))
                         {
-                            MainWindow mainWindow = CreateWindow();
-                            _mainWindows.Add(mainWindow);
-                            RegisterFinishing(mainWindow);
-                            scope = mainWindow.WindowScope;
+                            if (!Directory.Exists(path))
+                                return;
 
-                            mainWindow.Activate();
+                            DirectoryInfo directoryInfo = new DirectoryInfo(path);
+                            DirectoryNode directoryNode = _driveUtilsService.CreateDirectoryNode(null, directoryInfo);
+
+                            if (isRedirected)
+                            {
+                                MainWindow mainWindow = CreateWindow();
+                                _mainWindows.Add(mainWindow);
+                                RegisterFinishing(mainWindow);
+                                scope = mainWindow.WindowScope;
+
+                                mainWindow.Activate();
+                            }
+
+                            MainPageViewModel mainPageViewModel = scope.ServiceProvider?.GetRequiredService<MainPageViewModel>()!;
+                            mainPageViewModel.DriveNodes.Add(directoryNode);
+                            await mainPageViewModel.RequestScanForSelectedTargetAsync(mainPageViewModel.DriveNodes);
                         }
+                        else if (command.Contains("--open") && !string.IsNullOrWhiteSpace(path))
+                        {
+                            if (!File.Exists(path))
+                                return;
 
-                        MainPageViewModel mainPageViewModel = scope.ServiceProvider?.GetRequiredService<MainPageViewModel>()!;
-                        mainPageViewModel.DriveNodes.Add(directoryNode);
-                        await mainPageViewModel.RequestScanForSelectedTargetAsync(mainPageViewModel.DriveNodes);
-                    }
-                    else if (command.Contains("--open") && !string.IsNullOrWhiteSpace(path))
-                    {
-                        if (!File.Exists(path))
-                            return;
-
-                        ReportViewerPageViewModel reportViewerPageViewModel = scope.ServiceProvider?.GetRequiredService<ReportViewerPageViewModel>()!;
-                        reportViewerPageViewModel.RetrieveAndOpenScanReport(path, true);
-                    }
+                            ReportViewerPageViewModel reportViewerPageViewModel = scope.ServiceProvider?.GetRequiredService<ReportViewerPageViewModel>()!;
+                            reportViewerPageViewModel.RetrieveAndOpenScanReport(path, true);
+                        }
+                    }   
                 }
                 catch(Exception ex)
                 {
