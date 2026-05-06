@@ -55,7 +55,7 @@ namespace FileSystemViewer
 
                             app.WindowCreated += async () =>
                             {
-                                await RecognizeActivationKind(appActivationArguments, app, false);
+                                await RecognizeActivationKindAsync(appActivationArguments.Kind, appActivationArguments.Data, app, false);
                             };
                         });
                     }
@@ -99,17 +99,17 @@ namespace FileSystemViewer
             if (Application.Current is App currentApp)
             {
                 currentApp.HandleRedirectedActivation(args);
-                await RecognizeActivationKind(args, currentApp, true);
+                await RecognizeActivationKindAsync(args.Kind, args.Data, currentApp, true);
             }
         }
 
-        private static async Task RecognizeActivationKind(AppActivationArguments args, IAppActivationHandler appHandler, bool isRedirected)
+        internal static async Task RecognizeActivationKindAsync(ExtendedActivationKind kind, object data, IAppActivationHandler appHandler, bool isRedirected)
         {
             try
             {
-                if (args.Kind == ExtendedActivationKind.Launch)
+                if (kind == ExtendedActivationKind.Launch)
                 {
-                    var launchArgs = args.Data as ILaunchActivatedEventArgs;
+                    var launchArgs = data as ILaunchActivatedEventArgs;
 
                     if (launchArgs != null)
                     {
@@ -118,7 +118,7 @@ namespace FileSystemViewer
                     } 
                 }
 
-                switch (args.Data)
+                switch (data)
                 {
                     case IFileActivatedEventArgs fileArgs:
                         appHandler.HandleFileOpenActivation(fileArgs.Files);

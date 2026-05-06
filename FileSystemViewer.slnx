@@ -4,6 +4,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="FileSystemViewer.UnitTests/FileSystemViewer.UnitTests.csproj" Id="27f58835-0861-4dab-917b-a8ce45672f79" />
   <Project Path="FileSystemViewer/FileSystemViewer.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />

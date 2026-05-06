@@ -84,9 +84,9 @@ namespace FileSystemViewer.Models
             get { return _extensionColorPairs; }
         }
 
-        public static Color GetColorByExtension(string extension)
+        public static Color GetColorByExtension(string extension, bool isFileIcon)
         {
-            if (string.IsNullOrEmpty(extension))
+            if (string.IsNullOrWhiteSpace(extension))
             {
                 return _extensionColorPairs[string.Empty];
             }
@@ -96,22 +96,7 @@ namespace FileSystemViewer.Models
                 return color;
             }
 
-            return _defaultColor;
-        }
-
-        public static Color GetFileIconColorByExtension(string extension)
-        {
-            if (string.IsNullOrEmpty(extension))
-            {
-                return _extensionColorPairs[string.Empty];
-            }
-
-            if (_extensionColorPairs.TryGetValue(extension, out var color))
-            {
-                return color;
-            }
-
-            return _fileIconColor;
+            return isFileIcon ? _fileIconColor : _defaultColor;
         }
     }
 }

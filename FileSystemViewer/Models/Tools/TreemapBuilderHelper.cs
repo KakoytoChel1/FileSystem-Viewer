@@ -67,7 +67,7 @@ namespace FileSystemViewer.Models.Tools
                     LabeledName = string.IsNullOrEmpty(extension) ? "No extension" : extension,
                     IsContainer = false,
                     Size = totalSizeForExtension,
-                    BackgroundColor = ColorManager.GetColorByExtension(extension),
+                    BackgroundColor = ColorManager.GetColorByExtension(extension, false),
                     Percent = totalPercent,
                     Parent = treemapNode,
                     Children = null

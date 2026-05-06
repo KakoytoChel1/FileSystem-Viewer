@@ -224,7 +224,7 @@ namespace FileSystemViewer.Services
                 LastModified = fileInfo.LastWriteTime,
                 Extension = fileInfo.Extension,
                 UnicodeIcon = UnicodeManager.GetFileUnicodeByExtension(fileInfo.Extension),
-                IconColor = ColorManager.GetFileIconColorByExtension(fileInfo.Extension),
+                IconColor = ColorManager.GetColorByExtension(fileInfo.Extension, isFileIcon: true),
                 FileCount = 1
             };
             return fileNode;

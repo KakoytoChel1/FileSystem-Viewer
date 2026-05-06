@@ -44,6 +44,11 @@ namespace FileSystemViewer.Models
             { ".fsvscan", "\uE9F9" }
         };
 
+        public static Dictionary<string, string> ExtensionIconPairs
+        {
+            get { return _extensionIconPairs; }
+        }
+
         public static string DirectoryIcon
         {
             get { return _directoryIcon; }
@@ -59,7 +64,7 @@ namespace FileSystemViewer.Models
 
         public static string GetFileUnicodeByExtension(string extension)
         {
-            if (string.IsNullOrEmpty(extension))
+            if (string.IsNullOrWhiteSpace(extension))
             {
                 return _extensionIconPairs[string.Empty];
             }

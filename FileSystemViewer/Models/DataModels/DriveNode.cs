@@ -1,5 +1,4 @@
 ﻿using Humanizer;
-using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace FileSystemViewer.Models
 {
