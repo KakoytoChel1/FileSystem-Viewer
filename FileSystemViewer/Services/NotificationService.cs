@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using WinUI3Localizer;
 
 namespace FileSystemViewer.Services
 {
@@ -15,7 +16,7 @@ namespace FileSystemViewer.Services
         private readonly string _successImagePath;
         private readonly string _cancelImagePath;
         private readonly string _warningImagePath;
-        private ResourceLoader _resourceLoader = new ResourceLoader();
+        public ILocalizer _localizer => Localizer.Get();
 
         public NotificationService()
         {
@@ -26,36 +27,27 @@ namespace FileSystemViewer.Services
         
         public void ShowSuccessScanningNotification(TimeSpan elapsedTime, int nodesCount, long directoriesCount, long filesCount, string reportFilePath)
         {
-            RefreshResourceLoader();
-            string message = $"{_resourceLoader.GetString("NotificationSuccessText1")} {directoriesCount}; {_resourceLoader.GetString("NotificationSuccessText2")} " +
-                $"{filesCount};\n{_resourceLoader.GetString("NotificationSuccessText3")} {elapsedTime.Humanize()}.";
-            BuildAndShowToastNotification($"{_resourceLoader.GetString("NotificationSuccessTitle")} {elapsedTime.Humanize()}.", message, _successImagePath, reportFilePath);
+            string message = $"{_localizer.GetLocalizedString("NotificationSuccessText1")} {directoriesCount}; {_localizer.GetLocalizedString("NotificationSuccessText2")} " +
+                $"{filesCount};\n{_localizer.GetLocalizedString("NotificationSuccessText3")} {elapsedTime.Humanize()}.";
+            BuildAndShowToastNotification($"{_localizer.GetLocalizedString("NotificationSuccessTitle")}.", message, _successImagePath, reportFilePath);
         }
 
         public void ShowCancelScanningNotification()
         {
-            RefreshResourceLoader();
             BuildAndShowToastNotification(
-                    _resourceLoader.GetString("NotificationCanceledTitle"),
-                    _resourceLoader.GetString("NotificationCanceledText"),
+                    _localizer.GetLocalizedString("NotificationCanceledTitle"),
+                    _localizer.GetLocalizedString("NotificationCanceledText"),
                     _cancelImagePath);
         }
 
         public void ShowLowSpaceWarningNotification(IEnumerable<string> drivesNames)
         {
-            RefreshResourceLoader();
-
             StringBuilder messageBuilder = new StringBuilder();
             foreach (string driveName in drivesNames)
             {
                 messageBuilder.Append($"{driveName}; ");
             }
-            BuildAndShowToastNotification(_resourceLoader.GetString("NotificationWarningTitle"), messageBuilder.ToString(), _warningImagePath);
-        }
-
-        private void RefreshResourceLoader()
-        {
-            _resourceLoader = new ResourceLoader();
+            BuildAndShowToastNotification(_localizer.GetLocalizedString("NotificationWarningTitle"), messageBuilder.ToString(), _warningImagePath);
         }
 
         private void BuildAndShowToastNotification(string title, string content, string? iconFilePath = null, string? reportDocumentPath = null)

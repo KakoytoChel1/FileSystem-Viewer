@@ -201,6 +201,7 @@ namespace FileSystemViewer
             services.AddScoped<ReportViewerPageViewModel>();
 
             services.AddScoped<IDialogService, DialogService>();
+            services.AddScoped<ISubWindowManagerService, SubWindowManagerService>();
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();

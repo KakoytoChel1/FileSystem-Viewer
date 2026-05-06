@@ -1,5 +1,4 @@
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -11,24 +10,30 @@ namespace FileSystemViewer.Views.Pages
 {
     public sealed partial class ShellPage : Page
     {
+        private IServiceProvider? _serviceProvider;
+
         public ShellPage()
         {
             InitializeComponent();
+            this.Loaded += ShellPage_Loaded;
+        }
+
+        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            IDialogService dialogService = _serviceProvider!.GetRequiredService<IDialogService>();
+            dialogService.Initialize(this.XamlRoot);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            var scopeProvider = e.Parameter as IServiceProvider;
+            _serviceProvider = e.Parameter as IServiceProvider;
 
-            MainPageFrame.Navigate(typeof(MainPage), scopeProvider);
-            ChartPageFrame.Navigate(typeof(ChartPage), scopeProvider);
-            TreemapPageFrame.Navigate(typeof(TreemapPage), scopeProvider);
+            MainPageFrame.Navigate(typeof(MainPage), _serviceProvider);
+            ChartPageFrame.Navigate(typeof(ChartPage), _serviceProvider);
+            TreemapPageFrame.Navigate(typeof(TreemapPage), _serviceProvider);
 
             VerticalSplitter.DoubleTapped += VerticalSplitter_DoubleTapped;
             HorizontalSplitter.DoubleTapped += HorizontalSplitter_DoubleTapped;
-
-            IDialogService dialogService = scopeProvider!.GetRequiredService<IDialogService>();
-            dialogService.Initialize(this.XamlRoot);
 
             base.OnNavigatedTo(e);
         }

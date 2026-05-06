@@ -29,14 +29,26 @@ namespace FileSystemViewer.Services
             return dialogResult == ContentDialogResult.Primary;
         }
 
-        public Task<bool> ConfirmRestoreSettingsAsync()
+        public async Task<bool> ConfirmRestoreSettingsAsync()
         {
-            throw new NotImplementedException();
+            if (_xamlRoot == null)
+                ThrowXamlRootException();
+
+            var dialogResult = await ShowContentDialogAsync(_xamlRoot!, _localizer.GetLocalizedString("DialogRestoreSettingsTitle"), _localizer.GetLocalizedString("DialogConfirmText"),
+                ContentDialogButton.Primary, _localizer.GetLocalizedString("DialogRestoreSettingsText"), closeBtnText: _localizer.GetLocalizedString("DialogCancelText"));
+
+            return dialogResult == ContentDialogResult.Primary;
         }
 
-        public Task<bool> ConfirmScanningCancellingAsync()
+        public async Task<bool> ConfirmScanningCancellingAsync()
         {
-            throw new NotImplementedException();
+            if (_xamlRoot == null)
+                ThrowXamlRootException();
+
+            var dialogResult = await ShowContentDialogAsync(_xamlRoot!, _localizer.GetLocalizedString("DialogCancelScanningTitle"), _localizer.GetLocalizedString("DialogConfirmText"),
+                ContentDialogButton.Primary, _localizer.GetLocalizedString("DialogCancelScanningText"), _localizer.GetLocalizedString("DialogCancelText"), null);
+
+            return dialogResult == ContentDialogResult.Primary;
         }
 
         public async Task<bool> ConfirmSelectedDirectoryScanningAsync()
@@ -50,19 +62,46 @@ namespace FileSystemViewer.Services
             return dialogResult == ContentDialogResult.Primary;
         }
 
-        public Task<bool> ConfirmSettingsByDefaultAsync()
+        public async Task<bool> ConfirmSettingsByDefaultAsync()
         {
-            throw new NotImplementedException();
+            if (_xamlRoot == null)
+                ThrowXamlRootException();
+
+            var dialogResult = await ShowContentDialogAsync(_xamlRoot!, _localizer.GetLocalizedString("DialogSetSettingsByDefaultTitle"), _localizer.GetLocalizedString("DialogConfirmText"),
+                ContentDialogButton.Primary, _localizer.GetLocalizedString("DialogSetSettingsByDefaultText"), closeBtnText: _localizer.GetLocalizedString("DialogCancelText"));
+
+            return dialogResult == ContentDialogResult.Primary;
         }
 
-        public Task<bool> ShowOpenReportErrorAsync()
+        public async Task<bool> ShowOpenReportErrorAsync(string exMessage)
         {
-            throw new NotImplementedException();
+            if (_xamlRoot == null)
+                ThrowXamlRootException();
+
+            await ShowContentDialogAsync(_xamlRoot!, _localizer.GetLocalizedString("DialogErrorTitle"), _localizer.GetLocalizedString("DialogOkay"), 
+                ContentDialogButton.Primary, $"{_localizer.GetLocalizedString("DialogFailedImportSettingsText")} {exMessage}");
+            return true;
         }
 
-        public Task<bool> ShowSettingsImportErrorAsync()
+        public async Task<bool> ConfirmClosingSettingsMenuAsync()
         {
-            throw new NotImplementedException();
+            if (_xamlRoot == null)
+                ThrowXamlRootException();
+
+            var dialogResult = await ShowContentDialogAsync(_xamlRoot!, _localizer.GetLocalizedString("DialogUnsavedChangesTitle"), _localizer.GetLocalizedString("DialogConfirmText"),
+                ContentDialogButton.Primary, _localizer.GetLocalizedString("DialogUnsavedChangesText"), closeBtnText: _localizer.GetLocalizedString("DialogCancelText"));
+
+            return dialogResult == ContentDialogResult.Primary;
+        }
+
+        public async Task<bool> ShowSettingsImportErrorAsync(string exMessage)
+        {
+            if (_xamlRoot == null)
+                ThrowXamlRootException();
+
+            await ShowContentDialogAsync(_xamlRoot!, _localizer.GetLocalizedString("DialogErrorTitle"), _localizer.GetLocalizedString("DialogOkay"), ContentDialogButton.Primary, 
+                $"{_localizer.GetLocalizedString("DialogFailedImportSettingsText")} {exMessage}");
+            return true;
         }
 
         public async Task<bool> ShowTargetSelectionDialogAsync(IServiceProvider serviceProvider)
@@ -76,9 +115,14 @@ namespace FileSystemViewer.Services
             return dialogResult == ContentDialogResult.Primary;
         }
 
-        public Task<bool> ShowUnsavedChangesWarningAsync()
+        public async Task<bool> ShowUnsavedChangesWarningAsync()
         {
-            throw new NotImplementedException();
+            if (_xamlRoot == null)
+                ThrowXamlRootException();
+
+            await ShowContentDialogAsync(_xamlRoot!, _localizer.GetLocalizedString("DialogExportSettingsWarningTitle"), 
+                _localizer.GetLocalizedString("DialogOkay"), ContentDialogButton.Primary, _localizer.GetLocalizedString("DialogExportSettingsWarningText"));
+            return true;
         }
 
         public async Task<bool> ShowUnhandledExceptionAsync(System.Exception exception)

@@ -4,15 +4,9 @@ using FileSystemViewer.Models;
 using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Models.Tools;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.Views.DialogPages;
-using FileSystemViewer.Views.Windows;
 using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using ModernControls.Models;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,13 +22,14 @@ namespace FileSystemViewer.ViewModels
     {
         public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState,
-            TimeProvider timeProvider, INotificationService notificationService, IReportStorageService reportStorageService, IDialogService dialogService) : base(serviceProvider, driveUtilsService, 
+            TimeProvider timeProvider, INotificationService notificationService, IReportStorageService reportStorageService, IDialogService dialogService, ISubWindowManagerService subWindowManagerService) : base(serviceProvider, driveUtilsService,
                 dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
             DriveNodes = new ObservableCollection<DirectoryNode>();
             AllAvailableDrives = new ObservableCollection<DriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
             TreemapNodes = new ObservableCollection<TreemapNode>();
+            _subWindowManagerService = subWindowManagerService;
 
             TimeProvider = timeProvider;
 
@@ -116,9 +111,10 @@ namespace FileSystemViewer.ViewModels
             PauseScanningCommand.NotifyCanExecuteChanged();
         }
 
+        private ISubWindowManagerService _subWindowManagerService;
         TimeProvider TimeProvider { get; }
         private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; }
-        private PauseResetTokenSource? PauseResetTokenSource { get; set; } 
+        private PauseResetTokenSource? PauseResetTokenSource { get; set; }
 
         /// <summary>
         /// Main nodes collection, contains all selected drives with their inner collections.
@@ -142,7 +138,7 @@ namespace FileSystemViewer.ViewModels
         public partial Visibility ProgressBarVisibility { get; set; }
 
         [RelayCommand(CanExecute = nameof(IsScanningOperationsAvailable))]
-        public async Task OpenTargetSelectDialog(XamlRoot xamlRoot)
+        public async Task OpenTargetSelectDialog()
         {
             LoadAvailableDrives();
             SelectedTargetDrives.Clear();
@@ -226,12 +222,12 @@ namespace FileSystemViewer.ViewModels
 
         // Starts scanning target again.
         [RelayCommand(CanExecute = nameof(IsScanningOperationsAvailable))]
-        public async Task RefreshScanning(XamlRoot xamlRoot)
+        public async Task RefreshScanning()
         {
             if (!DriveNodes.Any())
                 return;
 
-            if(await DialogService.ConfirmRefreshScanningAsync(DriveNodes.Count))
+            if (await DialogService.ConfirmRefreshScanningAsync(DriveNodes.Count))
             {
                 foreach (DirectoryNode driveNode in DriveNodes)
                 {
@@ -258,7 +254,7 @@ namespace FileSystemViewer.ViewModels
 
         // Starts scanning target again for selected directory nodes.
         [RelayCommand(CanExecute = nameof(IsDirectoryScanningAvailable))]
-        public async Task RescanSelectedDirectories(XamlRoot xamlRoot)
+        public async Task RescanSelectedDirectories()
         {
             if (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode selectedDirectoryNode)
             {
@@ -285,12 +281,9 @@ namespace FileSystemViewer.ViewModels
         private bool IsDirectoryScanningAvailable() => (ApplicationState.CurrentScanningState == AppState.ScanningStates.Completed || ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled) && (SelectedFileSystemNode != null && SelectedFileSystemNode is DirectoryNode);
 
         [RelayCommand(CanExecute = nameof(IsCancelScanningAvailable))]
-        public async Task CancelScanning(XamlRoot xamlRoot)
+        public async Task CancelScanning()
         {
-            var dialogResult = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogCancelScanningTitle"), Localizer.GetLocalizedString("DialogConfirmText"),
-                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogCancelScanningText"), Localizer.GetLocalizedString("DialogCancelText"), null);
-
-            if (dialogResult == ContentDialogResult.Primary)
+            if (await DialogService.ConfirmScanningCancellingAsync())
             {
                 CurrentScanningCancellationTokenSource!.Cancel();
                 ApplicationState.CurrentScanningState = AppState.ScanningStates.Canceled;
@@ -320,31 +313,13 @@ namespace FileSystemViewer.ViewModels
         [RelayCommand]
         public void OpenTreeViewNewWindow()
         {
-            string windowKey = nameof(TreeViewWindow);
-
-            if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
-            {
-                TreeViewWindow treeViewWindow = new TreeViewWindow(ServiceProvider!);
-                VisualManagerService.SetWindowTheme(treeViewWindow, ConfigurationService.Settings!.AppTheme);
-                treeViewWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
-                ApplicationState.ActiveSubWindows.Add(windowKey, treeViewWindow);
-                treeViewWindow.Activate();
-            }
+            _subWindowManagerService.OpenTreeViewSubWindow();
         }
 
         [RelayCommand]
         public void OpenTreeMapNewWindow()
         {
-            string windowKey = nameof(TreemapWindow);
-
-            if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
-            {
-                TreemapWindow treemapWindow = new TreemapWindow(ServiceProvider!);
-                VisualManagerService.SetWindowTheme(treemapWindow, ConfigurationService.Settings!.AppTheme);
-                treemapWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
-                ApplicationState.ActiveSubWindows.Add(windowKey, treemapWindow);
-                treemapWindow.Activate();
-            }
+            _subWindowManagerService.OpenTreemapSubWindow();
         }
 
         [RelayCommand]
@@ -500,7 +475,7 @@ namespace FileSystemViewer.ViewModels
                 {
                     FileExtentionItemService.UpdateOrCreateFileExtensionItem(fileNode.Extension, fileNode.Size, 1);
                 });
-            });   
+            });
         }
 
         private void ResetValuesAndCollections()
@@ -509,18 +484,12 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.FileExtensionSeriesCollection.Clear();
             ApplicationState.FileExtensionItems.Clear();
             ApplicationState.ScannedRootNodeNames.Clear();
-
-            ApplicationState.TotalFilesScanned = 0;
-            ApplicationState.TotalDirectoriesScanned = 0;
         }
 
         private void ProceedScanForSelectedDirectoryLevel(DirectoryNode directoryNode)
         {
             TotalScanValues values = DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
             ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath);
-
-            ApplicationState.TotalDirectoriesScanned += values.TotalDirectoryCount;
-            ApplicationState.TotalFilesScanned += values.TotalFileCount;
 
             var current = directoryNode;
             while (current != null)
@@ -567,166 +536,12 @@ namespace FileSystemViewer.ViewModels
 
         private void BuildHierarchicalTreemapStructure<T>(ObservableCollection<T> rootNodes) where T : DirectoryNode
         {
-            var newTreemanCollection = new ObservableCollection<TreemapNode>();
-
-            foreach (var rootNode in rootNodes)
-            {
-                var rootTreemapNode = CreateTreemapNodeFromDirectoryNode(rootNode);
-
-                if (rootTreemapNode == null)
-                    return;
-
-                newTreemanCollection.Add(rootTreemapNode);
-            }
-
-            TreemapNodes = newTreemanCollection;
+            TreemapNodes = new ObservableCollection<TreemapNode>(TreemapBuilderHelper.Build(rootNodes));
         }
 
-        private TreemapNode? CreateTreemapNodeFromDirectoryNode(DirectoryNode directoryNode)
+        public void UpdateChart(IEnumerable<FileExtensionItem> fileExtensionItems)
         {
-            const int maxSubdirectories = 200;
-            const double minPercent = 0.01;
-
-            var treemapNode = new TreemapNode
-            {
-                LabeledName = directoryNode.Name,
-                IsContainer = true,
-                Size = directoryNode.Size,
-                BackgroundColor = ColorManager.DirectoryTreemapNodeColor,
-                Percent = 0,
-                Children = new ObservableCollection<TreemapNode>(),
-                FullPath = directoryNode.FullPath
-            };
-
-            var subDirectories = directoryNode.FileSystemNodes!
-                .OfType<DirectoryNode>();
-                
-            var orderedDirectories = subDirectories
-                .Where(d => d.PercentProperty >= minPercent)
-                .OrderByDescending(d => d.PercentProperty)
-                .Take(maxSubdirectories)
-                .ToList();
-
-            var extensionGroups = directoryNode.FileSystemNodes!
-                .OfType<FileNode>()
-                .GroupBy(f => f.Extension);
-                
-            var sortedFilesExtensionGroups = extensionGroups
-                .Where(g => g.Sum(i => i.PercentProperty) >= minPercent)
-                .ToList();
-
-            // File extension groups
-            foreach (var extensionGroup in sortedFilesExtensionGroups)
-            {
-                string extension = extensionGroup.Key;
-                long totalSizeForExtension = extensionGroup.Sum(f => f.Size);
-                double totalPercent = extensionGroup.Sum(f => f.PercentProperty);
-
-                var fileExtensionNode = new TreemapNode
-                {
-                    LabeledName = string.IsNullOrEmpty(extension) ? "No extension" : extension,
-                    IsContainer = false,
-                    Size = totalSizeForExtension,
-                    BackgroundColor = ColorManager.GetColorByExtension(extension),
-                    Percent = totalPercent,
-                    Parent = treemapNode,
-                    Children = null
-                };
-
-                treemapNode.Children.Add(fileExtensionNode);
-            }
-
-            // Directories
-            foreach (var subDirectory in orderedDirectories)
-            {
-                var childTreemapNode = CreateTreemapNodeFromDirectoryNode(subDirectory);
-
-                if (childTreemapNode == null)
-                    continue;
-
-                childTreemapNode.Parent = treemapNode;
-                treemapNode.Children.Add(childTreemapNode);
-            }
-
-            // Calculate percentages for this node's children
-            if (treemapNode.Children.Any())
-            {
-                long totalChildSize = treemapNode.Children.Sum(c => c.Size);
-                if (totalChildSize > 0)
-                {
-                    foreach (var child in treemapNode.Children)
-                    {
-                        child.Percent = (double)child.Size / totalChildSize * 100;
-                    }
-                }
-            }
-
-            return treemapNode;
+            ApplicationState.FileExtensionSeriesCollection = new ObservableCollection<ISeries>(ChartSeriesBuilderHelper.Build(fileExtensionItems));
         }
-
-        public void UpdateChart(IEnumerable<FileExtensionItem> fileItems)
-        {
-            ApplicationState.FileExtensionSeriesCollection.Clear();
-
-            List<FileExtensionItem> otherItems = new List<FileExtensionItem>();
-
-            var validItems = fileItems
-                .Where((item) => 
-                { 
-                    if (item.Percent <= 1)
-                    {
-                        otherItems.Add(item);
-                        return false;
-                    }
-
-                    return true; 
-
-                }).ToList();
-
-            var seriesList = validItems.Select(TransformIntoSeries);
-            var otherSeries = ArrangeOtherSeries(otherItems);
-
-            foreach (var series in seriesList)
-            {
-                ApplicationState.FileExtensionSeriesCollection.Add(series);
-            }
-            ApplicationState.FileExtensionSeriesCollection.Add(otherSeries);
-        }
-
-        private ISeries TransformIntoSeries(FileExtensionItem item)
-        {
-            var pieSeries = new PieSeries<long>
-            {
-                Values = new long[] { item.Size },
-                Name = item.Extension,
-                ToolTipLabelFormatter = point => $"{item.Percent:F2}%",
-                InnerRadius = 0,
-                HoverPushout = 5,
-                Pushout = 2
-            };
-
-            var winColor = item.Color;
-            pieSeries.Fill = new SolidColorPaint(new SKColor(winColor.R, winColor.G, winColor.B, winColor.A));
-
-            return pieSeries;
-        }
-
-        private ISeries ArrangeOtherSeries(List<FileExtensionItem> others)
-        {
-            PieSeries<long> pieSeries = new PieSeries<long>()
-            {
-                Values = new long[] { others.Sum(i => i.Size) },
-                Name = "Other",
-                ToolTipLabelFormatter = point => $"{others.Sum(i => i.Percent):F2}%",
-                InnerRadius = 0,
-                HoverPushout = 5,
-                Pushout = 2
-            };
-
-            var otherColor = ColorManager.OtherColor;
-            pieSeries.Fill = new SolidColorPaint(new SKColor(otherColor.R, otherColor.G, otherColor.B, otherColor.A));
-
-            return pieSeries;
-        }
-    }
+    }      
 }

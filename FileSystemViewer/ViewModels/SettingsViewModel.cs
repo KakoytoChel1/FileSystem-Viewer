@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels.Tools;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -127,7 +126,7 @@ namespace FileSystemViewer.ViewModels
         public partial Color CustomAccentColor { get; set; }
 
         [RelayCommand]
-        public async Task ImportSettings(XamlRoot xamlRoot)
+        public async Task ImportSettings()
         {
             FileOpenPicker fileOpenPicker = new FileOpenPicker(Win32Interop.GetWindowIdFromWindow(ApplicationState.MainWindowHandle))
             {
@@ -153,18 +152,18 @@ namespace FileSystemViewer.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogErrorTitle"), Localizer.GetLocalizedString("DialogOkay"), ContentDialogButton.Primary, $"{Localizer.GetLocalizedString("DialogFailedImportSettingsText")} {ex.Message}");
+                        await DialogService.ShowSettingsImportErrorAsync(ex.Message);
                     }
                 }
             }
         }
 
         [RelayCommand]
-        public async Task ExportSettings(XamlRoot xamlRoot)
+        public async Task ExportSettings()
         {
             if (IsThereUnsavedChanges)
             {
-                await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogExportSettingsWarningTitle"), Localizer.GetLocalizedString("DialogOkay"), ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogExportSettingsWarningText"));
+                await DialogService.ShowUnsavedChangesWarningAsync();
                 return;
             }
 
@@ -185,27 +184,18 @@ namespace FileSystemViewer.ViewModels
         }
 
         [RelayCommand]
-        public async Task SetSettingsByDefault(XamlRoot xamlRoot)
+        public async Task SetSettingsByDefault()
         {
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogSetSettingsByDefaultTitle"), Localizer.GetLocalizedString("DialogConfirmText"), 
-                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogSetSettingsByDefaultText"), closeBtnText: Localizer.GetLocalizedString("DialogCancelText"));
-            if (result == ContentDialogResult.Primary)
+            if (await DialogService.ConfirmSettingsByDefaultAsync())
             {
                 RestoreSettingsPropertiesFrom(new AppSettings());
             }
         }
 
         [RelayCommand]
-        public async Task RestoreSettings(XamlRoot xamlRoot)
+        public async Task RestoreSettings()
         {
-            if (!IsThereUnsavedChanges)
-            {
-                return;
-            }
-
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogRestoreSettingsTitle"), Localizer.GetLocalizedString("DialogConfirmText"), 
-                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogRestoreSettingsText"), closeBtnText: Localizer.GetLocalizedString("DialogCancelText"));
-            if (result == ContentDialogResult.Primary)
+            if (IsThereUnsavedChanges && await DialogService.ConfirmRestoreSettingsAsync())
             {
                 RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
             }
@@ -227,7 +217,7 @@ namespace FileSystemViewer.ViewModels
         }
 
         [RelayCommand]
-        public async Task CloseSettingsMenu(XamlRoot xamlRoot)
+        public async Task CloseSettingsMenu()
         {
             if (!IsThereUnsavedChanges)
             {
@@ -235,10 +225,7 @@ namespace FileSystemViewer.ViewModels
                 return;
             }
 
-            var result = await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogUnsavedChangesTitle"), Localizer.GetLocalizedString("DialogConfirmText"), 
-                ContentDialogButton.Primary, Localizer.GetLocalizedString("DialogUnsavedChangesText"), closeBtnText: Localizer.GetLocalizedString("DialogCancelText"));
-
-            if (result == ContentDialogResult.Primary)
+            if (await DialogService.ConfirmClosingSettingsMenuAsync())
             {
                 RestoreSettingsPropertiesFrom(ConfigurationService.Settings!);
                 ApplicationState.SettingsMenuVisibility = Visibility.Collapsed;

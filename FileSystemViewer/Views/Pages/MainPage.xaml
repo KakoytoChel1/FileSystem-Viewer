@@ -37,7 +37,6 @@
             <Button
                 Style="{StaticResource CommandBarButtonStyle}"
                 Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}"
-                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"
                 Content="&#xE958;"
                 Foreground="{ThemeResource AccentAAFillColorDefaultBrush}">
 
@@ -56,7 +55,6 @@
                     <Button
                         Style="{StaticResource MiniCommandBarButtonStyle}"
                         Command="{x:Bind ViewModel.CancelScanningCommand}"
-                        CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}"
                         Content="&#xEE95;"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}">
 
@@ -97,8 +95,7 @@
                 Style="{StaticResource CommandBarButtonStyle}"
                 Content="&#xE895;"
                 FontSize="16"
-                Command="{x:Bind ViewModel.RefreshScanningCommand}"
-                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+                Command="{x:Bind ViewModel.RefreshScanningCommand}">
 
                 <ToolTipService.ToolTip>
                     <TextBlock
@@ -110,8 +107,7 @@
                 Style="{StaticResource CommandBarButtonStyle}"
                 Content="&#xE8F7;"
                 FontSize="16"
-                Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}"
-                CommandParameter="{Binding ElementName=mainPage, Path=XamlRoot}">
+                Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}">
 
                 <ToolTipService.ToolTip>
                     <TextBlock

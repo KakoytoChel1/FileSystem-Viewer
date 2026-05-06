@@ -136,7 +136,7 @@
 
                 <Grid>
                     <lvc:PieChart
-                        Series="{x:Bind ViewModel.ApplicationState.FileExtensionSeriesCollection}"
+                        Series="{x:Bind ViewModel.ApplicationState.FileExtensionSeriesCollection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Background="Transparent"
                         TooltipPosition="Center"/>
                 </Grid>
