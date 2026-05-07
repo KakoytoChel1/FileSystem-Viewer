@@ -90,6 +90,8 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
+    <PackageReference Include="System.IO.Abstractions" Version="22.1.1" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="22.1.1" />
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
     <PackageReference Include="WinUI3Localizer" Version="2.3.0" />
     <PackageReference Include="WinUICommunity.ContextMenuExtensions" Version="7.1.0" />

@@ -12,24 +12,32 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace FileSystemViewer.ViewModels
 {
+    // 1. Исправить ошибку с IDriveInfo.
+    // 2. Проверить работу сервиса оркестратора.
+    // 3. Покрыть сервис тестами.
+    // 4. Подсократить потребление RAM при сканировании.
+
     public partial class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState,
-            TimeProvider timeProvider, INotificationService notificationService, IReportStorageService reportStorageService, IDialogService dialogService, ISubWindowManagerService subWindowManagerService) : base(serviceProvider, driveUtilsService,
+            TimeProvider timeProvider, INotificationService notificationService, IReportStorageService reportStorageService, IDialogService dialogService, 
+            ISubWindowManagerService subWindowManagerService, IScanOrchestratorService scanOrchestratorService) : base(serviceProvider, driveUtilsService,
                 dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
             DriveNodes = new ObservableCollection<DirectoryNode>();
-            AllAvailableDrives = new ObservableCollection<DriveInfo>();
+            AllAvailableDrives = new ObservableCollection<IDriveInfo>();
             SelectedTargetDrives = new ObservableCollection<DriveInfo>();
             TreemapNodes = new ObservableCollection<TreemapNode>();
             _subWindowManagerService = subWindowManagerService;
+            _scanOrchestratorService = scanOrchestratorService;
 
             TimeProvider = timeProvider;
 
@@ -112,6 +120,7 @@ namespace FileSystemViewer.ViewModels
         }
 
         private ISubWindowManagerService _subWindowManagerService;
+        private IScanOrchestratorService _scanOrchestratorService;
         TimeProvider TimeProvider { get; }
         private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; }
         private PauseResetTokenSource? PauseResetTokenSource { get; set; }
@@ -120,7 +129,7 @@ namespace FileSystemViewer.ViewModels
         /// Main nodes collection, contains all selected drives with their inner collections.
         /// </summary>
         public ObservableCollection<DirectoryNode> DriveNodes { get; set; }
-        public ObservableCollection<DriveInfo> AllAvailableDrives { get; set; }
+        public ObservableCollection<IDriveInfo> AllAvailableDrives { get; set; }
         public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
 
         [ObservableProperty]
@@ -188,7 +197,7 @@ namespace FileSystemViewer.ViewModels
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
 
-                    foreach (DriveInfo driveInfo in AllAvailableDrives)
+                    foreach (IDriveInfo driveInfo in AllAvailableDrives)
                     {
                         var name = !string.IsNullOrWhiteSpace(driveInfo.VolumeLabel) ? $"{driveInfo.VolumeLabel} {driveInfo.Name}" : driveInfo.Name;
 
@@ -233,6 +242,7 @@ namespace FileSystemViewer.ViewModels
                 {
                     driveNode.FileSystemNodes!.Clear();
                     driveNode.FileCount = 0;
+                    driveNode.DirectoriesCount = 0;
                     driveNode.Size = 0;
                     driveNode.IsExpanded = false;
 
@@ -356,98 +366,44 @@ namespace FileSystemViewer.ViewModels
 
         private async Task ProceedScanForSelectedTargetAsync<T>(ObservableCollection<T> target, CancellationTokenSource cts, PauseResetTokenSource prts) where T : DirectoryNode
         {
-            long targetSizeSum;
-            long startTime;
-            TimeSpan elapsedTime;
+            ResetValuesAndCollections();
+            ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
 
             var progress = new Action<List<FileSystemNode>>(ProcessReceivedScannedNodes);
-            ResetValuesAndCollections();
-
-            ApplicationState.CurrentScanningState = AppState.ScanningStates.InProgress;
-            startTime = TimeProvider.GetTimestamp();
-
-            // Scans the first level of every root node.
-            foreach (DirectoryNode directoryNode in target)
-            {
-                directoryNode.IsInProgress = true;
-                ProceedScanForSelectedDirectoryLevel(directoryNode);
-            }
-            // Scanning.
-            await DriveUtilsService.ScanProvidedNodesAsync<T>(target, progress, cts.Token, prts.Token);
-
-            foreach (DirectoryNode directoryNode in target)
-            {
-                directoryNode.IsInProgress = false;
-                directoryNode.IsExpanded = true;
-            }
-
-            // Calls OnPropertyChanged events after scanning for specific properties.
-            UpdateInnerExpandedNodes(DriveNodes);
-
-            targetSizeSum = target.Sum(dn => dn.Size);
-
-            // Fills list with file categories by their extensions.
-            foreach (FileExtensionItem item in FileExtentionItemService.GetOrderedExtensionCollection())
-            {
-                ApplicationState.FileExtensionItems.Add(item);
-                item.UpdateParameters(targetSizeSum);
-            }
-
-            UpdateChart(ApplicationState.FileExtensionItems);
-            // Build hierarchical TreemapNodes structure.
-            BuildHierarchicalTreemapStructure(DriveNodes);
+            ScanResult scanResult = await _scanOrchestratorService.CoordinateScanningOperationAsync(target, progress, cts, prts);
 
             if (CurrentScanningCancellationTokenSource != null)
             {
                 CurrentScanningCancellationTokenSource.Dispose();
             }
 
-            elapsedTime = TimeProvider.GetElapsedTime(startTime);
-
-            if (ApplicationState.CurrentScanningState == AppState.ScanningStates.Canceled)
+            if (scanResult.FinalState == AppState.ScanningStates.Canceled)
             {
-                NotificationService.ShowCancelScanningNotification();
+                ApplicationState.CurrentScanningState = AppState.ScanningStates.Canceled;
                 return;
             }
 
-            ApplicationState.CurrentScanningState = AppState.ScanningStates.Completed;
-
-            long totalScannedDirectories = target.Sum(d => d.DirectoriesCount) + target.Count;
-            long totalScannedFiles = target.Sum(d => d.FileCount);
-
-            ScanReport scanReport = new ScanReport()
+            foreach (DirectoryNode directoryNode in target)
             {
-                ScanDateTime = DateTime.Now,
-                ElapsedTime = elapsedTime,
-                NodesScanned = target.Count,
-                TotalSize = targetSizeSum,
-                TotalFilesCount = totalScannedFiles,
-                TotalDirectoriesCount = totalScannedDirectories,
-                RootNodes = new ObservableCollection<DirectoryNode>(target.Select((node) =>
-                {
-                    DirectoryNode directoryNode = new DirectoryNode(null)
-                    {
-                        Name = node.Name,
-                        FullPath = node.FullPath,
-                        Size = node.Size,
-                        LastModified = node.LastModified,
-                        UnicodeIcon = node.UnicodeIcon,
-                        IconColor = node.IconColor,
-                        FileCount = node.FileCount,
-                        DirectoriesCount = node.DirectoriesCount,
-                    };
-                    return directoryNode;
-                }))
-            };
-            string reportFilePath = ReportStorageService.SaveReport(scanReport);
-            NotificationService.ShowSuccessScanningNotification(elapsedTime, target.Count, target.Sum(n => n.DirectoriesCount), target.Sum(n => n.FileCount), reportFilePath);
+                directoryNode.IsInProgress = false;
+                directoryNode.IsExpanded = true;
+                ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath);
+            }
+
+            UpdateInnerExpandedNodes(DriveNodes);
+            TreemapNodes = new ObservableCollection<TreemapNode>(scanResult.TreemapNodes);
+            ApplicationState.FileExtensionItems = new ObservableCollection<FileExtensionItem>(scanResult.ExtensionItems);
+            // Updates series collection
+            UpdateChart(ApplicationState.FileExtensionItems);
+       
+            ApplicationState.CurrentScanningState = AppState.ScanningStates.Completed;
         }
 
         private void LoadAvailableDrives()
         {
             AllAvailableDrives.Clear();
             var drives = DriveUtilsService.GetAvailableDrives();
-            foreach (DriveInfo drive in drives)
+            foreach (IDriveInfo drive in drives)
             {
                 AllAvailableDrives.Add(drive);
             }
@@ -486,20 +442,6 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.ScannedRootNodeNames.Clear();
         }
 
-        private void ProceedScanForSelectedDirectoryLevel(DirectoryNode directoryNode)
-        {
-            TotalScanValues values = DriveUtilsService.ScanDirectoryLevel(directoryNode, directoryNode.FullPath);
-            ApplicationState.ScannedRootNodeNames.Add(directoryNode.FullPath);
-
-            var current = directoryNode;
-            while (current != null)
-            {
-                current.Size += values.TotalSizeInBytes;
-                current.FileCount += values.TotalFileCount;
-                current = current.ParentNode as DirectoryNode;
-            }
-        }
-
         private void UpdateInnerExpandedNodes<T>(ObservableCollection<T> nodes) where T : DirectoryNode
         {
             foreach (DirectoryNode drive in nodes)
@@ -532,11 +474,6 @@ namespace FileSystemViewer.ViewModels
                     }
                 }
             }
-        }
-
-        private void BuildHierarchicalTreemapStructure<T>(ObservableCollection<T> rootNodes) where T : DirectoryNode
-        {
-            TreemapNodes = new ObservableCollection<TreemapNode>(TreemapBuilderHelper.Build(rootNodes));
         }
 
         public void UpdateChart(IEnumerable<FileExtensionItem> fileExtensionItems)

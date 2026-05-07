@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -204,6 +205,8 @@ namespace FileSystemViewer
             services.AddScoped<ISubWindowManagerService, SubWindowManagerService>();
 
             services.AddSingleton<IDriveUtilsService, DriveUtilsService>();
+            services.AddSingleton<IScanOrchestratorService, ScanOrchestratorService>();
+            services.AddSingleton<IFileSystem, FileSystem>();
             services.AddSingleton<IDispatcherQueueProvider, DispatcherQueueProvider>();
             services.AddSingleton<IFileExtentionItemService, FileExtentionItemService>();
             services.AddSingleton<IConfigurationService<AppSettings>, ConfigurationService<AppSettings>>();

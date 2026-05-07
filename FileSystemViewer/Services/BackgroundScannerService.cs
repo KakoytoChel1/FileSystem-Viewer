@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,11 +27,11 @@ namespace FileSystemViewer.Services
             TimeSpan elapsedTime;
 
             ObservableCollection<DriveNode> driveNodes = new ObservableCollection<DriveNode>();
-            List<DriveInfo> drives = _driveUtilsService.GetAvailableDrives();
+            List<IDriveInfo> drives = _driveUtilsService.GetAvailableDrives();
 
             startTime = _timeProvider.GetTimestamp();
 
-            foreach (DriveInfo driveInfo in drives)
+            foreach (IDriveInfo driveInfo in drives)
             {
                 var name = !string.IsNullOrWhiteSpace(driveInfo.VolumeLabel) ? $"{driveInfo.VolumeLabel} {driveInfo.Name}" : driveInfo.Name;
 

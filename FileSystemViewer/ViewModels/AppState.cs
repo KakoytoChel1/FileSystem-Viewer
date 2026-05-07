@@ -64,7 +64,8 @@ namespace FileSystemViewer.ViewModels
             }
         }
 
-        public ObservableCollection<FileExtensionItem> FileExtensionItems { get; set; }
+        [ObservableProperty]
+        public partial ObservableCollection<FileExtensionItem> FileExtensionItems { get; set; }
 
         [ObservableProperty]
         public partial ObservableCollection<ISeries> FileExtensionSeriesCollection { get; set; }
