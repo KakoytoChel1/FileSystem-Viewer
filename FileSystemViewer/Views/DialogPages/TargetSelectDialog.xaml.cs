@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.IO;
+using System.IO.Abstractions;
 
 namespace FileSystemViewer.Views.DialogPages;
 
@@ -20,7 +21,7 @@ public sealed partial class TargetSelectDialog : UserControl
 
     private void AvailableDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        foreach (DriveInfo item in e.AddedItems)
+        foreach (IDriveInfo item in e.AddedItems)
         {
             if (!ViewModel.SelectedTargetDrives.Contains(item))
             {
@@ -28,7 +29,7 @@ public sealed partial class TargetSelectDialog : UserControl
             }
         }
 
-        foreach (DriveInfo item in e.RemovedItems)
+        foreach (IDriveInfo item in e.RemovedItems)
         {
             if (ViewModel.SelectedTargetDrives.Contains(item))
             {

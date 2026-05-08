@@ -19,27 +19,24 @@ using System.Threading.Tasks;
 
 namespace FileSystemViewer.ViewModels
 {
-    // 1. Исправить ошибку с IDriveInfo.
-    // 2. Проверить работу сервиса оркестратора.
+    // 1. Исправить ошибку с IDriveInfo. +
+    // 2. Проверить работу сервиса оркестратора. +
     // 3. Покрыть сервис тестами.
     // 4. Подсократить потребление RAM при сканировании.
 
     public partial class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
-            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState,
-            TimeProvider timeProvider, INotificationService notificationService, IReportStorageService reportStorageService, IDialogService dialogService, 
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, IVisualManagerService visualManagerService, AppState appState, INotificationService notificationService, IReportStorageService reportStorageService, IDialogService dialogService, 
             ISubWindowManagerService subWindowManagerService, IScanOrchestratorService scanOrchestratorService) : base(serviceProvider, driveUtilsService,
                 dispatcherQueueProvider, fileExtentionItemService, configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
             DriveNodes = new ObservableCollection<DirectoryNode>();
             AllAvailableDrives = new ObservableCollection<IDriveInfo>();
-            SelectedTargetDrives = new ObservableCollection<DriveInfo>();
+            SelectedTargetDrives = new ObservableCollection<IDriveInfo>();
             TreemapNodes = new ObservableCollection<TreemapNode>();
             _subWindowManagerService = subWindowManagerService;
             _scanOrchestratorService = scanOrchestratorService;
-
-            TimeProvider = timeProvider;
 
             SelectedScanningTargetIndex = 0;
             ApplicationState.CurrentScanningState = AppState.ScanningStates.None;
@@ -121,7 +118,6 @@ namespace FileSystemViewer.ViewModels
 
         private ISubWindowManagerService _subWindowManagerService;
         private IScanOrchestratorService _scanOrchestratorService;
-        TimeProvider TimeProvider { get; }
         private CancellationTokenSource? CurrentScanningCancellationTokenSource { get; set; }
         private PauseResetTokenSource? PauseResetTokenSource { get; set; }
 
@@ -130,7 +126,7 @@ namespace FileSystemViewer.ViewModels
         /// </summary>
         public ObservableCollection<DirectoryNode> DriveNodes { get; set; }
         public ObservableCollection<IDriveInfo> AllAvailableDrives { get; set; }
-        public ObservableCollection<DriveInfo> SelectedTargetDrives { get; set; }
+        public ObservableCollection<IDriveInfo> SelectedTargetDrives { get; set; }
 
         [ObservableProperty]
         public partial ObservableCollection<TreemapNode> TreemapNodes { get; set; }
@@ -169,7 +165,7 @@ namespace FileSystemViewer.ViewModels
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
 
-                    foreach (DriveInfo driveInfo in SelectedTargetDrives)
+                    foreach (IDriveInfo driveInfo in SelectedTargetDrives)
                     {
                         var name = !string.IsNullOrWhiteSpace(driveInfo.VolumeLabel) ? $"{driveInfo.VolumeLabel} {driveInfo.Name}" : driveInfo.Name;
 
@@ -377,12 +373,6 @@ namespace FileSystemViewer.ViewModels
                 CurrentScanningCancellationTokenSource.Dispose();
             }
 
-            if (scanResult.FinalState == AppState.ScanningStates.Canceled)
-            {
-                ApplicationState.CurrentScanningState = AppState.ScanningStates.Canceled;
-                return;
-            }
-
             foreach (DirectoryNode directoryNode in target)
             {
                 directoryNode.IsInProgress = false;
@@ -395,7 +385,13 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.FileExtensionItems = new ObservableCollection<FileExtensionItem>(scanResult.ExtensionItems);
             // Updates series collection
             UpdateChart(ApplicationState.FileExtensionItems);
-       
+
+            if (scanResult.FinalState == AppState.ScanningStates.Canceled)
+            {
+                ApplicationState.CurrentScanningState = AppState.ScanningStates.Canceled;
+                return;
+            }
+
             ApplicationState.CurrentScanningState = AppState.ScanningStates.Completed;
         }
 
@@ -413,12 +409,14 @@ namespace FileSystemViewer.ViewModels
         {
             long fileCount = directoryNode.FileCount;
             long size = directoryNode.Size;
+            long directoryCount = directoryNode.DirectoriesCount;
             var current = directoryNode;
 
             while (current != null)
             {
                 current.Size -= size;
                 current.FileCount -= fileCount;
+                current.DirectoriesCount -= directoryCount;
                 current = current.ParentNode as DirectoryNode;
             }
         }

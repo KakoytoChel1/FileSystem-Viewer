@@ -43,7 +43,7 @@
                     
                     <Grid>
                         <ListView
-                            ItemsSource="{x:Bind ViewModel.ApplicationState.FileExtensionItems}"
+                            ItemsSource="{x:Bind ViewModel.ApplicationState.FileExtensionItems, Mode=OneWay}"
                             ShowsScrollingPlaceholders="True">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="ListViewItem">

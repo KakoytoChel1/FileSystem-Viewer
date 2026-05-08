@@ -22,14 +22,14 @@ namespace FileSystemViewer.UnitTests.Helpers
             };
         }
 
-        public static DirectoryNode GetDirectoryNodeForTest(FileSystemNode? parent, long size = 0)
+        public static DirectoryNode GetDirectoryNodeForTest(FileSystemNode? parent, long size = 0, string fullPath = "")
         {
             return new DirectoryNode(parent)
             {
                 UnicodeIcon = string.Empty,
                 IconColor = default,
                 Name = string.Empty,
-                FullPath = string.Empty,
+                FullPath = fullPath,
                 Size = size,
                 LastModified = default
             };
