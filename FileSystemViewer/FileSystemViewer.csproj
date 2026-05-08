@@ -39,7 +39,6 @@
     <None Remove="Assets\warning.png" />
     <None Remove="Views\DialogPages\TargetSelectDialog.xaml" />
     <None Remove="Views\Pages\ChartPage.xaml" />
-    <None Remove="Views\Pages\MainPage.xaml" />
     <None Remove="Views\Pages\ReportViewerPage.xaml" />
     <None Remove="Views\Pages\SettingsPage.xaml" />
     <None Remove="Views\Pages\ShellPage.xaml" />

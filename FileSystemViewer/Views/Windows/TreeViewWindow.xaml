@@ -40,12 +40,8 @@
 
         <Grid
             Grid.Row="1">
-            <TreeView 
-                x:Name="FileSystemTreeView"
-                ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.SelectedFileSystemNode, Mode=TwoWay}"
-                ItemTemplate="{StaticResource FileSystemNodeTemplate}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"/>
+            <Frame
+                x:Name="mainPageFrame"/>
         </Grid>
     </Grid>
 </Window>

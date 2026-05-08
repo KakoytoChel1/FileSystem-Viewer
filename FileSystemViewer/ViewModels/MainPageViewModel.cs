@@ -13,17 +13,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace FileSystemViewer.ViewModels
 {
-    // 1. Исправить ошибку с IDriveInfo. +
-    // 2. Проверить работу сервиса оркестратора. +
-    // 3. Покрыть сервис тестами.
-    // 4. Подсократить потребление RAM при сканировании.
-
     public partial class MainPageViewModel : ViewModelBase
     {
         public MainPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider,
@@ -52,25 +49,10 @@ namespace FileSystemViewer.ViewModels
                 CurrentScanningCancellationTokenSource?.Dispose();
                 SelectedFileSystemNode = null;
 
-                if (DriveNodes != null)
-                {
-                    foreach (var drive in DriveNodes)
-                    {
-                        DestroyFileSystemNodesRecursively(drive);
-                    }
-                    DriveNodes.Clear();
-                    DriveNodes = null!;
-                }
-
-                if (TreemapNodes != null)
-                {
-                    foreach (var treemapNode in TreemapNodes)
-                    {
-                        DestroyTreemapNodeRecursively(treemapNode);
-                    }
-                    TreemapNodes.Clear();
-                    TreemapNodes = null!;
-                }
+                DestroyRootNodesCollection(DriveNodes, true);
+                DestroyTreemapCollection(TreemapNodes, true);
+                DriveNodes = null!;
+                TreemapNodes = null!;
 
                 base.Dispose();
             }
@@ -104,6 +86,34 @@ namespace FileSystemViewer.ViewModels
                 DestroyTreemapNodeRecursively(child);
             }
             children.Clear();
+        }
+
+        private void DestroyRootNodesCollection<T>(ObservableCollection<T> rootNodes, bool clearCollection) where T: FileSystemNode
+        {
+            if (rootNodes != null)
+            {
+                foreach (var rootNode in rootNodes)
+                {
+                    DestroyFileSystemNodesRecursively(rootNode);
+                }
+
+                if (clearCollection)
+                    rootNodes.Clear();
+            }
+        }
+
+        private void DestroyTreemapCollection(ObservableCollection<TreemapNode> treemapNodes, bool clearCollection)
+        {
+            if (treemapNodes != null)
+            {
+                foreach (var treemapNode in treemapNodes)
+                {
+                    DestroyTreemapNodeRecursively(treemapNode);
+                }
+
+                if (clearCollection)
+                    treemapNodes.Clear();
+            }
         }
 
         private void ApplicationState_ScanningStatePropertyChanged()
@@ -155,7 +165,7 @@ namespace FileSystemViewer.ViewModels
                     if (!SelectedTargetDrives.Any()) { return; }
 
                     SelectedFileSystemNode = null;
-                    DriveNodes.Clear();
+                    DestroyRootNodesCollection(DriveNodes, true);
 
                     if (CurrentScanningCancellationTokenSource != null)
                     {
@@ -189,7 +199,7 @@ namespace FileSystemViewer.ViewModels
                 else
                 {
                     SelectedFileSystemNode = null;
-                    DriveNodes.Clear();
+                    DestroyRootNodesCollection(DriveNodes, true);
                     CurrentScanningCancellationTokenSource = new CancellationTokenSource();
                     PauseResetTokenSource = new PauseResetTokenSource();
 
@@ -236,7 +246,6 @@ namespace FileSystemViewer.ViewModels
             {
                 foreach (DirectoryNode driveNode in DriveNodes)
                 {
-                    driveNode.FileSystemNodes!.Clear();
                     driveNode.FileCount = 0;
                     driveNode.DirectoriesCount = 0;
                     driveNode.Size = 0;
@@ -244,6 +253,14 @@ namespace FileSystemViewer.ViewModels
 
                     driveNode.UpdateSizeProperty();
                     driveNode.UpdateFileCountProperty();
+                }
+                
+                DestroyRootNodesCollection(DriveNodes, false);
+
+                // re initializing after making it null
+                foreach (var drive in DriveNodes)
+                {
+                    drive.FileSystemNodes = new ObservableCollection<FileSystemNode>();
                 }
 
                 if (CurrentScanningCancellationTokenSource != null)
@@ -275,8 +292,8 @@ namespace FileSystemViewer.ViewModels
                     PauseResetTokenSource = new PauseResetTokenSource();
 
                     RemoveDataForRescannedDirectory(selectedDirectoryNode);
+                    DestroyRootNodesCollection(selectedDirectoryNode.FileSystemNodes!, true);
 
-                    selectedDirectoryNode.FileSystemNodes!.Clear();
                     selectedDirectoryNode.FileCount = 0;
                     selectedDirectoryNode.Size = 0;
 
@@ -332,6 +349,34 @@ namespace FileSystemViewer.ViewModels
         public void OpenSettingsMenu()
         {
             ApplicationState.SettingsMenuVisibility = Visibility.Visible;
+        }
+
+        [RelayCommand]
+        public void OpenFileSystemNodeInExplorer(FileSystemNode fileSystemNode)
+        {
+            FileSystemNode? nodeForOpen = IdentifyAndCheckExistence(fileSystemNode);
+
+            if (nodeForOpen == null)
+                return;
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = nodeForOpen.FullPath,
+                UseShellExecute = true,
+            });
+        }
+
+        [RelayCommand]
+        public void CopyFileSystemNodePath(FileSystemNode fileSystemNode)
+        {
+            FileSystemNode? nodeForOpen = IdentifyAndCheckExistence(fileSystemNode);
+
+            if (nodeForOpen == null)
+                return;
+
+            var package = new DataPackage();
+            package.SetText(nodeForOpen.FullPath);
+            Clipboard.SetContent(package);
         }
 
         [RelayCommand]
@@ -438,6 +483,7 @@ namespace FileSystemViewer.ViewModels
             ApplicationState.FileExtensionSeriesCollection.Clear();
             ApplicationState.FileExtensionItems.Clear();
             ApplicationState.ScannedRootNodeNames.Clear();
+            DestroyTreemapCollection(TreemapNodes, true);
         }
 
         private void UpdateInnerExpandedNodes<T>(ObservableCollection<T> nodes) where T : DirectoryNode
@@ -477,6 +523,27 @@ namespace FileSystemViewer.ViewModels
         public void UpdateChart(IEnumerable<FileExtensionItem> fileExtensionItems)
         {
             ApplicationState.FileExtensionSeriesCollection = new ObservableCollection<ISeries>(ChartSeriesBuilderHelper.Build(fileExtensionItems));
+        }
+
+        private FileSystemNode? IdentifyAndCheckExistence(FileSystemNode fileSystemNode)
+        {
+            FileSystemNode nodeForOpen = null!;
+
+            if (fileSystemNode is DirectoryNode directoryNode)
+            {
+                if (Directory.Exists(directoryNode.FullPath))
+                {
+                    nodeForOpen = directoryNode;
+                }
+            }
+            else if (fileSystemNode is FileNode fileNode)
+            {
+                if (File.Exists(fileNode.FullPath))
+                {
+                    nodeForOpen = fileNode;
+                }
+            }
+            return nodeForOpen;
         }
     }      
 }

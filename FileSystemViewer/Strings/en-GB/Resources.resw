@@ -366,4 +366,7 @@
   <data name="StartupSection.Text" xml:space="preserve">
     <value>Application startup</value>
   </data>
+  <data name="ContextMenuCopyPath.Text" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
 </root>

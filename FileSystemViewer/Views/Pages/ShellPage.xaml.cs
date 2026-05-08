@@ -1,4 +1,5 @@
 using FileSystemViewer.Services.Interfaces;
+using FileSystemViewer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -11,6 +12,7 @@ namespace FileSystemViewer.Views.Pages
     public sealed partial class ShellPage : Page
     {
         private IServiceProvider? _serviceProvider;
+        public MainPageViewModel ViewModel { get; set; } = null!;
 
         public ShellPage()
         {
@@ -27,6 +29,8 @@ namespace FileSystemViewer.Views.Pages
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             _serviceProvider = e.Parameter as IServiceProvider;
+
+            ViewModel = _serviceProvider!.GetRequiredService<MainPageViewModel>();
 
             MainPageFrame.Navigate(typeof(MainPage), _serviceProvider);
             ChartPageFrame.Navigate(typeof(ChartPage), _serviceProvider);

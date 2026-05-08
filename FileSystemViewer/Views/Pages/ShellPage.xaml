@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:l="using:WinUI3Localizer"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -59,7 +60,121 @@
             Margin="5,0,2.5,2.5" 
             Style="{ThemeResource CardBorderStyle}">
 
-            <Frame x:Name="MainPageFrame" />
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <!--Buttons bar-->
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.ColumnSpan="2"
+                    Margin="5,5,5,0"
+                    Orientation="Horizontal"
+                    Spacing="3">
+
+                    <Button
+                        Style="{StaticResource CommandBarButtonStyle}"
+                        Command="{x:Bind ViewModel.OpenTargetSelectDialogCommand}"
+                        Content="&#xE958;"
+                        Foreground="{ThemeResource AccentAAFillColorDefaultBrush}">
+
+                        <ToolTipService.ToolTip>
+                            <TextBlock l:Uids.Uid="SelectTargetButton"/>
+                        </ToolTipService.ToolTip>
+                    </Button>
+
+                    <!--Scanning managing command bar-->
+                    <Border
+                        BorderThickness="0.5,0,0.5,0"
+                        BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                        Padding="5,0,5,0">
+
+                        <StackPanel Orientation="Horizontal" Spacing="3">
+                            <Button
+                                Style="{StaticResource MiniCommandBarButtonStyle}"
+                                Command="{x:Bind ViewModel.CancelScanningCommand}"
+                                Content="&#xEE95;"
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}">
+
+                                <ToolTipService.ToolTip>
+                                    <TextBlock
+                                        l:Uids.Uid="CancelScanningButton"/>
+                                </ToolTipService.ToolTip>
+                            </Button>
+
+                            <Button
+                                Style="{StaticResource MiniCommandBarButtonStyle}"
+                                Command="{x:Bind ViewModel.ResumeScanningCommand}"
+                                Content="&#xF5B0;"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}">
+
+                                <ToolTipService.ToolTip>
+                                    <TextBlock
+                                        l:Uids.Uid="ResumeScanningButton"/>
+                                </ToolTipService.ToolTip>
+                            </Button>
+
+                            <Button
+                                Style="{StaticResource MiniCommandBarButtonStyle}"
+                                Command="{x:Bind ViewModel.PauseScanningCommand}"
+                                Content="&#xF8AE;"
+                                Foreground="{ThemeResource SystemFillColorCautionBrush}">
+
+                                <ToolTipService.ToolTip>
+                                    <TextBlock
+                                        l:Uids.Uid="PauseScanningButton"/>
+                                </ToolTipService.ToolTip>
+                            </Button>
+
+                        </StackPanel>
+                    </Border>
+
+                    <Button
+                        Style="{StaticResource CommandBarButtonStyle}"
+                        Content="&#xE895;"
+                        FontSize="16"
+                        Command="{x:Bind ViewModel.RefreshScanningCommand}">
+
+                        <ToolTipService.ToolTip>
+                            <TextBlock
+                l:Uids.Uid="RefreshScanningButton"/>
+                        </ToolTipService.ToolTip>
+                    </Button>
+
+                    <Button
+                        Style="{StaticResource CommandBarButtonStyle}"
+                        Content="&#xE8F7;"
+                        FontSize="16"
+                        Command="{x:Bind ViewModel.RescanSelectedDirectoriesCommand}">
+
+                        <ToolTipService.ToolTip>
+                            <TextBlock
+                                l:Uids.Uid="RefreshSelectedButton"/>
+                        </ToolTipService.ToolTip>
+                    </Button>
+
+                    <Border
+                        BorderThickness="0.5,0,0,0"
+                        BorderBrush="{ThemeResource ControlElevationBorderBrush}">
+
+                        <Button
+                            Margin="5,0,0,0"
+                            Style="{StaticResource CommandBarButtonStyle}"
+                            Content="&#xE8A7;"
+                            Command="{x:Bind ViewModel.OpenTreeViewNewWindowCommand}">
+
+                            <ToolTipService.ToolTip>
+                                <TextBlock
+                                    l:Uids.Uid="OpenInNewWindowButton"/>
+                            </ToolTipService.ToolTip>
+                        </Button>
+                    </Border>
+                </StackPanel>
+
+                <Frame x:Name="MainPageFrame" Grid.Row="1"/>
+            </Grid>
         </Border>
 
         <controls:GridSplitter x:Name="VerticalSplitter" Grid.Column="1"/>
