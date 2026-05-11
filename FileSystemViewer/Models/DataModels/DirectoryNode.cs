@@ -2,10 +2,8 @@
 
 namespace FileSystemViewer.Models
 {
-    public class DirectoryNode : FileSystemNode
+    public class DirectoryNode(FileSystemNode? parentNode) : FileSystemNode(parentNode)
     {
-        public DirectoryNode(FileSystemNode? parentNode) : base(parentNode) { }
-
         private bool _isInProgress;
         public override bool IsInProgress 
         { 
@@ -26,6 +24,8 @@ namespace FileSystemViewer.Models
             get { return _fileSystemNodes; }
             set { SetProperty(ref _fileSystemNodes, value); }
         }
+
+        public long DirectoriesCount { get; set; }
 
         public void UpdateFileCountProperty()
         {

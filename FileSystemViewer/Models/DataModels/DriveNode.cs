@@ -2,33 +2,21 @@
 
 namespace FileSystemViewer.Models
 {
-    public class DriveNode : DirectoryNode
+    public class DriveNode() : DirectoryNode(null)
     {
-        public DriveNode() : base(null) { }
-
         public string? VolumeName { get; set; }
-
-        private long _totalSize;
-        public long TotalSize
-        {
-            get { return _totalSize; }
-            set { _totalSize = value; OnPropertyChanged(nameof(Tag)); }
-        }
-
-        private long _totalFreeSpace;
-        public long TotalFreeSpace
-        {
-            get { return _totalFreeSpace; }
-            set { _totalFreeSpace = value; OnPropertyChanged(nameof(Tag)); }
-        }
+        public required long TotalSize { get; set; }
+        public required long TotalFreeSpace { get; set; }
 
         public override string Tag
         {
-            get { return $"{TotalFreeSpace.Bytes().Humanize()} free of {TotalSize.Bytes().Humanize()} {GetPercentString()}"; }
+            get { return $"{TotalFreeSpace.Bytes().Humanize()} / {TotalSize.Bytes().Humanize()} {GetPercentString()}"; }
         }
 
         private string GetPercentString()
         {
+            if (TotalSize == 0) return "(0%)";
+
             double result = (double)TotalFreeSpace / TotalSize;
             return $"({result:P0})";
         }

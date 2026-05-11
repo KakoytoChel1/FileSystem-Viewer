@@ -9,7 +9,6 @@
     xmlns:vm="using:FileSystemViewer.ViewModels"
     mc:Ignorable="d"
     xmlns:models="using:FileSystemViewer.Models"
-    xmlns:view="using:FileSystemViewer.Views"
     xmlns:converters="using:FileSystemViewer.Views.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
@@ -41,12 +40,8 @@
 
         <Grid
             Grid.Row="1">
-            <TreeView 
-                x:Name="FileSystemTreeView"
-                ItemsSource="{x:Bind ViewModel.DriveNodes, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.SelectedFileSystemNode, Mode=TwoWay}"
-                ItemTemplate="{StaticResource FileSystemNodeTemplate}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"/>
+            <Frame
+                x:Name="mainPageFrame"/>
         </Grid>
     </Grid>
 </Window>

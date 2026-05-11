@@ -4,8 +4,8 @@ using ModernControls.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
+using System.Windows.Input;
 using Windows.Foundation;
 
 namespace ModernControls.Controls
@@ -34,8 +34,6 @@ namespace ModernControls.Controls
 
             _internalItemsSource = new ObservableCollection<TreemapNode>();
         }
-
-        #region Handlers
 
         private void Treemap_Loaded(object sender, RoutedEventArgs e)
         {
@@ -72,18 +70,28 @@ namespace ModernControls.Controls
             base.OnApplyTemplate();
 
             if (_backButton != null)
+            {
                 _backButton.Click -= OnBackButtonClicked;
+            }
 
             _backButton = GetTemplateChild("PART_BackButton") as Button;
 
             if (_backButton != null)
+            {
                 _backButton.Click += OnBackButtonClicked;
+            }
 
-            if (_canvas != null) _canvas.SizeChanged -= OnCanvasSizeChanged;
+            if (_canvas != null)
+            {
+                _canvas.SizeChanged -= OnCanvasSizeChanged;
+            }
 
             _canvas = GetTemplateChild("PART_Canvas") as Canvas;
 
-            if (_canvas != null) _canvas.SizeChanged += OnCanvasSizeChanged;
+            if (_canvas != null)
+            {
+                _canvas.SizeChanged += OnCanvasSizeChanged;
+            }
         }
 
         private void OnCanvasSizeChanged(object sender, SizeChangedEventArgs e)
@@ -120,7 +128,7 @@ namespace ModernControls.Controls
             if (clickedNode.Children == null || !clickedNode.Children.Any())
                 return;
 
-            _history.Push(new HistoryLevel(_internalItemsSource, this.CurrentLevelName));
+            _history.Push(new HistoryLevel() { Items = new ObservableCollection<TreemapNode>(_internalItemsSource), LevelName = this.CurrentLevelName});
 
             this.CurrentLevelName = $"{this.CurrentLevelName}{clickedNode.LabeledName}{this.Separator}";
 
@@ -132,9 +140,6 @@ namespace ModernControls.Controls
 
             RenderTreemap();
         }
-        #endregion
-
-        #region Properties
 
         public static readonly DependencyProperty CurrentLevelNameProperty =
             DependencyProperty.Register(
@@ -188,7 +193,18 @@ namespace ModernControls.Controls
             set => SetValue(ItemsSourceProperty, value);
         }
 
-        #endregion
+        public static readonly DependencyProperty MenuActionCommandProperty =
+            DependencyProperty.Register(
+                nameof(MenuActionCommand),
+                typeof(ICommand),
+                typeof(HierarchicalTreemap),
+                new PropertyMetadata(null));
+
+        public ICommand MenuActionCommand
+        {
+            get => (ICommand)GetValue(MenuActionCommandProperty);
+            set => SetValue(MenuActionCommandProperty, value);
+        }
 
         private void RenderTreemap()
         {
@@ -243,7 +259,8 @@ namespace ModernControls.Controls
                 {
                     NodeData = wrappedNode.TreemapNode,
                     Width = wrappedNode.Bounds.Width,
-                    Height = wrappedNode.Bounds.Height
+                    Height = wrappedNode.Bounds.Height,
+                    MenuActionCommand = this.MenuActionCommand
                 };
 
                 itemControl.ItemClicked += OnTreemapItemClicked;

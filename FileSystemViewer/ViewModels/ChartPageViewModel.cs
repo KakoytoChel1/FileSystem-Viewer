@@ -1,33 +1,27 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels;
-using FileSystemViewer.Views.Windows;
-using System.Windows.Input;
+using System;
 
-namespace FileSystem_Viewer.ViewModels
+namespace FileSystemViewer.ViewModels
 {
-    public class ChartPageViewModel : ViewModelBase
+    public partial class ChartPageViewModel : ViewModelBase
     {
-        public ChartPageViewModel(IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, IFileExtentionItemService fileExtentionItemService, AppState appState) : base(driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, appState)
+        private ISubWindowManagerService _subWindowManagerService;
+
+        public ChartPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
+            IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
+            IVisualManagerService visualManagerService, INotificationService notificationService, IReportStorageService reportStorageService,
+            IDialogService dialogService, ISubWindowManagerService subWindowManagerService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, fileExtentionItemService, 
+                configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
-            
+            _subWindowManagerService = subWindowManagerService;
         }
 
-        #region Commands
-
-        private ICommand? _openChartTabsWindowCommand;
-        public ICommand OpenChartTabsNewWindowCommand => _openChartTabsWindowCommand ??= new RelayCommand(async () =>
+        [RelayCommand]
+        public void OpenChartTabsNewWindow()
         {
-            string windowKey = nameof(ChartTabsWindow);
-
-            if (!ApplicationState.ActiveSubWindows.ContainsKey(windowKey))
-            {
-                ChartTabsWindow chartTabsWindow = new ChartTabsWindow();
-                chartTabsWindow.Closed += (s, e) => ApplicationState.ActiveSubWindows.Remove(windowKey);
-                ApplicationState.ActiveSubWindows.Add(windowKey, chartTabsWindow);
-                chartTabsWindow.Activate();
-            }
-        });
-        #endregion
+            _subWindowManagerService.OpenExtensionChartSubWindow();
+        }
     }
 }

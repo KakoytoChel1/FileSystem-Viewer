@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FileSystemViewer.Models
 {
     public static class UnicodeManager
     {
-        private readonly static string _directoryIcon = "\uE8D5";
-        private readonly static string _fileIcon = "\uE729";
-        private readonly static string _driveIcon = "\uE958";
+        private const string _directoryIcon = "\uE8D5";
+        private const string _fileIcon = "\uE729";
+        private const string _driveIcon = "\uE958";
 
-        private static Dictionary<string, string> _extensionColorPairs = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> _extensionIconPairs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {string.Empty, "\uE8FF" },
 
@@ -39,8 +40,14 @@ namespace FileSystemViewer.Models
             { ".sys", "\uE7C3" },
             { ".ini", "\uE7C3" },
             { ".dat", "\uE7C3" },
-            { ".pdf", "\uEA90" }
+            { ".pdf", "\uEA90" },
+            { ".fsvscan", "\uE9F9" }
         };
+
+        public static Dictionary<string, string> ExtensionIconPairs
+        {
+            get { return _extensionIconPairs; }
+        }
 
         public static string DirectoryIcon
         {
@@ -57,11 +64,15 @@ namespace FileSystemViewer.Models
 
         public static string GetFileUnicodeByExtension(string extension)
         {
-            if (string.IsNullOrEmpty(extension))
-                return _extensionColorPairs[string.Empty];
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                return _extensionIconPairs[string.Empty];
+            }
 
-            if (_extensionColorPairs.TryGetValue(extension, out var color))
-                return color;
+            if (_extensionIconPairs.TryGetValue(extension, out var unicodeIcon))
+            {
+                return unicodeIcon;
+            }
 
             return _fileIcon;
         }

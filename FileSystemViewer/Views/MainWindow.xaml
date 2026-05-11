@@ -9,13 +9,22 @@
     mc:Ignorable="d"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:mControls="using:ModernControls.Controls"
-    Title="FileSystem-Viewer">
+    Title="FileSystem-Viewer"
+    x:Name="mainWindow">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid 
+        x:Name="rootGrid"
+        Background="Transparent"
+        AllowDrop="True"
+        DragEnter="rootGrid_DragEnter"
+        DragOver="rootGrid_DragOver"
+        Drop="rootGrid_Drop"
+        DragLeave="rootGrid_DragLeave">
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -23,76 +32,79 @@
 
         <TitleBar
             x:Name="TitleBar"
+            SizeChanged="TitleBar_SizeChanged"
             Grid.Row="0" 
-            Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
             Title="File Viewer"
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False">
 
             <TitleBar.IconSource>
-                <ImageIconSource ImageSource="/Assets/drive.ico"/>
+                <ImageIconSource ImageSource="/Assets/appIcon.png"/>
             </TitleBar.IconSource>
+
+            <TitleBar.LeftHeader>
+                <Button
+                    Command="{x:Bind MainPageViewModel.OpenSettingsMenuCommand}"
+                    Margin="5,0,-5,0"
+                    Background="Transparent"
+                    BorderThickness="0.5"
+                    Width="35"
+                    Height="35">
+
+                    <Viewbox
+                        Margin="-1.2">
+                        <FontIcon
+                            Glyph="&#xE713;"/>
+                    </Viewbox>
+                </Button>
+            </TitleBar.LeftHeader>
         </TitleBar>
 
-        <Grid
-            Grid.Row="1">
+        <Frame
+            Grid.Row="1"
+            x:Name="RootFrame"/>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="0.4*"/>
-            </Grid.ColumnDefinitions>
+        <Frame
+            Grid.Row="1"
+            x:Name="SettingsFrame"
+            Visibility="{x:Bind MainPageViewModel.ApplicationState.SettingsMenuVisibility, Mode=OneWay}"/>
+        
+        <Frame
+            Grid.Row="1"
+            x:Name="ReportViewerFrame"
+            Visibility="{x:Bind MainPageViewModel.ApplicationState.ReportViewerVisibility, Mode=OneWay}"/>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition Height="auto"/>
-                    <RowDefinition Height="0.2*"/>
-                </Grid.RowDefinitions>
-                
-                <ScrollViewer
-                    Grid.Row="0"
-                    HorizontalScrollBarVisibility="Visible" 
-                    VerticalScrollBarVisibility="Disabled"
-                    HorizontalScrollMode="Enabled"
-                    VerticalScrollMode="Disabled">
-                    <Frame 
-                        x:Name="RootFrame"/>
-                </ScrollViewer>
+        <Border
+            x:Name="criticalDrop"
+            Grid.Column="0"
+            Grid.Row="0"
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            Background="{ThemeResource SmokeFillColorDefaultBrush}"
+            Padding="5"
+            Visibility="Collapsed">
 
-                <controls:GridSplitter
-                    
-                    Grid.Row="1"/>
+            <Border
+                BorderThickness="1"
+                CornerRadius="10"
+                BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"/>
+        </Border>
 
-                <Grid
-                    Grid.Row="2">
+        <Border
+            x:Name="positiveDrop"
+            Grid.Column="0"
+            Grid.Row="0"
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            Background="{ThemeResource SmokeFillColorDefaultBrush}"
+            Padding="5"
+            Visibility="Collapsed">
 
-                    <mControls:HierarchicalTreemap
-                        x:Name="hierarchicalTreemap"
-                        GlyphIcon="&#xE838;"
-                        Separator="\"
-                        ItemsSource="{x:Bind MainPageViewModel.TreemapNodes, Mode=OneWay}"/>
-
-                    <Button
-                        Style="{StaticResource CommandBarButtonStyle}"
-                        ToolTipService.ToolTip="Open in new window"
-                        Content="&#xE8A7;"
-                        Height="27"
-                        Width="35"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Margin="0,5,5,0"
-                        Command="{x:Bind MainPageViewModel.OpenTreeMapNewWindowCommand}">
-                    </Button>
-                </Grid>
-            </Grid>
-
-            <controls:GridSplitter
-                Grid.Column="1"/>
-
-            <Frame
-                x:Name="ChartFrame"
-                Grid.Column="2"/>
-        </Grid>
+            <Border
+                BorderThickness="1"
+                CornerRadius="10"
+                BorderBrush="{ThemeResource SystemFillColorAttentionBrush}"/>
+        </Border>
     </Grid>
 </Window>

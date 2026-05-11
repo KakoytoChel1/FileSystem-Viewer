@@ -1,18 +1,18 @@
+﻿using Humanizer;
 using Microsoft.UI.Xaml.Data;
 using System;
 
-namespace ModernControls.Converters
+namespace FileSystemViewer.Views.Converters
 {
-    public class PercentToFormattedStringConverter : IValueConverter
+    public class TimeSpanIntoStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is double percent)
+            if (value is TimeSpan timeSpan)
             {
-                return percent.ToString("F2");
+                return timeSpan.Humanize();
             }
-
-            return "0.00";
+            return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

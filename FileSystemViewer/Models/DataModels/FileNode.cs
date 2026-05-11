@@ -1,8 +1,7 @@
 ﻿namespace FileSystemViewer.Models
 {
-    public class FileNode : FileSystemNode
+    public class FileNode(FileSystemNode parentNode) : FileSystemNode(parentNode)
     {
-        public FileNode(FileSystemNode parentNode) : base(parentNode) { }
-        public string Extension { get; set; } = null!;
+        public required string Extension { get; set; }
     }
 }
