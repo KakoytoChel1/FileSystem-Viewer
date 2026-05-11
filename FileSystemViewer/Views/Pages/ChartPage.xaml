@@ -43,7 +43,7 @@
                     
                     <Grid>
                         <ListView
-                            ItemsSource="{x:Bind ViewModel.ApplicationState.FileExtensionItems}"
+                            ItemsSource="{x:Bind ViewModel.ApplicationState.FileExtensionItems, Mode=OneWay}"
                             ShowsScrollingPlaceholders="True">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="ListViewItem">
@@ -136,7 +136,7 @@
 
                 <Grid>
                     <lvc:PieChart
-                        Series="{x:Bind ViewModel.ApplicationState.FileExtensionSeriesCollection}"
+                        Series="{x:Bind ViewModel.ApplicationState.FileExtensionSeriesCollection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Background="Transparent"
                         TooltipPosition="Center"/>
                 </Grid>

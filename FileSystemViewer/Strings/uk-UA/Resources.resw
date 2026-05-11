@@ -366,4 +366,7 @@
   <data name="StartupSection.Text" xml:space="preserve">
     <value>Автозапуск додатку</value>
   </data>
+  <data name="ContextMenuCopyPath.Text" xml:space="preserve">
+    <value>Копіювати шлях</value>
+  </data>
 </root>

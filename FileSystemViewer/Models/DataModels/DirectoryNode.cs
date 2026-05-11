@@ -1,6 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 
 namespace FileSystemViewer.Models
 {
@@ -32,20 +30,6 @@ namespace FileSystemViewer.Models
         public void UpdateFileCountProperty()
         {
             OnPropertyChanged(nameof(FileCount));
-        }
-
-        protected override void Open()
-        {
-            if (Directory.Exists(FullPath))
-            {
-               
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = FullPath,
-                    UseShellExecute = true,
-                    Verb = "open"
-                });
-            }
         }
     }
 }

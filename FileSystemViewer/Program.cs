@@ -1,4 +1,5 @@
-﻿using FileSystemViewer.Models;
+﻿using FileSystemViewer.Interfaces;
+using FileSystemViewer.Models;
 using FileSystemViewer.Models.Tools;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -54,7 +55,7 @@ namespace FileSystemViewer
 
                             app.WindowCreated += async () =>
                             {
-                                await RecognizeActivationKind(appActivationArguments, app, false);
+                                await RecognizeActivationKindAsync(appActivationArguments.Kind, appActivationArguments.Data, app, false);
                             };
                         });
                     }
@@ -98,45 +99,41 @@ namespace FileSystemViewer
             if (Application.Current is App currentApp)
             {
                 currentApp.HandleRedirectedActivation(args);
-                await RecognizeActivationKind(args, currentApp, true);
+                await RecognizeActivationKindAsync(args.Kind, args.Data, currentApp, true);
             }
         }
 
-        private static async Task RecognizeActivationKind(AppActivationArguments args, App app, bool isRedirected)
+        internal static async Task RecognizeActivationKindAsync(ExtendedActivationKind kind, object data, IAppActivationHandler appHandler, bool isRedirected)
         {
             try
             {
-                if (args.Kind == ExtendedActivationKind.Launch)
+                if (kind == ExtendedActivationKind.Launch)
                 {
-                    var launchArgs = args.Data as ILaunchActivatedEventArgs;
+                    var launchArgs = data as ILaunchActivatedEventArgs;
 
                     if (launchArgs != null)
                     {
                         string[] arguments = launchArgs.Arguments.Split(' ');
-
-                        if (arguments.Length > 1)
-                        {
-                            await app.HandleCommandLineActivation(arguments, isRedirected);
-                        }
+                        await appHandler.HandleCommandLineActivation(arguments, isRedirected);
                     } 
                 }
 
-                switch (args.Data)
+                switch (data)
                 {
                     case IFileActivatedEventArgs fileArgs:
-                        app.HandleFileOpenActivation(fileArgs.Files);
+                        appHandler.HandleFileOpenActivation(fileArgs.Files);
                         break;
 
                     case IProtocolActivatedEventArgs protocolArgs:
-                        app.HandleProtocolActivation(protocolArgs);
+                        appHandler.HandleProtocolActivation(protocolArgs);
                         break;
 
                     case IStartupTaskActivatedEventArgs startupArgs:
-                        app.HandleStartupActivation(startupArgs);
+                        appHandler.HandleStartupActivation(startupArgs);
                         break;
 
                     case AppNotificationActivatedEventArgs notificationArgs:
-                        app.HandleAppNotificationActivation(notificationArgs.Arguments);
+                        appHandler.HandleAppNotificationActivation(notificationArgs.Arguments);
                         break;
                 }
             }

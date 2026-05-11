@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FileSystemViewer.Models
 {
@@ -8,7 +9,7 @@ namespace FileSystemViewer.Models
         private const string _fileIcon = "\uE729";
         private const string _driveIcon = "\uE958";
 
-        private static readonly Dictionary<string, string> _extensionColorPairs = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> _extensionIconPairs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {string.Empty, "\uE8FF" },
 
@@ -43,6 +44,11 @@ namespace FileSystemViewer.Models
             { ".fsvscan", "\uE9F9" }
         };
 
+        public static Dictionary<string, string> ExtensionIconPairs
+        {
+            get { return _extensionIconPairs; }
+        }
+
         public static string DirectoryIcon
         {
             get { return _directoryIcon; }
@@ -58,14 +64,14 @@ namespace FileSystemViewer.Models
 
         public static string GetFileUnicodeByExtension(string extension)
         {
-            if (string.IsNullOrEmpty(extension))
+            if (string.IsNullOrWhiteSpace(extension))
             {
-                return _extensionColorPairs[string.Empty];
+                return _extensionIconPairs[string.Empty];
             }
 
-            if (_extensionColorPairs.TryGetValue(extension, out var color))
+            if (_extensionIconPairs.TryGetValue(extension, out var unicodeIcon))
             {
-                return color;
+                return unicodeIcon;
             }
 
             return _fileIcon;

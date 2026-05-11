@@ -2,10 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using FileSystemViewer.Models.DataModels;
 using FileSystemViewer.Services.Interfaces;
-using FileSystemViewer.ViewModels.Tools;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
 using System;
 using System.Collections.Generic;
@@ -22,8 +20,9 @@ namespace FileSystemViewer.ViewModels
     {
         public ReportViewerPageViewModel(IServiceProvider serviceProvider, IDriveUtilsService driveUtilsService, IDispatcherQueueProvider dispatcherQueueProvider, 
             IFileExtentionItemService fileExtentionItemService, IConfigurationService<AppSettings> configurationService, 
-            IVisualManagerService visualManagerService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, 
-                fileExtentionItemService, configurationService, visualManagerService, appState)
+            IVisualManagerService visualManagerService, INotificationService notificationService, IReportStorageService reportStorageService, 
+            IDialogService dialogService, AppState appState) : base(serviceProvider, driveUtilsService, dispatcherQueueProvider, 
+                fileExtentionItemService, configurationService, visualManagerService, notificationService, reportStorageService, dialogService, appState)
         {
             ScanReports = new ObservableCollection<ScanReport>();
         }
@@ -62,7 +61,7 @@ namespace FileSystemViewer.ViewModels
         }
 
         [RelayCommand]
-        public async Task OpenReport(XamlRoot xamlRoot)
+        public async Task OpenReport()
         {
             FileOpenPicker fileOpenPicker = new FileOpenPicker(Win32Interop.GetWindowIdFromWindow(ApplicationState.MainWindowHandle))
             {
@@ -84,7 +83,7 @@ namespace FileSystemViewer.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        await DialogManager.ShowContentDialogAsync(xamlRoot!, Localizer.GetLocalizedString("DialogErrorTitle"), Localizer.GetLocalizedString("DialogOkay"), ContentDialogButton.Primary, $"{Localizer.GetLocalizedString("DialogFailedImportSettingsText")} {ex.Message}");
+                        await DialogService.ShowOpenReportErrorAsync(ex.Message);
                     }
                 }
             }

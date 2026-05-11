@@ -12,8 +12,6 @@ namespace FileSystemViewer.Models
         public FileSystemNode(FileSystemNode? parentNode)
         {
             ParentNode = parentNode;
-
-            OpenCommand = new RelayCommand(Open);
         }
 
         public required string UnicodeIcon { get; set; }
@@ -23,7 +21,6 @@ namespace FileSystemViewer.Models
         public required long Size { get; set; }
         public required DateTime? LastModified { get; set; }
         public FileSystemNode? ParentNode { get; private set; }
-        public ICommand? OpenCommand { get; }
 
         public double PercentProperty
         {
@@ -56,7 +53,5 @@ namespace FileSystemViewer.Models
         {
             OnPropertyChanged(nameof(Size));
         }
-
-        protected virtual void Open() { }
     }
 }

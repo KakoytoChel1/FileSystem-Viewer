@@ -1,5 +1,4 @@
 ﻿using Humanizer;
-using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace FileSystemViewer.Models
 {
@@ -16,6 +15,8 @@ namespace FileSystemViewer.Models
 
         private string GetPercentString()
         {
+            if (TotalSize == 0) return "(0%)";
+
             double result = (double)TotalFreeSpace / TotalSize;
             return $"({result:P0})";
         }

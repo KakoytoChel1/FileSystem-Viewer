@@ -32,9 +32,7 @@ namespace FileSystemViewer.Models
                 IConfigurationService<AppSettings> configurationService = ServiceProvider.GetRequiredService<IConfigurationService<AppSettings>>();
 
                 ApplicationLanguages.PrimaryLanguageOverride = configurationService.Settings.AppLanguage == AppSettings.Language.English ? "en-GB" : "uk-UA";
-                ResourceLoader resourceLoader = new ResourceLoader();
-
-                await backgroundScannerService.ProceedScan(resourceLoader);
+                await backgroundScannerService.ProceedScan();
             }
             catch (Exception ex)
             {

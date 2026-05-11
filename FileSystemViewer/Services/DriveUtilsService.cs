@@ -9,12 +9,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.IO.Abstractions;
 
 namespace FileSystemViewer.Services
 {
-    public class DriveUtilsService(IFileExtentionItemService fileExtentionItemService) : IDriveUtilsService
+    public class DriveUtilsService(IFileExtentionItemService fileExtentionItemService, IFileSystem fileSystem) : IDriveUtilsService
     {
         private readonly IFileExtentionItemService _fileExtentionItemService = fileExtentionItemService;
+        private readonly IFileSystem _fileSystem = fileSystem;
 
         private class WorkCounter
         {
@@ -224,7 +226,7 @@ namespace FileSystemViewer.Services
                 LastModified = fileInfo.LastWriteTime,
                 Extension = fileInfo.Extension,
                 UnicodeIcon = UnicodeManager.GetFileUnicodeByExtension(fileInfo.Extension),
-                IconColor = ColorManager.GetFileIconColorByExtension(fileInfo.Extension),
+                IconColor = ColorManager.GetColorByExtension(fileInfo.Extension, isFileIcon: true),
                 FileCount = 1
             };
             return fileNode;
@@ -244,12 +246,12 @@ namespace FileSystemViewer.Services
             return directoryNode;
         }
 
-        public List<DriveInfo> GetAvailableDrives()
+        public List<IDriveInfo> GetAvailableDrives()
         {
-            List<DriveInfo> availableDrives = new List<DriveInfo>();
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
+            List<IDriveInfo> availableDrives = new List<IDriveInfo>();
+            IDriveInfo[] allDrives = _fileSystem.DriveInfo.GetDrives();
 
-            foreach (DriveInfo driveInfo in allDrives)
+            foreach (IDriveInfo driveInfo in allDrives)
             {
                 if (driveInfo.IsReady)
                 {
